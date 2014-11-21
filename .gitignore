@@ -1,0 +1,7 @@
+*.pyc
+__xtuml_lextab.py
+__xtuml_parsetab.py
+OalLexer.py
+OalLexerTokenTypes.txt
+OalParser.py
+OalTokenTypes.txt
