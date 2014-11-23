@@ -75,7 +75,6 @@ class MetaModel(object):
         inst = Cls()
         inst.__r__ = copy.copy(Cls.__r__)
         
-        # set all params with an initial default value
         def default_value(ty):
             if   ty == 'boolean'  : return False
             elif ty == 'integer'  : return 0
@@ -84,14 +83,18 @@ class MetaModel(object):
             elif ty == 'string'   : return ''
             
             logger.error("Unknown data type '%s'" % ty)
-        
-        defaults = {key: default_value(ty) for key, ty in zip(self.param_names[kind], self.param_types[kind])}
-        inst.__dict__.update(defaults)
-        
-        args = {key: value for key, value in zip(self.param_names[kind], args)}
-        inst.__dict__.update(args)
+
+        # set all params with an initial default value
+        for key, ty in zip(self.param_names[kind], self.param_types[kind]):
+            inst.__dict__[key] = default_value(ty)
+
+        # set all positional arguments
+        for key, value in zip(self.param_names[kind], args):
+            inst.__dict__[key] = value
+
+        # set all named arguments
         inst.__dict__.update(kwargs)
-        
+
         if not self.instances.has_key(kind):
             self.instances[kind] = list()
             
