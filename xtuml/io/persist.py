@@ -2,6 +2,10 @@
 # Copyright (C) 2014 John Törnblom
 
 import uuid
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def serialize_model(model):
@@ -16,6 +20,35 @@ def serialize_model(model):
     return s
 
 
+def default_value(ty):
+    if   ty == 'boolean'  : return False
+    elif ty == 'integer'  : return 0
+    elif ty == 'real'     : return 0.0
+    elif ty == 'unique_id': return uuid.UUID(int=0)
+    elif ty == 'string'   : return ''
+    else                  : return None
+
+
+def serialize_value(value):
+    if   isinstance(value, bool):
+        return '%d' % int(value)
+
+    elif isinstance(value, str):
+        return "'%s'" % value.replace("'", "''")
+
+    elif isinstance(value, int):
+        return '%d' % value
+
+    elif isinstance(value, long):
+        return '%f' % value
+
+    elif isinstance(value, uuid.UUID):
+        return '"%s"' % value
+
+    else:
+        return None
+
+
 def serialize_instance(inst, table, attributes):
     attr_count = 0
         
@@ -23,20 +56,15 @@ def serialize_instance(inst, table, attributes):
     for name, ty in attributes:
         value = getattr(inst, name)
         s += '\n    '
-        if   isinstance(value, bool):
-            s += '%d' % int(value)
 
-        elif isinstance(value, str):
-            s += "'%s'" % value.replace("'", "''")
-
-        elif isinstance(value, int):
-            s += '%d' % value
-
-        elif isinstance(value, long):
-            s += '%f' % value
-
-        elif isinstance(value, uuid.UUID):
-            s += '"%s"' % value
+        s_val = serialize_value(value)
+        if s_val is None:
+            msg = 'type error while serializing "%s.%s = %s"' % (table, name, repr(value))
+            value = default_value(ty)
+            logger.warning('%s, using the default %s value %s' % (msg, ty, repr(value)))
+            s_val = serialize_value(value)
+ 
+        s += s_val
 
         attr_count += 1
         if attr_count < len(attributes):
