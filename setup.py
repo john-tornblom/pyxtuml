@@ -18,12 +18,11 @@ class PrepareCommand(Command):
         pass
 
     def run(self):
-        from xtuml.io.load import ModelLoader
-        loader = ModelLoader()
-        loader.build_parser(True)
-        
         os.system('runantlr -o xtuml/oal xtuml/oal/parser.g')
         os.system('runantlr -o xtuml/oal xtuml/oal/lexer.g')
+
+        os.system('runantlr -o xtuml/sql xtuml/sql/parser.g')
+        os.system('runantlr -o xtuml/sql xtuml/sql/lexer.g')
 
 
 long_desc = "pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models."

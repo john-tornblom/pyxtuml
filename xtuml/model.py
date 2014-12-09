@@ -5,6 +5,10 @@ import logging
 import uuid
 import copy
 
+import xtuml.sql.SqlLexer
+import xtuml.sql.SqlParser
+import xtuml.sql.statement as sql_stmt
+
 logger = logging.getLogger(__name__)
         
 
@@ -23,39 +27,74 @@ class NavChain(object):
     
     def __call__(self):
         return self.inst
-    
-class AssociationEndPoint(object):
-    
-    def __init__(self, kind, cardinality, ids, phrase=None):
-        self.cardinality = cardinality
+
+
+class Attribute(object):
+    def __init__(self, name, kind):
+        self.name = name
         self.kind = kind
+
+
+class EndPoint(object):
+    def __init__(self, kind, cardinality, phrase=None):
+        self.kind = kind
+        self.cardinality = cardinality
         self.phrase = phrase
-        self.ids = ids
+        self.ids = list()
 
     @property
     def is_many(self):
-        return self.cardinality.upper() in ['M', 'MC']
+        return self.cardinality.upper() in ["M", "MC"]
 
     @property
     def is_conditional(self):
-        return 'C' in self.cardinality.upper()
+        return "C" in self.cardinality.upper()
 
 
-class SingleEndPoint(AssociationEndPoint):
+class SingleEndPoint(EndPoint):
     
-    def __init__(self, kind, conditional=False, ids=[], phrase=None):
+    def __init__(self, kind, conditional=False, phrase=None):
         if conditional: cardinality = '1C'
         else:           cardinality = '1'
-        AssociationEndPoint.__init__(self, kind, cardinality, ids, phrase)
+        EndPoint.__init__(self, kind, cardinality, phrase)
 
 
-class ManyEndPoint(AssociationEndPoint):
+class ManyEndPoint(EndPoint):
     
-    def __init__(self, kind, conditional=False, ids=[], phrase=None):
+    def __init__(self, kind, conditional=False, phrase=None):
         if conditional: cardinality = 'MC'
         else:           cardinality = 'M'
-        AssociationEndPoint.__init__(self, kind, cardinality, ids, phrase)
+        EndPoint.__init__(self, kind, cardinality, phrase)
         
+
+
+class MetaModelParser(object):
+
+    def __init__(self):
+        self.statements = list()
+
+    def parse(self, path):
+        stmts = xtuml.sql.parse(path)
+        self.statements.extend(stmts)
+
+    def build(self):
+        m = MetaModel()
+
+        schema    = [s for s in self.statements if isinstance(s, sql_stmt.CreateStmt)]
+        relations = [s for s in self.statements if isinstance(s, sql_stmt.RelateStmt)]
+        instances = [s for s in self.statements if isinstance(s, sql_stmt.InsertStmt)]
+        
+        for s in schema:
+            m.define_class(s.kind, s.attributes)
+        
+        for s in relations:
+            end1, end2 = s.end_points
+            m.define_relation(s.id, end1, end2)
+            
+        for s in instances:
+            m.new(s.kind, *s.values)
+            
+        return m
 
 
 class MetaModel(object):
@@ -69,8 +108,8 @@ class MetaModel(object):
     def define_class(self, kind, attributes):
         Cls = type(kind, (object,), dict(__q__=dict(), __r__=dict()))
         self.classes[kind] = Cls
-        self.param_names[kind] = [name for name, _ in attributes]
-        self.param_types[kind] = [ty for _, ty in attributes]
+        self.param_names[kind] = [attr.name for attr in attributes]
+        self.param_types[kind] = [attr.kind for attr in attributes]
         
         return Cls
 

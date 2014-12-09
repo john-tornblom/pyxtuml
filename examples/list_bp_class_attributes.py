@@ -9,15 +9,13 @@ import uuid
 base_dir = '%s/..' % os.path.dirname(__file__)
 sys.path.append(base_dir)
 
-from xtuml import io
+from xtuml import model
 
-loader = io.load.ModelLoader()
-loader.build_parser()
-loader.filename_input('%s/resources/ooaofooa_schema.sql' % base_dir)
-loader.filename_input(sys.argv[1])
+parser = model.MetaModelParser()
+parser.parse('%s/resources/ooaofooa_schema.sql' % base_dir)
+parser.parse(sys.argv[1])
 
-
-m = loader.build_metamodel()
+m = parser.build()
 for o_obj in m.select_many('O_OBJ'):
     print o_obj.Name
 
