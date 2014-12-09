@@ -31,7 +31,15 @@ class AssociationEndPoint(object):
         self.kind = kind
         self.phrase = phrase
         self.ids = ids
-        
+
+    @property
+    def is_many(self):
+        return self.cardinality.upper() in ['M', 'MC']
+
+    @property
+    def is_conditional(self):
+        return 'C' in self.cardinality.upper()
+
 
 class SingleEndPoint(AssociationEndPoint):
     
@@ -59,7 +67,7 @@ class MetaModel(object):
         self.param_types = dict()
         
     def define_class(self, kind, attributes):
-        Cls = type(kind, (object,), dict(__r__=dict()))
+        Cls = type(kind, (object,), dict(__q__=dict(), __r__=dict()))
         self.classes[kind] = Cls
         self.param_names[kind] = [name for name, _ in attributes]
         self.param_types[kind] = [ty for _, ty in attributes]
@@ -73,6 +81,7 @@ class MetaModel(object):
         
         Cls = self.classes[kind]
         inst = Cls()
+        inst.__q__ = copy.copy(Cls.__q__)
         inst.__r__ = copy.copy(Cls.__r__)
         
         def default_value(ty):
@@ -133,72 +142,84 @@ class MetaModel(object):
     def define_relation(self, rel_id, end1, end2):
         Cls1 = self.classes[end1.kind]
         Cls2 = self.classes[end2.kind]
+
+        Cls1.__r__['%s_%s' % (rel_id, end2.kind)] = end2
+        Cls2.__r__['%s_%s' % (rel_id, end1.kind)] = end1
         
-        Cls1.__r__['%s_%s' % (rel_id, end2.kind)] = self._formalized_query(end1, end2)
-        Cls2.__r__['%s_%s' % (rel_id, end1.kind)] = self._formalized_query(end2, end1)
+        Cls1.__q__['%s_%s' % (rel_id, end2.kind)] = self._formalized_query(end1, end2)
+        Cls2.__q__['%s_%s' % (rel_id, end1.kind)] = self._formalized_query(end2, end1)
     
     def unrelate(self, inst1, inst2, rel_id, phrase=None, using=None):
         index1 = '%s_%s' % (rel_id, inst2.__class__.__name__)
         index2 = '%s_%s' % (rel_id, inst1.__class__.__name__)
         
-        endpoint1 = inst1.__r__[index1]
-        endpoint2 = inst2.__r__[index2]
+        endpoint1_query = inst1.__q__[index1]
+        endpoint2_query = inst2.__q__[index2]
         
-        if isinstance(endpoint1, set):
-            endpoint1 -= set([inst2])
+        if isinstance(endpoint1_query, set):
+            endpoint1_query -= set([inst2])
         else:
-            endpoint1 = None
+            endpoint1_query = None
             
-        if isinstance(endpoint2, set):
-            endpoint2 -= set([inst1])
+        if isinstance(endpoint2_query, set):
+            endpoint2_query -= set([inst1])
         else:
-            endpoint2 = None
+            endpoint2_query = None
         
-        inst1.__r__[index1] = endpoint1
-        inst2.__r__[index2] = endpoint2
+        inst1.__q__[index1] = endpoint1_query
+        inst2.__q__[index2] = endpoint2_query
         
     def relate(self, inst1, inst2, rel_id, phrase=None, using=None):
         index1 = '%s_%s' % (rel_id, inst2.__class__.__name__)
         index2 = '%s_%s' % (rel_id, inst1.__class__.__name__)
         
-        endpoint1 = inst1.__r__[index1]
-        endpoint2 = inst2.__r__[index2]
+        endpoint1_query = inst1.__q__[index1]
+        endpoint2_query = inst2.__q__[index2]
         
-        if callable(endpoint1):
-            endpoint1 = endpoint1(inst1)
-        elif isinstance(endpoint1, set):
-            endpoint1 |= set([inst2])
+        if callable(endpoint1_query):
+            endpoint1_query = endpoint1_query(inst1)
+        elif isinstance(endpoint1_query, set):
+            endpoint1_query |= set([inst2])
         else:
-            endpoint1 = inst2
+            endpoint1_query = inst2
             
-        if callable(endpoint2):
-            endpoint2 = endpoint2(inst2)
-        elif isinstance(endpoint2, set):
-            endpoint2 |= set([inst1])
+        if callable(endpoint2_query):
+            endpoint2_query = endpoint2_query(inst2)
+        elif isinstance(endpoint2_query, set):
+            endpoint2_query |= set([inst1])
         else:
-            endpoint2 = inst1
+            endpoint2_query = inst1
         
-        inst1.__r__[index1] = endpoint1
-        inst2.__r__[index2] = endpoint2
+        inst1.__q__[index1] = endpoint1_query
+        inst2.__q__[index2] = endpoint2_query
     
     def navigate(self, handle, kind, rel_id):
-        if not isinstance(handle, set):
+        index = '%s_%s' % (rel_id, kind)
+
+        if isinstance(handle, set):
+            return_set = True
+        else:
+            Cls = self.classes[handle.__class__.__name__]
+            r = Cls.__r__[index]
+            return_set = r.is_many
             handle = set([handle])
 
-        index = '%s_%s' % (rel_id, kind)
         s = set()
         for inst in handle:
-            r = inst.__r__[index]
-            if callable(r):
-                r = inst.__r__[index] = r(inst)
+            q = inst.__q__[index]
+            if callable(q):
+                q = inst.__q__[index] = q(inst)
             
-            if r is None:
+            if q is None:
                 pass
-            elif not isinstance(r, set):
-                s |= set([r])
+            elif not isinstance(q, set):
+                s |= set([q])
             else: 
-                s |= r
-            
+                s |= q
+        
+        if not return_set and len(s):
+            return s.pop()
+
         return s
         
     def chain(self, inst):
