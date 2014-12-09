@@ -1,4 +1,5 @@
 *.pyc
+*~
 __xtuml_lextab.py
 __xtuml_parsetab.py
 OalLexer.py
