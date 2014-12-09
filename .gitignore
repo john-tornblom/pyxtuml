@@ -6,3 +6,7 @@ OalLexer.py
 OalLexerTokenTypes.txt
 OalParser.py
 OalTokenTypes.txt
+SqlLexer.py
+SqlLexerTokenTypes.txt
+SqlParser.py
+SqlTokenTypes.txt
