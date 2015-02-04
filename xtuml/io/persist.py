@@ -40,6 +40,9 @@ def serialize_value(value):
         return '%d' % value
 
     elif isinstance(value, long):
+        return '%d' % value
+    
+    elif isinstance(value, float):
         return '%f' % value
 
     elif isinstance(value, uuid.UUID):

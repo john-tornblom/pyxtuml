@@ -76,7 +76,7 @@ class ModelLoader(object):
     def __init__(self):
         self.statements = list()
 
-    def build_parser(self, debug=True):
+    def build_parser(self):
         self.lexer = lex.lex(debuglog=logger,
                              errorlog=logger,
                              optimize=1,
@@ -104,10 +104,10 @@ class ModelLoader(object):
     
     def file_input(self, f):
         return self.input(f.read())
-    
-    
-    def build_metamodel(self):
-        m = model.MetaModel()
+
+
+    def build_metamodel(self, id_generator):
+        m = model.MetaModel(id_generator)
         # TODO: consider speeding up by using one single loop
         schema    = [s for s in self.statements if isinstance(s, CreateClassStmt)]
         relations = [s for s in self.statements if isinstance(s, CreateRelatationStmt)]
@@ -233,7 +233,7 @@ class ModelLoader(object):
 
     def p_create_table_statement(self, p):
         '''create_table_statement : CREATE TABLE ident LPAREN attr_list RPAREN'''
-        p[0] = CreateClassStmt(p[3], p[5])
+        p[0] = CreateClassStmt(p[3].upper(), p[5])
 
     def p_attr_list_1(self, p):
         '''attr_list : attr'''
@@ -243,6 +243,10 @@ class ModelLoader(object):
         '''attr_list : attr_list COMMA attr'''
         p[0] = p[1] + [p[3]]
 
+    def p_attr_list_3(self, p):
+        '''attr_list : '''
+        p[0] = []
+
     def p_attr(self, p):
         '''attr : ident ident'''
         p[0] = (p[1], p[2].lower())
@@ -251,7 +255,7 @@ class ModelLoader(object):
         '''
         insert_into_statement : INSERT INTO ident VALUES LPAREN value_list RPAREN
         '''
-        p[0] = CreateInstanceStmt(p[3], p[6])
+        p[0] = CreateInstanceStmt(p[3].upper(), p[6])
 
     def p_value_list_1(self, p):
         '''value_list : value'''
@@ -293,11 +297,11 @@ class ModelLoader(object):
 
     def p_association_end_1(self, p):
         '''association_end : cardinality ident LPAREN id_list RPAREN'''
-        p[0] = model.AssociationEndPoint(p[2], p[1], p[4])
+        p[0] = model.AssociationEndPoint(p[2].upper(), p[1], p[4])
 
     def p_association_end_2(self, p):
         '''association_end : cardinality ident LPAREN id_list RPAREN PHRASE STRING'''
-        p[0] = model.AssociationEndPoint(p[2], p[1], p[4], p[7])
+        p[0] = model.AssociationEndPoint(p[2].upper(), p[1], p[4], p[7][1:-1])
 
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''
@@ -322,6 +326,10 @@ class ModelLoader(object):
     def p_id_list_2(self, p):
         '''id_list : id_list COMMA ident'''
         p[0] = p[1] + [p[3]]
+
+    def p_id_list_3(self, p):
+        '''id_list : '''
+        p[0] = []
 
     def p_idend_1(self, p):
         '''ident : ID'''

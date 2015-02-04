@@ -1,7 +1,14 @@
+.settings
+.coverage
+.metadata
+.project
+.pydevproject
 *.pyc
 *~
 __xtuml_lextab.py
 __xtuml_parsetab.py
+__rsl_lextab.py
+__rsl_parsetab.py
 OalLexer.py
 OalLexerTokenTypes.txt
 OalParser.py
