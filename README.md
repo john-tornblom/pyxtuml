@@ -1,4 +1,4 @@
-pyxtuml
+pyxtuml		[![Build Status](https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master)](https://travis-ci.org/john-tornblom/pyxtuml)
 ========
 pyxtuml is a python library for parsing, manipulating, and generating [BridgePoint](https://www.xtuml.org) xtUML models. The library operates at the metamodel, hence you cannot execute models using pyxtuml. 
 
