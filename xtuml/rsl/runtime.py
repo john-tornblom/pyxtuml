@@ -311,7 +311,7 @@ class Runtime(object):
 
         if do_write:
             dirname = os.path.dirname(filename)
-            if not os.path.exists(dirname):
+            if dirname and not os.path.exists(dirname):
                 os.makedirs(dirname)
 
             if os.path.exists(filename):
