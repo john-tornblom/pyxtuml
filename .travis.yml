@@ -2,6 +2,5 @@ language: python
 python:
   - "3.4"
   - "2.7"
-  - "2.6"
 install: pip install ply
 script: python setup.py test
