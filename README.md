@@ -1,4 +1,4 @@
-pyxtuml		[![Build Status](https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master)](https://travis-ci.org/john-tornblom/pyxtuml)
+pyxtuml		[![Build Status](https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master)](https://travis-ci.org/john-tornblom/pyxtuml)	[![Coverage Status](https://coveralls.io/repos/john-tornblom/pyxtuml/badge.svg?branch=master)](https://coveralls.io/r/john-tornblom/pyxtuml?branch=master)
 ========
 pyxtuml is a python library for parsing, manipulating, and generating [BridgePoint](https://www.xtuml.org) xtUML models. The library operates at the metamodel, hence you cannot execute models using pyxtuml. 
 
