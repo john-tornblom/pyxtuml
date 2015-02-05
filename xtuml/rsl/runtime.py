@@ -305,7 +305,7 @@ class Runtime(object):
         if self.diff:
             self.append_diff(filename, org, buf)
 
-        if do_write and self.force_emit:
+        if do_write and self.force_emit and os.path.exists(filename):
             st = os.stat(filename)
             os.chmod(filename, st.st_mode | stat.S_IWRITE)
 
