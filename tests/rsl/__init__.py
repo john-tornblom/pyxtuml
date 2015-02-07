@@ -20,26 +20,24 @@ from . import typesys
 from . import variable
 
 
-def run():
+def suite():
     loader = unittest.TestLoader()
 
-    suite = loader.loadTestsFromModule(binop)
-    suite.addTests(loader.loadTestsFromModule(emit))
-    suite.addTests(loader.loadTestsFromModule(loop))
-    suite.addTests(loader.loadTestsFromModule(select))
-    suite.addTests(loader.loadTestsFromModule(invoke))
-    suite.addTests(loader.loadTestsFromModule(ifs))
-    suite.addTests(loader.loadTestsFromModule(prints))
-    suite.addTests(loader.loadTestsFromModule(const))
-    suite.addTests(loader.loadTestsFromModule(info))
-    suite.addTests(loader.loadTestsFromModule(parsekw))
-    suite.addTests(loader.loadTestsFromModule(intrinsic))
-    suite.addTests(loader.loadTestsFromModule(variable))
-    suite.addTests(loader.loadTestsFromModule(format))
-    suite.addTests(loader.loadTestsFromModule(typesys))
+    s = loader.loadTestsFromModule(binop)
+    s.addTests(loader.loadTestsFromModule(emit))
+    s.addTests(loader.loadTestsFromModule(loop))
+    s.addTests(loader.loadTestsFromModule(select))
+    s.addTests(loader.loadTestsFromModule(invoke))
+    s.addTests(loader.loadTestsFromModule(ifs))
+    s.addTests(loader.loadTestsFromModule(prints))
+    s.addTests(loader.loadTestsFromModule(const))
+    s.addTests(loader.loadTestsFromModule(info))
+    s.addTests(loader.loadTestsFromModule(parsekw))
+    s.addTests(loader.loadTestsFromModule(intrinsic))
+    s.addTests(loader.loadTestsFromModule(variable))
+    s.addTests(loader.loadTestsFromModule(format))
+    s.addTests(loader.loadTestsFromModule(typesys))
     
-    suite.addTests(loader.loadTestsFromModule(symtab))
+    s.addTests(loader.loadTestsFromModule(symtab))
     
-    runner = unittest.TextTestRunner(verbosity=2, buffer=True)
-    return runner.run(suite)
-
+    return s
