@@ -265,6 +265,10 @@ class ModelLoader(object):
         '''value_list : value_list COMMA value'''
         p[0] = p[1] + [p[3]]
 
+    def p_value_list_3(self, p):
+        '''value_list : '''
+        p[0] = []
+        
     def p_value_1(self, p):
         '''value : FRACTION'''
         p[0] = float(p[1])

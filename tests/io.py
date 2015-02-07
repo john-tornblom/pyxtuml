@@ -116,6 +116,15 @@ class TestLoader(unittest.TestCase):
         INSERT INTO PHRASE VALUES ("00000000-0000-0000-0000-000000000000");
         '''
         self.assertTrue(m.select_any('PHRASE') is not None)
+        
+    @load
+    def testEmptyAttributeList(self, m):
+        '''
+        CREATE TABLE X ();
+        INSERT INTO X VALUES ();
+        '''
+        self.assertTrue(m.select_any('X') is not None)
+
 
 def suite():
     loader = unittest.TestLoader()
