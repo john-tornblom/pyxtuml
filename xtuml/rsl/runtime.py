@@ -17,9 +17,6 @@ import difflib
 import xtuml.version
 import xtuml.model
 
-from . import parse
-from . import pyrepr
-
 
 logger = logging.getLogger(__name__)
 
@@ -231,22 +228,7 @@ class Runtime(object):
             return xtuml.model.QuerySet([value])
         else:
             return value
-            
-    def compile(self, filename):
-        if filename not in self.include_cache:
-            parser = parse.RSLParser()
-            ast = parser.filename_input(filename)
         
-            w = pyrepr.PyReprWalker(self)
-            #w.visitors.append(xtuml.tools.NodePrintVisitor())
-            py_code = w.accept(ast)
-            code = compile(py_code, filename, 'exec')
-            self.include_cache[filename] = code
-            
-        else:
-            code = self.include_cache[filename]
-        
-        return code
         
     def buffer_literal(self, literal):
         if   literal.endswith('\\' * 3):
