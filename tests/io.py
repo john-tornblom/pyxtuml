@@ -3,6 +3,7 @@
 
 import unittest
 import os
+import uuid
 
 from xtuml import model
 from xtuml import io
@@ -126,6 +127,68 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('X') is not None)
 
 
+    @load
+    def testInsertSTRING(self, m):
+        '''
+        CREATE TABLE X (Id STRING);
+        INSERT INTO X VALUES ('TEST');
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, 'TEST')
+        
+    @load
+    def testInsertUNIQUE_ID_Null(self, m):
+        '''
+        CREATE TABLE X (Id UNIQUE_ID);
+        INSERT INTO X VALUES ("00000000-0000-0000-0000-000000000000");
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, uuid.UUID(int=0))
+        
+    @load
+    def testInsertREAL_Positive(self, m):
+        '''
+        CREATE TABLE X (Id REAL);
+        INSERT INTO X VALUES (1.1);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, 1.1)
+        
+        
+    @load
+    def testInsertREAL_Negative(self, m):
+        '''
+        CREATE TABLE X (Id REAL);
+        INSERT INTO X VALUES (-5.2);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, -5.2)
+
+    @load
+    def testInsertINTEGER_Positive(self, m):
+        '''
+        CREATE TABLE X (Id INTEGER);
+        INSERT INTO X VALUES (5);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, 5)
+        
+    @load
+    def testInsertINTEGER_Negative(self, m):
+        '''
+        CREATE TABLE X (Id INTEGER);
+        INSERT INTO X VALUES (-1000);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, -1000)
+        
+        
 def suite():
     loader = unittest.TestLoader()
     s = loader.loadTestsFromTestCase(TestLoader)
