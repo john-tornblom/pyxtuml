@@ -15,7 +15,6 @@ from . import loop
 from . import parsekw
 from . import prints
 from . import select
-from . import symtab
 from . import typesys
 from . import variable
 
@@ -37,8 +36,6 @@ def run():
     suite.addTests(loader.loadTestsFromModule(variable))
     suite.addTests(loader.loadTestsFromModule(format))
     suite.addTests(loader.loadTestsFromModule(typesys))
-    
-    suite.addTests(loader.loadTestsFromModule(symtab))
     
     runner = unittest.TextTestRunner(verbosity=2, buffer=True)
     return runner.run(suite)
