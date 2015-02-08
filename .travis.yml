@@ -5,5 +5,7 @@ python:
 install: 
   - pip install ply
   - pip install coveralls
-script: coverage run --source=xtuml setup.py test
-after_success: coveralls
+script:
+  - coverage run --source=xtuml setup.py test
+after_success:
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then coveralls; fi
