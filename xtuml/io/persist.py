@@ -39,7 +39,8 @@ def serialize_value(value):
 
 def serialize_instance(inst, table, attributes):
     attr_count = 0
-        
+    attributes = list(attributes)
+
     s = 'INSERT INTO %s VALUES (' % table
     for name, ty in attributes:
         value = getattr(inst, name)
