@@ -29,9 +29,6 @@ def serialize_value(value):
 
     elif isinstance(value, int):
         return '%d' % value
-
-    elif isinstance(value, long):
-        return '%d' % value
     
     elif isinstance(value, float):
         return '%f' % value

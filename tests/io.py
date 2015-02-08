@@ -239,7 +239,7 @@ class TestPersist(unittest.TestCase):
         loader.build_parser()
         loader.input(schema)
         
-        id_generator = model.IdGenerator(readfunc=lambda: 0L)
+        id_generator = model.IdGenerator(readfunc=lambda: 0)
         m = loader.build_metamodel(id_generator)
         m.new('X')
         
