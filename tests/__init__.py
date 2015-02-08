@@ -8,5 +8,7 @@ from . import io
 
 def run():
     runner = unittest.TextTestRunner(verbosity=2, buffer=True)
-    runner.run(rsl.suite())
-    runner.run(io.suite())
+    rc = runner.run(rsl.suite()).wasSuccessful()
+    rc &= runner.run(io.suite()).wasSuccessful()
+    
+    return not rc

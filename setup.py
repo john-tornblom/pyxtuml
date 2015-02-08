@@ -45,8 +45,9 @@ class TestCommand(Command):
 
     def run(self):
         import tests
-        tests.run()
-        
+        import sys
+        sys.exit(tests.run())
+
 
 long_desc = "pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models."
 
