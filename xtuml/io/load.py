@@ -207,17 +207,11 @@ class ModelLoader(object):
 
     def p_statement_list_1(self, p):
         '''statement_list : statement'''
-        if p[1]:
-            p[0] = [p[1]]
-        else:
-            p[0] = []
+        p[0] = [p[1]]
 
     def p_statement_list_2(self, p):
         '''statement_list : statement_list statement'''
-        if p[2]:
-            p[0] = p[1] + [p[2]]
-        else:
-            p[0] = p[1]
+        p[0] = p[1] + [p[2]]
 
     def p_statement_1(self, p):
         '''statement : create_table_statement SEMICOLON'''
