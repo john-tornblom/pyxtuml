@@ -186,12 +186,82 @@ class TestLoader(unittest.TestCase):
         '''
         val = m.select_any('X')
         self.assertTrue(val is not None)
-        self.assertEqual(val.Id, -1000)
+        self.assertEqual(val.Id, -1000) 
+
+class TestPersist(unittest.TestCase):
+
+    def testPersist(self):
         
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
         
+        loader = io.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        
+        id_generator = model.IdGenerator()
+        m = loader.build_metamodel(id_generator)
+        m.new('X', BOOLEAN=True,
+                   INTEGER=1,
+                   REAL = -5.5,
+                   UNIQUE_ID=uuid.UUID(int=0))
+        
+        s = io.persist.serialize_model(m)
+        
+        loader = io.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        loader.input(s)
+        
+        m = loader.build_metamodel(id_generator)
+        x = m.select_any('X')
+        self.assertEqual(x.BOOLEAN, True)
+        self.assertEqual(x.INTEGER, 1)
+        self.assertEqual(x.REAL, -5.5)
+        self.assertEqual(x.UNIQUE_ID, uuid.UUID(int=0))
+        
+    def testPersistDefaultValues(self):
+        
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        
+        loader = io.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        
+        id_generator = model.IdGenerator(readfunc=lambda: 0L)
+        m = loader.build_metamodel(id_generator)
+        m.new('X')
+        
+        s = io.persist.serialize_model(m)
+        
+        loader = io.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        loader.input(s)
+        
+        m = loader.build_metamodel(id_generator)
+        x = m.select_any('X')
+        self.assertEqual(x.BOOLEAN, False)
+        self.assertEqual(x.INTEGER, 0)
+        self.assertEqual(x.REAL, 0.0)
+        self.assertEqual(x.UNIQUE_ID, 0)
+
+
 def suite():
     loader = unittest.TestLoader()
     s = loader.loadTestsFromTestCase(TestLoader)
-    
+    s.addTests(loader.loadTestsFromTestCase(TestPersist))
+
     return s
 
