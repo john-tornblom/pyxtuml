@@ -85,8 +85,7 @@ class TestEmit(RSLTestCase):
     
     @evaluate
     def testEmitFromFunction(self, rc):
-        '''
-        .function f
+        '''.function f
 Hello world!
         .end function
         .invoke rc = f()
@@ -97,5 +96,5 @@ Hello world!
         self.assertEqual("Hello world!\n", rc)
         
         with open("/tmp/RSLTestCase") as f:
-            self.assertEqual(f.read(), "\n")
+            self.assertEqual(f.read(), "")
 
