@@ -37,12 +37,13 @@ class TestEmit(RSLTestCase):
     
     def testEmitEscapedBackslash(self):
         text = 'Hello world' + '\\' + '\\' + '\n' 
+        text+= 'Test\n'
         text+= '.emit to file "/tmp/RSLTestCase"' 
         
         self.eval_text(text)
         
         with open("/tmp/RSLTestCase") as f:
-            self.assertEqual(f.read(), "Hello world\\\n")
+            self.assertEqual(f.read(), "Hello world\\\nTest\n")
     
     @evaluate
     def testEmitComment(self, rc):
