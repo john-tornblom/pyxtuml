@@ -60,8 +60,8 @@ setup(name='pyxtuml',
       url='https://github.com/john-tornblom/pyxtuml',
       license='GPLv3',
       platforms=["Linux"],
-      packages=['xtuml', 'xtuml.io', 'xtuml.rsl', 'xtuml.oal'],
-      requires=['ply', 'antlr'],
+      packages=['xtuml', 'xtuml.io', 'xtuml.rsl'],
+      requires=['ply'],
       cmdclass={'prepare': PrepareCommand, 'test': TestCommand},
       scripts=['gen_erate.py']
       )
