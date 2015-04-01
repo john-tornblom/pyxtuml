@@ -29,8 +29,8 @@ def parse_text(text, filename=''):
     return parser.text_input(text, filename)
 
 
-def evaluate(rt, ast):
-    w = eval.EvalWalker(rt)
+def evaluate(rt, ast, includes):
+    w = eval.EvalWalker(rt, includes)
     #w.visitors.append(xtuml.tools.NodePrintVisitor())
     w.accept(ast)
 

@@ -26,9 +26,10 @@ class BreakException(Exception):
 
 class EvalWalker(xtuml.tools.Walker):
     
-    def __init__(self, rt):
+    def __init__(self, rt, includes):
         xtuml.tools.Walker.__init__(self)
         self.runtime = rt
+        self.includes = includes
         self.callstack = list()
         self.symtab = symtab.SymbolTable()
         
@@ -366,19 +367,31 @@ class EvalWalker(xtuml.tools.Walker):
         assert isinstance(node, ast.IncludeNode)
         
         filename = self.accept(node.inc_filename).fget()
+        root = None
+        
+        # check cache
         if filename in self.runtime.include_cache:
             root = self.runtime.include_cache[filename]
         
-        elif os.path.exists(filename):
+        # check absolute path
+        elif os.path.isabs(filename):
             root = xtuml.rsl.parse_file(filename)
             self.runtime.include_cache[filename] = root
-            
-        elif not os.path.isabs(filename):
-            path = os.path.dirname(self.runtime.info.arch_file_name)
-            if not path: path = '.'
-            root = xtuml.rsl.parse_file('%s/%s' % (path, filename))
-            self.runtime.include_cache[filename] = root
+
+        # search relative include paths
         else:
+            paths_to_search = [os.path.dirname(self.runtime.info.arch_file_name)]
+            paths_to_search.extend(self.includes)
+            paths_to_search = filter(None, paths_to_search)
+            
+            for path in paths_to_search:
+                abs_path = '%s/%s' % (path, filename)
+                if os.path.exists(abs_path):
+                    root = xtuml.rsl.parse_file(abs_path)
+                    self.runtime.include_cache[filename] = root
+                    break
+            
+        if root is None:
             raise Exception("unable to find '%s'" % filename)
         
         self.callstack.append(node)

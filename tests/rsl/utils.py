@@ -17,14 +17,15 @@ class RSLTestCase(unittest.TestCase):
         id_generator = xtuml.model.IdGenerator(readfunc=self.next_id)
         self.metamodel = xtuml.model.MetaModel(id_generator)
         self.runtime = xtuml.rsl.runtime.Runtime(self.metamodel)
-
+        self.includes = ['./']
+        
     def tearDown(self):
         del self.metamodel
 
     def eval_text(self, text, filename=''):
         ast = xtuml.rsl.parse_text(text + '\n', filename)
         try:
-            xtuml.rsl.evaluate(self.runtime, ast)
+            xtuml.rsl.evaluate(self.runtime, ast, self.includes)
         except SystemExit as e:
             return e.code
 
