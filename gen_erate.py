@@ -22,7 +22,7 @@ def next_id():
 def main():
     parser = optparse.OptionParser(usage="%prog [OPTION]... {filename}", version=version.complete_string, formatter=optparse.TitledHelpFormatter())
     parser.add_option("-i", "--import", dest="imports", metavar="PATH", help="import model information from PATH", action="append", default=[])
-    parser.add_option("-I", "--include", dest="includes", metavar="PATH", help="import model information from PATH", action="append", default=['./'])
+    parser.add_option("-I", "--include", dest="includes", metavar="PATH", help="add PATH to list of dirs to search for include files", action="append", default=['./'])
     parser.add_option("-e", "--emit", dest='emit', metavar="WHEN", choices=['never', 'change', 'always'], action="store", help="choose when to emit (never, change, always)", default='change')
     parser.add_option("-f", "--force", dest='force', action="store_true", help="make read-only emit files writable", default=False)
     parser.add_option("-d", "--diff", dest='diff', metavar="PATH", action="store", help="save a diff of all emits to PATH", default=None)
