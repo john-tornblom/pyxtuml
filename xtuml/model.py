@@ -395,14 +395,12 @@ class MetaModel(object):
         for inst in self.instances[kind]:
             if not isinstance(inst, Cls): continue
             
-            match = True
             for name, value in kwargs.items():
                 if getattr(inst, name) != value:
-                    match = False
                     break
+            else:
+                return inst
 
-            if match: return inst
-    
     def select_any(self, kind, **kwargs):
         return self.select_one(kind, **kwargs)
     
@@ -418,13 +416,11 @@ class MetaModel(object):
         for inst in self.instances[kind]:
             if not isinstance(inst, Cls): continue
             
-            match = True
             for name, value in kwargs.items():
                 if getattr(inst, name) != value:
-                    match = False
                     break
-
-            if match: lst.append(inst)
+            else:
+                lst.append(inst)
             
         return QuerySet(lst)
 
