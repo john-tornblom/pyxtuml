@@ -10,6 +10,7 @@ from distutils.core import Command
 
 import xtuml.io.load
 import xtuml.rsl.parse
+import xtuml.version
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -52,7 +53,7 @@ class TestCommand(Command):
 long_desc = "pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models."
 
 setup(name='pyxtuml',
-      version='0.0.1',
+      version=xtuml.version.release,
       description='pyxtuml',
       long_description=long_desc,
       author='John Törnblom',
