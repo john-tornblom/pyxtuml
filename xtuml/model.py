@@ -145,7 +145,11 @@ class QuerySet(OrderedSet):
 class BaseObject(object):
     __r__ = None
     __q__ = None
+    __c__ = None
     
+    def __init__(self):
+        self.__c__.clear()
+        
     def __add__(self, other):
         assert isinstance(other, BaseObject)
         return QuerySet([self, other])
@@ -166,6 +170,7 @@ class BaseObject(object):
         for attr in self.__dict__.keys():
             if attr.lower() == name:
                 self.__dict__[attr] = value
+                self.__c__.clear()
                 return
 
     def __str__(self):
@@ -209,7 +214,7 @@ class MetaModel(object):
         self.id_generator = id_generator
         
     def define_class(self, kind, attributes):
-        Cls = type(kind, (BaseObject,), dict(__q__=dict(), __r__=dict()))
+        Cls = type(kind, (BaseObject,), dict(__q__=dict(), __r__=dict(), __c__=dict()))
         self.classes[kind] = Cls
         self.param_names[kind] = [name for name, _ in attributes]
         self.param_types[kind] = [ty for _, ty in attributes]
@@ -258,7 +263,7 @@ class MetaModel(object):
         
         Cls = self.classes[kind]
         inst = Cls()
-
+        
         # set all parameters with an initial default value
         for key, ty in zip(self.param_names[kind], self.param_types[kind]):
             inst.__dict__[key] = self.default_value(ty)
@@ -326,21 +331,16 @@ class MetaModel(object):
         return inst != query_set.last
     
     def _formalized_query(self, source, target):
-        is_set = target.cardinality.startswith('M')
-        
         def select_endpoint(inst, kwargs):
             keys = target.ids + list(kwargs.keys())
             values = [getattr(inst, name) for name in source.ids] + list(kwargs.values())
+            kwargs = dict(zip(keys, values))
 
-            if is_set: select = self.select_many
-            else     : select = self.select_one
-        
-            kwargs = dict()
-            for key, value in zip(keys, values):
-                kwargs[key] = value
-    
-            return select(target.kind, **kwargs)
-            
+            if target.is_many:
+                return self.select_many(target.kind, **kwargs)
+            else:
+                return self.select_one(target.kind, **kwargs)
+
         return lambda self, **kwargs: select_endpoint(self, kwargs)
     
     def define_relation(self, rel_id, end1, end2):
@@ -384,44 +384,40 @@ class MetaModel(object):
     def chain(self, inst):
         return NavChain(self, inst)
     
-    def select_one(self, kind, **kwargs):
-        if not kind in self.classes:
-            raise ModelException("The kind '%s' is undefined" % kind)
-        
+    def _select(self, kind, **kwargs):        
         if not kind in self.instances:
-            return QuerySet()
+            return
         
-        Cls = self.classes[kind]
         for inst in self.instances[kind]:
-            if not isinstance(inst, Cls): continue
-            
             for name, value in kwargs.items():
                 if getattr(inst, name) != value:
                     break
             else:
-                return inst
-
-    def select_any(self, kind, **kwargs):
-        return self.select_one(kind, **kwargs)
+                yield inst
     
     def select_many(self, kind, **kwargs):
         if not kind in self.classes:
             raise ModelException("The kind '%s' is undefined" % kind)
         
-        if not kind in self.instances:
-            return QuerySet()
+        Cls = self.classes[kind]
+        cache_key = frozenset(list(kwargs.items()) + [('__c__', 'many')])
+        if cache_key not in Cls.__c__:
+            Cls.__c__[cache_key] = QuerySet(self._select(kind, **kwargs))
+        
+        return Cls.__c__[cache_key]
+
+    def select_one(self, kind, **kwargs):
+        if not kind in self.classes:
+            raise ModelException("The kind '%s' is undefined" % kind)
         
         Cls = self.classes[kind]
-        lst = list()
-        for inst in self.instances[kind]:
-            if not isinstance(inst, Cls): continue
-            
-            for name, value in kwargs.items():
-                if getattr(inst, name) != value:
-                    break
-            else:
-                lst.append(inst)
-            
-        return QuerySet(lst)
-
-
+        cache_key = frozenset(list(kwargs.items()) + [('__c__', 'one')])
+        if cache_key not in Cls.__c__:
+            Cls.__c__[cache_key] = next(self._select(kind, **kwargs), None)
+        
+        return Cls.__c__[cache_key]
+    
+    def select_any(self, kind, **kwargs):
+        return self.select_one(kind, **kwargs)
+    
+    
