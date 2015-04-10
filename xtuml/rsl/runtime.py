@@ -17,6 +17,11 @@ import difflib
 import xtuml.version
 import xtuml.model
 
+try:
+    from future_builtins import filter
+except ImportError:
+    pass
+
 
 logger = logging.getLogger(__name__)
 
@@ -308,8 +313,6 @@ class Runtime(object):
             with open(filename, 'w+') as f:
                 f.write(buf)
 
-
-
     def clear_buffer(self):
         b = self.buffer
         self.buffer = ''
@@ -319,27 +322,18 @@ class Runtime(object):
         return self.metamodel.new(key_letter)
     
     def chain(self, inst):
-        return self.metamodel.chain(inst)
+        return self.metamodel.navigate_many(inst)
     
     def select_any_from(self, key_letter, where_cond):
-        for inst in self.metamodel.select_many(key_letter):
-            if where_cond(inst):
-                return inst
-    
+        return self.metamodel.select_any(key_letter, where_cond)
+         
     def select_many_from(self, key_letter, where_cond):
-        s = xtuml.model.QuerySet()
-        for inst in self.metamodel.select_many(key_letter):
-            if where_cond(inst):
-                s.add(inst)
-        return s
+        return self.metamodel.select_many(key_letter, where_cond)
 
     @staticmethod
     def select_many_in(inst_set, where_cond):
-        s = xtuml.model.QuerySet()
-        for inst in iter(inst_set):
-            if where_cond(inst):
-                s.add(inst)
-        return s
+        s = filter(where_cond, inst_set)
+        return xtuml.model.QuerySet(s)
 
     @staticmethod
     def select_any_in(inst_set, where_cond):
@@ -353,9 +347,7 @@ class Runtime(object):
         if cardinality > 1:
             raise RuntimeException('select one from a set with cardinality %d' % cardinality)
         
-        for inst in iter(inst_set):
-            if where_cond(inst):
-                return inst
+        return Runtime.select_any_in(inst_set, where_cond)
                 
     @staticmethod
     def cardinality(inst_set):

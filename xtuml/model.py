@@ -1,9 +1,15 @@
 # encoding: utf-8
 # Copyright (C) 2014 John Törnblom
+from itertools import chain
 
 import logging
 import uuid
 import collections
+
+try:
+    from future_builtins import filter, zip
+except ImportError:
+    pass
 
 
 logger = logging.getLogger(__name__)
@@ -14,20 +20,50 @@ class ModelException(Exception):
 
 
 class NavChain(object):
-
-    def __init__(self, metamodel, inst):
-        self.metamodel = metamodel
-        self.inst = inst
-
-    def nav(self, kind, rel_id, phrase=''):
-        inst = self.metamodel.navigate(self.inst, kind, rel_id, phrase)
-        return NavChain(self.metamodel, inst)
-
-    def __iter__(self):
-        return self.inst.__iter__()
     
-    def __call__(self):
-        return self.inst
+    def __init__(self, metamodel, handle, is_many=True):
+        if handle is None:
+            self.handle = set()
+        
+        elif isinstance(handle, BaseObject):
+            self.handle = set([handle])
+        
+        elif isinstance(handle, QuerySet):
+            self.handle = handle
+        
+        else:
+            raise ModelException("Unable to navigate instances of '%s'" % type(handle))
+            
+        self.metamodel = metamodel
+        self.is_many = is_many
+        
+        self._kind = None
+    
+    def nav(self, kind, relid, phrase=''):
+        if isinstance(relid, int):
+            relid = 'R%d' % relid
+        
+        result = set()
+        for child in iter(self.handle):
+            result |= set(child.__q__[kind][relid][phrase](child))
+
+        self.handle = result
+        
+        return self
+    
+    def __getattr__(self, name):
+        self._kind = name
+        return self
+    
+    def __getitem__(self, relid, phrase=''):
+        return self.nav(self._kind, relid, phrase)
+
+    def __call__(self, where_clause=None):
+        s = filter(where_clause, self.handle)
+        if self.is_many:
+            return QuerySet(s)
+        else:
+            return next(s, None)
 
 
 class AssociationEndPoint(object):
@@ -143,7 +179,6 @@ class QuerySet(OrderedSet):
 
 
 class BaseObject(object):
-    __r__ = None
     __q__ = None
     __c__ = None
     
@@ -214,7 +249,7 @@ class MetaModel(object):
         self.id_generator = id_generator
         
     def define_class(self, kind, attributes):
-        Cls = type(kind, (BaseObject,), dict(__q__=dict(), __r__=dict(), __c__=dict()))
+        Cls = type(kind, (BaseObject,), dict(__q__=dict(), __c__=dict()))
         self.classes[kind] = Cls
         self.param_names[kind] = [name for name, _ in attributes]
         self.param_types[kind] = [ty for _, ty in attributes]
@@ -252,7 +287,7 @@ class MetaModel(object):
           'unique_id'   : type(self.id_generator.peek())
         }
         
-        if name in  lookup_table:
+        if name in lookup_table:
             return lookup_table[name]
         else:
             raise ModelException("Unknown type named '%s'" % name)
@@ -330,94 +365,76 @@ class MetaModel(object):
         assert isinstance(query_set, QuerySet)
         return inst != query_set.last
     
+    
+    def _select_endpoint(self, inst, source, target, kwargs):
+        if not target.kind in self.instances:
+            return frozenset()
+        
+        keys = chain(target.ids, kwargs.keys())
+        values = chain([getattr(inst, name) for name in source.ids], kwargs.values())
+        kwargs = dict(zip(keys, values))
+        
+        def perform_query():
+            for inst in iter(self.instances[target.kind]):
+                for name, value in kwargs.items():
+                    if getattr(inst, name) != value:
+                        break
+                else:
+                    yield inst
+                    if not target.is_many:
+                        return
+                    
+        cache_key = frozenset(list(kwargs.items()))
+        cache = self.classes[target.kind].__c__
+        
+        if cache_key not in cache:
+            cache[cache_key] = frozenset(perform_query())
+            
+        return cache[cache_key]
+    
     def _formalized_query(self, source, target):
-        def select_endpoint(inst, kwargs):
-            keys = target.ids + list(kwargs.keys())
-            values = [getattr(inst, name) for name in source.ids] + list(kwargs.values())
-            kwargs = dict(zip(keys, values))
-
-            if target.is_many:
-                return self.select_many(target.kind, **kwargs)
-            else:
-                return self.select_one(target.kind, **kwargs)
-
-        return lambda self, **kwargs: select_endpoint(self, kwargs)
+        return lambda inst, **kwargs: self._select_endpoint(inst, source, target, kwargs)
     
     def define_relation(self, rel_id, end1, end2):
         Cls1 = self.classes[end1.kind]
         Cls2 = self.classes[end2.kind]
 
-        Cls1.__r__['%s_%s_%s' % (rel_id, end2.kind, end2.phrase)] = end2
-        Cls2.__r__['%s_%s_%s' % (rel_id, end1.kind, end1.phrase)] = end1
-        
-        Cls1.__q__['%s_%s_%s' % (rel_id, end2.kind, end2.phrase)] = self._formalized_query(end1, end2)
-        Cls2.__q__['%s_%s_%s' % (rel_id, end1.kind, end1.phrase)] = self._formalized_query(end2, end1)
-
-    def navigate(self, handle, kind, rel_id, phrase=''):
-        index = '%s_%s_%s' % (rel_id, kind, phrase)
-
-        if handle is None:
-            handle = QuerySet()
-        
-        elif isinstance(handle, BaseObject):
-            handle = QuerySet([handle])
+        if end2.kind not in Cls1.__q__:
+            Cls1.__q__[end2.kind] = dict()
             
-        elif not isinstance(handle, QuerySet):
-            raise ModelException("Unable to navigate instances of '%s'" % type(handle))
-
-        s = QuerySet()
-        for inst in handle:
-            query = inst.__q__[index]
-            result = query(inst)
+        if end1.kind not in Cls2.__q__:
+            Cls2.__q__[end1.kind] = dict()
+        
+        if rel_id not in Cls1.__q__[end2.kind]:
+            Cls1.__q__[end2.kind][rel_id] = dict()
             
-            if result is None:
-                pass
-            
-            elif not isinstance(result, QuerySet):
-                s |= QuerySet([result])
-                
-            else: 
-                s |= result
-
-        return s
+        if rel_id not in Cls2.__q__[end1.kind]:
+            Cls2.__q__[end1.kind][rel_id] = dict()
         
-    def chain(self, inst):
-        return NavChain(self, inst)
+        Cls1.__q__[end2.kind][rel_id][end2.phrase] = self._formalized_query(end1, end2)
+        Cls2.__q__[end1.kind][rel_id][end1.phrase] = self._formalized_query(end2, end1)
     
-    def _select(self, kind, **kwargs):        
-        if not kind in self.instances:
-            return
-        
-        for inst in self.instances[kind]:
-            for name, value in kwargs.items():
-                if getattr(inst, name) != value:
-                    break
-            else:
-                yield inst
+    def select_one(self, kind, where_cond=None):
+        return self.select_any(kind, where_cond)
     
-    def select_many(self, kind, **kwargs):
-        if not kind in self.classes:
-            raise ModelException("The kind '%s' is undefined" % kind)
+    def select_any(self, kind, where_cond=None):
+        if kind in self.instances:
+            s = filter(where_cond, self.instances[kind])
+            return next(s, None)
         
-        Cls = self.classes[kind]
-        cache_key = frozenset(list(kwargs.items()) + [('__c__', 'many')])
-        if cache_key not in Cls.__c__:
-            Cls.__c__[cache_key] = QuerySet(self._select(kind, **kwargs))
-        
-        return Cls.__c__[cache_key]
-
-    def select_one(self, kind, **kwargs):
-        if not kind in self.classes:
-            raise ModelException("The kind '%s' is undefined" % kind)
-        
-        Cls = self.classes[kind]
-        cache_key = frozenset(list(kwargs.items()) + [('__c__', 'one')])
-        if cache_key not in Cls.__c__:
-            Cls.__c__[cache_key] = next(self._select(kind, **kwargs), None)
-        
-        return Cls.__c__[cache_key]
+    def select_many(self, kind, where_cond=None):
+        if kind in self.instances:
+            return QuerySet(filter(where_cond, self.instances[kind]))
+        else:
+            return QuerySet()
     
-    def select_any(self, kind, **kwargs):
-        return self.select_one(kind, **kwargs)
+    def navigate_one(self, inst):
+        return self.navigate_any(inst)
+    
+    def navigate_any(self, inst):
+        return NavChain(self, inst, is_many=False)
+    
+    def navigate_many(self, inst):
+        return NavChain(self, inst, is_many=True)
     
     

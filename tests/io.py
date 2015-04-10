@@ -35,7 +35,7 @@ class TestLoader(unittest.TestCase):
 
         id_generator = model.IdGenerator()
         metamodel = self.loader.build_metamodel(id_generator)
-        self.assertTrue(metamodel.select_any('S_DT', Name='integer') is not None)
+        self.assertTrue(metamodel.select_any('S_DT', lambda inst: inst.Name == 'integer') is not None)
         
     @load
     def testTableNamedCREATE(self, m):

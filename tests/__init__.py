@@ -11,5 +11,7 @@ def run():
     suite = unittest.TestSuite()
     rsl.populate_suite(suite)
     io.populate_suite(suite)
+    model.populate_suite(suite)
+
     runner = unittest.TextTestRunner(verbosity=2, buffer=True)
     return not runner.run(suite).wasSuccessful()
