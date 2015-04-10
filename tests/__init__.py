@@ -5,10 +5,11 @@ import unittest
 
 from . import rsl
 from . import io
+from . import model
 
 def run():
+    suite = unittest.TestSuite()
+    rsl.populate_suite(suite)
+    io.populate_suite(suite)
     runner = unittest.TextTestRunner(verbosity=2, buffer=True)
-    rc = runner.run(rsl.suite()).wasSuccessful()
-    rc &= runner.run(io.suite()).wasSuccessful()
-    
-    return not rc
+    return not runner.run(suite).wasSuccessful()

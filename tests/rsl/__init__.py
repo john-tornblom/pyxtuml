@@ -20,10 +20,9 @@ from . import typesys
 from . import variable
 
 
-def suite():
+def populate_suite(s):
     loader = unittest.TestLoader()
-
-    s = loader.loadTestsFromModule(binop)
+    s.addTests(loader.loadTestsFromModule(binop))
     s.addTests(loader.loadTestsFromModule(emit))
     s.addTests(loader.loadTestsFromModule(loop))
     s.addTests(loader.loadTestsFromModule(select))
@@ -37,7 +36,4 @@ def suite():
     s.addTests(loader.loadTestsFromModule(variable))
     s.addTests(loader.loadTestsFromModule(format))
     s.addTests(loader.loadTestsFromModule(typesys))
-    
     s.addTests(loader.loadTestsFromModule(symtab))
-    
-    return s

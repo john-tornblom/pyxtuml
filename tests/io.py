@@ -258,10 +258,8 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.UNIQUE_ID, 0)
 
 
-def suite():
+def populate_suite(s):
     loader = unittest.TestLoader()
-    s = loader.loadTestsFromTestCase(TestLoader)
+    s.addTests(loader.loadTestsFromTestCase(TestLoader))
     s.addTests(loader.loadTestsFromTestCase(TestPersist))
-
-    return s
 
