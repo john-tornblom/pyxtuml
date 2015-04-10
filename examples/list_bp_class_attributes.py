@@ -18,7 +18,7 @@ loader.filename_input(sys.argv[1])
 
 m = loader.build_metamodel()
 for o_obj in m.select_many('O_OBJ'):
-    print o_obj.Name
+    print (o_obj.Name)
 
     for o_attr in m.navigate(o_obj, 'O_ATTR', 'R102'):
         s_dt = m.navigate(o_attr, 'S_DT', 'R114').pop()
