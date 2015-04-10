@@ -106,7 +106,7 @@ class ModelLoader(object):
         return self.input(f.read())
 
 
-    def build_metamodel(self, id_generator):
+    def build_metamodel(self, id_generator=model.IdGenerator()):
         m = model.MetaModel(id_generator)
         # TODO: consider speeding up by using one single loop
         schema    = [s for s in self.statements if isinstance(s, CreateClassStmt)]
