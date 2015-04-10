@@ -34,13 +34,15 @@ Usage:
 
 Options:
 
-	--version               show program's version number and exit
-	--help, -h              show this help message and exit
-	--import=PATH, -i PATH  import model information from PATH
-	--emit=WHEN, -e WHEN    choose when to emit (never, change, always)
-	--force, -f             make read-only emit files writable
-	--diff=PATH, -d PATH    save a diff of all emits to PATH
-	--verbosity, -v         increase debug logging level
+    --version               show program's version number and exit
+    --help, -h              show this help message and exit
+    --import=PATH, -i PATH  import model information from PATH
+    --include=PATH, -I PATH
+                            add PATH to list of dirs to search for include files
+    --emit=WHEN, -e WHEN    choose when to emit (never, change, always)
+    --force, -f             make read-only emit files writable
+    --diff=PATH, -d PATH    save a diff of all emits to PATH
+    --verbosity, -v         increase debug logging level
 ```
 
 For example, to execute an RSL template from stdin, just type:
