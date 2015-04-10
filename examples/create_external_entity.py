@@ -73,13 +73,13 @@ s_bparm = m.new('S_BPARM',
                 DT_ID=s_dt.DT_ID)
 
 
-print '-- root-types-contained: Package_c'
-print '-- generics'
-print '-- BP 7.1 content: StreamData syschar: 3 persistence-version: 7.1.6'
-print io.persist.serialize_model(m)
-print ''
-print ''
-print '-- Copy the SQL statements above, and paste them into the BridgePoint editor'
-print '-- with a project selected in the project explorer. NOTE: do not remove the'
-print '-- first few comments.'
+print('-- root-types-contained: Package_c')
+print('-- generics')
+print('-- BP 7.1 content: StreamData syschar: 3 persistence-version: 7.1.6')
+print(io.persist.serialize_model(m))
+print('')
+print('')
+print('-- Copy the SQL statements above, and paste them into the BridgePoint editor')
+print('-- with a project selected in the project explorer. NOTE: do not remove the')
+print('-- first few comments.')
 
