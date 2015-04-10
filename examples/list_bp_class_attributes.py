@@ -4,7 +4,6 @@
 
 import sys
 import os
-import uuid
 
 base_dir = '%s/..' % os.path.dirname(__file__)
 sys.path.append(base_dir)
