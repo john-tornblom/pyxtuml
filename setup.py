@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 # Copyright (C) 2014 John Törnblom
-
 import os
 import logging
 
@@ -12,7 +11,9 @@ import xtuml.io.load
 import xtuml.rsl.parse
 import xtuml.version
 
+
 logging.basicConfig(level=logging.DEBUG)
+
 
 class PrepareCommand(Command):
     description = "Prepare the source code by generating lexers and parsers"
