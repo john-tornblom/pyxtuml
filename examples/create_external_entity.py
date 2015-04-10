@@ -50,7 +50,8 @@ s_ee = m.new('S_EE',
 #
 # Create a bridge operation (My_Bridge_Operation: boolean)
 #
-s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'boolean')
+s_dt = m.select_one('S_DT',
+                    lambda selected: selected.Name == 'boolean')
 
 s_ee = m.new('S_BRG',
              Brg_ID=uuid.uuid4(),
@@ -62,7 +63,8 @@ s_ee = m.new('S_BRG',
 #
 # Create a bridge parameter (My_Parameter: string)
 #
-s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
+s_dt = m.select_one('S_DT',
+                    lambda selected: selected.Name == 'string')
 
 s_bparm = m.new('S_BPARM',
                 BParm_ID=uuid.uuid4(),
