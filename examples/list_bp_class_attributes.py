@@ -15,12 +15,13 @@ loader.build_parser()
 loader.filename_input('%s/resources/ooaofooa_schema.sql' % base_dir)
 loader.filename_input(sys.argv[1])
 
-
+by_name = lambda inst: inst.Name
 m = loader.build_metamodel()
-for o_obj in m.select_many('O_OBJ'):
-    print (o_obj.Name)
 
-    for o_attr in m.navigate_many(o_obj).O_ATTR[102]():
+for o_obj in sorted(m.select_many('O_OBJ'), key=by_name):
+    print(o_obj.Name)
+
+    for o_attr in sorted(m.navigate_many(o_obj).O_ATTR[102](), key=by_name):
         s_dt = m.navigate_any(o_attr).S_DT[114]()
-        print ('   %s : %s' % (o_attr.Name, s_dt.Name))
+        print('   %s : %s' % (o_attr.Name, s_dt.Name))
 
