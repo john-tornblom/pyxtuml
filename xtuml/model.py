@@ -23,10 +23,10 @@ class NavChain(object):
     
     def __init__(self, metamodel, handle, is_many=True):
         if handle is None:
-            self.handle = set()
+            self.handle = QuerySet()
         
         elif isinstance(handle, BaseObject):
-            self.handle = set([handle])
+            self.handle = QuerySet([handle])
         
         elif isinstance(handle, QuerySet):
             self.handle = handle
@@ -43,9 +43,9 @@ class NavChain(object):
         if isinstance(relid, int):
             relid = 'R%d' % relid
         
-        result = set()
+        result = QuerySet()
         for child in iter(self.handle):
-            result |= set(child.__q__[kind][relid][phrase](child))
+            result |= child.__q__[kind][relid][phrase](child)
 
         self.handle = result
         
@@ -365,30 +365,29 @@ class MetaModel(object):
         assert isinstance(query_set, QuerySet)
         return inst != query_set.last
     
-    
+    def _query(self, kind, many, **kwargs):
+        for inst in iter(self.instances[kind]):
+            for name, value in kwargs.items():
+                if getattr(inst, name) != value:
+                    break
+            else:
+                yield inst
+                if not many:
+                    return
+                    
     def _select_endpoint(self, inst, source, target, kwargs):
         if not target.kind in self.instances:
-            return frozenset()
+            return QuerySet()
         
         keys = chain(target.ids, kwargs.keys())
         values = chain([getattr(inst, name) for name in source.ids], kwargs.values())
         kwargs = dict(zip(keys, values))
-        
-        def perform_query():
-            for inst in iter(self.instances[target.kind]):
-                for name, value in kwargs.items():
-                    if getattr(inst, name) != value:
-                        break
-                else:
-                    yield inst
-                    if not target.is_many:
-                        return
-                    
+                            
         cache_key = frozenset(list(kwargs.items()))
         cache = self.classes[target.kind].__c__
         
         if cache_key not in cache:
-            cache[cache_key] = frozenset(perform_query())
+            cache[cache_key] = QuerySet(self._query(target.kind, target.is_many, **kwargs))
             
         return cache[cache_key]
     
