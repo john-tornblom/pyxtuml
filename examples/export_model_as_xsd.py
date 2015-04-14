@@ -115,7 +115,7 @@ def build_schema(m):
 
 def prettify(xml_string):
     reparsed = xml.dom.minidom.parseString(xml_string)
-    return reparsed.toprettyxml(indent="  ")
+    return reparsed.toprettyxml(indent="    ")
 
 
 if __name__ == '__main__':
