@@ -35,22 +35,23 @@ def get_type_name(m, o_attr):
     
 
 def is_contained_in(m, pe_pe, root):
+    if not pe_pe:
+        return False
+    
     if pe_pe.__class__.__name__ != 'PE_PE':
         pe_pe = m.navigate_one(pe_pe).PE_PE[8001]()
 
-    c_c = m.navigate_one(pe_pe).C_C[8003]()
-    if root == c_c:
-        return True
-    elif is_contained_in(m, pe_pe, c_c):
-        return True
-    
     ep_pkg = m.navigate_one(pe_pe).EP_PKG[8000]()
-    if root == ep_pkg:
-        return True
-    elif is_contained_in(m, pe_pe, ep_pkg):
-        return True
+    c_c = m.navigate_one(pe_pe).C_C[8003]()
     
-    return False
+    if root in [ep_pkg, c_c]:
+        return True
+    elif is_contained_in(m, ep_pkg, root):
+        return True
+    elif is_contained_in(m, c_c, root):
+        return True
+    else:
+        return False
 
 
 def is_global(m, pe_pe):
@@ -59,11 +60,12 @@ def is_global(m, pe_pe):
 
     if m.navigate_one(pe_pe).C_C[8003]():
         return False
-       
-    if m.navigate_one(pe_pe).EP_PKG[8000]():
-        return False
-
-    return True
+    
+    pe_pe = m.navigate_one(pe_pe).EP_PKG[8000].PE_PE[8001]()
+    if not pe_pe:
+        return True
+    
+    return is_global(m, pe_pe)
 
     
 def build_class(m, o_obj):
