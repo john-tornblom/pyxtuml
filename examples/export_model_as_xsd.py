@@ -228,7 +228,7 @@ def build_component(m, c_c):
     for s_dt in m.select_many('S_DT', scope_filter):
         datatype = build_type(m, s_dt)
         if datatype is not None:
-            schema.append(datatype)
+            component.append(datatype)
     
     for o_obj in m.select_many('O_OBJ', scope_filter):
         cls = build_class(m, o_obj)
