@@ -55,7 +55,12 @@ class NavChain(object):
         self._kind = name
         return self
     
-    def __getitem__(self, relid, phrase=''):
+    def __getitem__(self, args):
+        if not isinstance(args, tuple):
+            args = (args, '')
+        
+        relid, phrase = args
+        
         return self.nav(self._kind, relid, phrase)
 
     def __call__(self, where_clause=None):
