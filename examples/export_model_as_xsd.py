@@ -4,6 +4,8 @@
 
 import sys
 import os
+import optparse
+import logging
 
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
@@ -12,6 +14,9 @@ base_dir = '%s/..' % os.path.dirname(__file__)
 sys.path.append(base_dir)
 
 from xtuml import io
+
+
+logger = logging.getLogger('xsd_export')
 
 
 def get_type_name(m, s_dt):
@@ -210,7 +215,8 @@ def build_class(m, o_obj):
         type_name = get_type_name(m, s_dt)
         if type_name:
             ET.SubElement(attributes, 'xs:attribute', name=o_attr.name, type=type_name)
-    
+        else:
+            logger.warn('unable to convert %s.%s : %s' % (o_obj.key_lett, o_attr.Name, s_dt.Name))
     return cls
 
 
@@ -225,11 +231,6 @@ def build_component(m, c_c):
     
     scope_filter = lambda selected: is_contained_in(m, selected, c_c)
     
-    for s_dt in m.select_many('S_DT', scope_filter):
-        datatype = build_type(m, s_dt)
-        if datatype is not None:
-            component.append(datatype)
-    
     for o_obj in m.select_many('O_OBJ', scope_filter):
         cls = build_class(m, o_obj)
         classes.append(cls)
@@ -237,9 +238,9 @@ def build_component(m, c_c):
     return component
 
 
-def build_schema(m):
+def build_schema(m, c_c):
     '''
-    Build an xsd schema from a bridgepoint model.
+    Build an xsd schema from a bridgepoint component.
     '''
     schema = ET.Element('xs:schema')
     schema.set('xmlns:xs', 'http://www.w3.org/2001/XMLSchema')
@@ -250,9 +251,14 @@ def build_schema(m):
         if datatype is not None:
             schema.append(datatype)
     
-    for c_c in m.select_many('C_C'):
-        component = build_component(m, c_c)
-        schema.append(component)
+    scope_filter = lambda selected: is_contained_in(m, selected, c_c)
+    for s_dt in m.select_many('S_DT', scope_filter):
+        datatype = build_type(m, s_dt)
+        if datatype is not None:
+            schema.append(datatype)
+            
+    component = build_component(m, c_c)
+    schema.append(component)
     
     return schema
 
@@ -266,21 +272,43 @@ def prettify(xml_string):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print('usage: %s <path to prebuild model.sql>' % sys.argv[0])
-        sys.exit()
+    
+    parser = optparse.OptionParser(usage="%prog [OPTION]... {filename}", formatter=optparse.TitledHelpFormatter())
+    parser.add_option("-c", "--component", dest="component", metavar="NAME", help="export xsd schema for the component named NAME", action="store", default=None)
+    parser.add_option("-o", "--output", dest='output', metavar="PATH", action="store", help="save xsd schema to PATH", default=None)
+    parser.add_option("-v", "--verbosity", dest='verbosity', action="count", help="increase debug logging level", default=1)
+    
+    (opts, args) = parser.parse_args()
+    if len(args) == 0 or None in [opts.component, opts.output]:
+        parser.print_help()
+        sys.exit(1)
+        
+    levels = {
+              0: logging.ERROR,
+              1: logging.WARNING,
+              2: logging.INFO,
+              3: logging.DEBUG,
+    }
+    logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
     loader = io.load.ModelLoader()
     loader.build_parser()
     loader.filename_input('%s/resources/ooaofooa_schema.sql' % base_dir)
-    loader.filename_input(sys.argv[1])
-    
+    for filename in args:
+        loader.filename_input(filename)
+        
     m = loader.build_metamodel()
     
-    schema = build_schema(m)
-    
-    s = ET.tostring(schema, 'utf-8')
-    s = prettify(s)
-    
-    print(s)
+    c_c = m.select_any('C_C', lambda inst: inst.Name == opts.component)
+    if c_c:
+        schema = build_schema(m, c_c)
+        with open(opts.output, 'w') as f:
+            s = ET.tostring(schema, 'utf-8')
+            s = prettify(s)
+            f.write(s)
+    else:
+        logger.error('unable to find a component named %s' % opts.component)
+        logger.info('available components to choose from are: %s' % ', '.join([c_c.Name for c_c in m.select_many('C_C')]))
+            
+        sys.exit(1)
 
