@@ -169,7 +169,7 @@ def build_user_type(m, s_udt):
     base_name = get_type_name(m, s_dt_base)
     if base_name:
         user = ET.Element('xs:simpleType', name=s_dt_user.name)
-        ET.SubElement(user, 'xs:extension', base=base_name)
+        ET.SubElement(user, 'xs:restriction', base=base_name)
         
         return user
 
