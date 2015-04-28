@@ -200,11 +200,13 @@ class BaseObject(object):
         else: return QuerySet([self])
 
     def __getattr__(self, name):
-        name = name.lower()
+        lname = name.lower()
         for attr in self.__dict__.keys():
-            if attr.lower() == name:
+            if attr.lower() == lname:
                 return self.__dict__[attr]
 
+        return  object.__getattr__(self, name)
+    
     def __setattr__(self, name, value):
         name = name.lower()
         for attr in self.__dict__.keys():
