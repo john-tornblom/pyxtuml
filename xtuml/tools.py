@@ -45,6 +45,8 @@ class Walker(object):
         self.visitors = list()
         
     def accept(self, node, **kwargs):
+        if node is None:
+            return
         for v in self.visitors: v.enter(node)
         
         name = 'accept_' + node.__class__.__name__
