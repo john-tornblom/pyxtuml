@@ -38,8 +38,6 @@ class CreateRelatationStmt(object):
         self.id = rel_id
         
 
-
-    
 class ModelLoader(object):
 
     reserved = (
@@ -82,15 +80,14 @@ class ModelLoader(object):
                              optimize=1,
                              module=self,
                              outputdir=os.path.dirname(__file__),
-                             lextab="xtuml.io.__xtuml_lextab")
+                             lextab="xtuml.__xtuml_lextab")
         
         self.parser = yacc.yacc(debuglog=logger,
                                 errorlog=logger,
                                 optimize=1,
                                 module=self,
                                 outputdir=os.path.dirname(__file__),
-                                tabmodule='xtuml.io.__xtuml_parsetab')
-
+                                tabmodule='xtuml.__xtuml_parsetab')
 
     def input(self, data):
         s = self.parser.parse(lexer=self.lexer, input=data)
@@ -109,7 +106,7 @@ class ModelLoader(object):
     def build_metamodel(self, id_generator=model.IdGenerator()):
         m = model.MetaModel(id_generator)
         # TODO: consider speeding up by using one single loop
-        schema    = [s for s in self.statements if isinstance(s, CreateClassStmt)]
+        schema = [s for s in self.statements if isinstance(s, CreateClassStmt)]
         relations = [s for s in self.statements if isinstance(s, CreateRelatationStmt)]
         instances = [s for s in self.statements if isinstance(s, CreateInstanceStmt)]
         
@@ -378,4 +375,13 @@ class ModelLoader(object):
             logger.error("invalid token '%s' at (%s, %d)" % (p.value, p.lineno, p.lexpos))
         else:
             logger.error("unknown error")
+
+
+def load_metamodel(filenames):
+    loader = ModelLoader()
+    loader.build_parser()
+    for filename in filenames:
+        loader.filename_input(filename)
+    
+    return loader.build_metamodel()
 

@@ -1,17 +1,13 @@
 # encoding: utf-8
 # Copyright (C) 2014 John Törnblom
 
-
 class Node(object):
     '''
     Tree node which may be walked a walker, and visited by a visitor.
     '''
     
-    lineno = None
-    filename = None
-    
     def __str__(self):
-        return self.__class__.__name__[0:-4]
+        return self.__class__.__name__
 
 
 class Visitor(object):
@@ -47,6 +43,7 @@ class Walker(object):
     def accept(self, node, **kwargs):
         if node is None:
             return
+        
         for v in self.visitors: v.enter(node)
         
         name = 'accept_' + node.__class__.__name__
@@ -71,7 +68,7 @@ class NodePrintVisitor(Visitor):
         self.__lvl = 0
         
     def default_enter(self, node):
-        print('%s:%s %s%s' % (node.filename, node.lineno, "  " * self.__lvl, node))
+        print('%s%s' % ("  " * self.__lvl, node))
         self.__lvl += 1
 
     def default_leave(self, node):

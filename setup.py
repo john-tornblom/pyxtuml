@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Copyright (C) 2014 John Törnblom
-import os
+# Copyright (C) 2015 John Törnblom
 import logging
+import unittest
+import sys
 
 from distutils.core import setup
 from distutils.core import Command
 
-import xtuml.io.load
-import xtuml.rsl.parse
-import xtuml.version
+import xtuml
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -26,13 +25,7 @@ class PrepareCommand(Command):
         pass
 
     def run(self):
-        loader = xtuml.io.load.ModelLoader()
-        loader.build_parser()
-        
-        xtuml.rsl.parse.RSLParser()
-        
-        #os.system('runantlr -o xtuml/oal xtuml/oal/parser.g')
-        #os.system('runantlr -o xtuml/oal xtuml/oal/lexer.g')
+        xtuml.load_metamodel([])
 
 
 class TestCommand(Command):
@@ -46,25 +39,23 @@ class TestCommand(Command):
         pass
 
     def run(self):
-        import tests
-        import sys
-        sys.exit(tests.run())
+        suite = unittest.TestLoader().discover('tests')
+        runner = unittest.TextTestRunner(verbosity=2, buffer=True)
+        exit_code = not runner.run(suite).wasSuccessful()
+        sys.exit(exit_code)
 
-
-long_desc = "pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models."
 
 setup(name='pyxtuml',
       version=xtuml.version.release,
       description='pyxtuml',
-      long_description=long_desc,
+      long_description="pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models.",
       author='John Törnblom',
       author_email='john.tornblom@gmail.com',
       url='https://github.com/john-tornblom/pyxtuml',
       license='GPLv3',
       platforms=["Linux"],
-      packages=['xtuml', 'xtuml.io', 'xtuml.rsl'],
+      packages=['xtuml'],
       requires=['ply'],
-      cmdclass={'prepare': PrepareCommand, 'test': TestCommand},
-      scripts=['gen_erate.py']
+      cmdclass={'prepare': PrepareCommand, 'test': TestCommand}
       )
 

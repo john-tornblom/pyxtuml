@@ -1,15 +1,13 @@
-pyxtuml		[![Build Status](https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master)](https://travis-ci.org/john-tornblom/pyxtuml)	[![Coverage Status](https://coveralls.io/repos/john-tornblom/pyxtuml/badge.svg?branch=master)](https://coveralls.io/r/john-tornblom/pyxtuml?branch=master)
+pyxtuml [![Build Status](https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master)](https://travis-ci.org/john-tornblom/pyxtuml)	[![Coverage Status](https://coveralls.io/repos/john-tornblom/pyxtuml/badge.svg?branch=master)](https://coveralls.io/r/john-tornblom/pyxtuml?branch=master)
 ========
-pyxtuml is a python library for parsing, manipulating, and generating [BridgePoint](https://www.xtuml.org) xtUML models. The library operates at the metamodel, hence you cannot execute models using pyxtuml. 
-
-In addition to reading models, pyxtuml also provides an experimental interpreter for the Rule Specification Language (RSL). RSL is commonly used as a template language to express transformations from a BridgePoint model into a textual representation, e.g. when writing model compilers or when generating html documentation from a model. 
+pyxtuml is a python library for parsing, manipulating, and generating [BridgePoint](https://www.xtuml.org) xtUML models.
 
 ### Getting Started
 pyxtuml depend on the following software packages:
 * [python](http://python.org) (tested with v2.7)
 * [ply](http://www.dabeaz.com/ply) (tested with v3.4)
 
-For people running Ubuntu 14.04, all packages are available via apt-get.
+For people running Ubuntu, all packages are available via apt-get.
 ```
 $ sudo apt-get install python2.7 python-ply
 ```
@@ -21,39 +19,23 @@ $ cd pyxtuml
 $ python setup.py prepare
 ```
 
-Optionally, you can also execute a test suite for the RSL interpreter:
+Optionally, you can also execute a test suite:
 ```
 $ python setup.py test
 ```
 
-### Using the RSL interpreter
-The usage of the RSL interpreter is as follows:
+Next, install pyxtuml on your system:
 ```
-Usage:
-  gen_erate.py [OPTION]... {filename}
-
-Options:
-
-    --version               show program's version number and exit
-    --help, -h              show this help message and exit
-    --import=PATH, -i PATH  import model information from PATH
-    --include=PATH, -I PATH
-                            add PATH to list of dirs to search for include files
-    --emit=WHEN, -e WHEN    choose when to emit (never, change, always)
-    --force, -f             make read-only emit files writable
-    --diff=PATH, -d PATH    save a diff of all emits to PATH
-    --verbosity, -v         increase debug logging level
+$ python setup.py install
 ```
 
-For example, to execute an RSL template from stdin, just type:
+Or if you prefer, install only for the current user:
 ```
-$ echo '.print "Hello world!"' | ./gen_erate.py /dev/stdin
+$ python setup.py install --user
 ```
 
-### Generating models
-Rather than using RSL to create or modify a metamodel, you can use python directly. 
-This might be useful if you try to import information expressed in some other form, e.g. C/C++ Header files.
-For example, one can use [the python binding for clang](https://github.com/llvm-mirror/clang/tree/master/bindings/python) to create external entities from C/C++ header files automatically.
+### Usage example
+The [examples folder](https://github.com/john-tornblom/pyxtuml/tree/master/examples) contains a few scripts which demonstrate how pyxtuml may be used.
 
 The following command will create an empty metamodel and populate it with some sample data:
 ```
@@ -65,8 +47,6 @@ If you are on a more recent GNU/Linux system, you can also pipe the output direc
 ```
 $ python examples/create_external_entity.py | xclip -selection clipboard
 ```
-
-Please note that pyxtuml is still regarded as experimental, and its API might change.
 
 ### Reporting bugs
 If you encounter problems with pyxtuml, please [file a github issue](https://github.com/john-tornblom/pyxtuml/issues/new). 

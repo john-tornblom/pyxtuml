@@ -1,19 +1,17 @@
 # encoding: utf-8
-# Copyright (C) 2014 John Törnblom
+# Copyright (C) 2014-2015 John Törnblom
 
 import unittest
 import os
 import uuid
 
-from xtuml import model
-from xtuml import io
+import xtuml.load
 
 
 def load(fn):
     def load_wrapper(self, *args, **kwargs):
         self.loader.input(fn.__doc__)
-        id_generator = model.IdGenerator()
-        metamodel = self.loader.build_metamodel(id_generator)
+        metamodel = self.loader.build_metamodel()
         fn(self, metamodel)
     
     return load_wrapper
@@ -22,19 +20,18 @@ def load(fn):
 class TestLoader(unittest.TestCase):
 
     def setUp(self):
-        self.loader = io.load.ModelLoader()
+        self.loader = xtuml.load.ModelLoader()
         self.loader.build_parser()
 
     def tearDown(self):
         del self.loader
 
     def testFileInput(self):
-        base_dir = '%s/../resources' % os.path.dirname(__file__)
-        self.loader.filename_input('%s/ooaofooa_schema.sql' % base_dir)
-        self.loader.filename_input('%s/Globals.xtuml' % base_dir)
+        resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
+        schema = resources + os.sep + 'ooaofooa_schema.sql'
+        globs = resources + os.sep + 'Globals.xtuml'
 
-        id_generator = model.IdGenerator()
-        metamodel = self.loader.build_metamodel(id_generator)
+        metamodel = xtuml.load_metamodel([globs, schema])
         self.assertTrue(metamodel.select_any('S_DT', lambda inst: inst.Name == 'integer') is not None)
         
     @load
@@ -200,25 +197,24 @@ class TestPersist(unittest.TestCase):
                             UNIQUE_ID UNIQUE_ID);
         '''
         
-        loader = io.load.ModelLoader()
+        loader = xtuml.load.ModelLoader()
         loader.build_parser()
         loader.input(schema)
         
-        id_generator = model.IdGenerator()
-        m = loader.build_metamodel(id_generator)
+        m = loader.build_metamodel()
         m.new('X', BOOLEAN=True,
                    INTEGER=1,
-                   REAL = -5.5,
+                   REAL=-5.5,
                    UNIQUE_ID=uuid.UUID(int=0))
         
-        s = io.persist.serialize_model(m)
+        s = xtuml.serialize_metamodel(m)
         
-        loader = io.load.ModelLoader()
+        loader = xtuml.load.ModelLoader()
         loader.build_parser()
         loader.input(schema)
         loader.input(s)
         
-        m = loader.build_metamodel(id_generator)
+        m = loader.build_metamodel()
         x = m.select_any('X')
         self.assertEqual(x.BOOLEAN, True)
         self.assertEqual(x.INTEGER, 1)
@@ -235,17 +231,17 @@ class TestPersist(unittest.TestCase):
                             UNIQUE_ID UNIQUE_ID);
         '''
         
-        loader = io.load.ModelLoader()
+        loader = xtuml.load.ModelLoader()
         loader.build_parser()
         loader.input(schema)
         
-        id_generator = model.IdGenerator(readfunc=lambda: 0)
+        id_generator = xtuml.IdGenerator(readfunc=lambda: 0)
         m = loader.build_metamodel(id_generator)
         m.new('X')
         
-        s = io.persist.serialize_model(m)
+        s = xtuml.serialize_metamodel(m)
         
-        loader = io.load.ModelLoader()
+        loader = xtuml.load.ModelLoader()
         loader.build_parser()
         loader.input(schema)
         loader.input(s)
@@ -258,8 +254,6 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.UNIQUE_ID, 0)
 
 
-def populate_suite(s):
-    loader = unittest.TestLoader()
-    s.addTests(loader.loadTestsFromTestCase(TestLoader))
-    s.addTests(loader.loadTestsFromTestCase(TestPersist))
+if __name__ == "__main__":
+    unittest.main()
 

@@ -1,23 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Copyright (C) 2014 John Törnblom
+# Copyright (C) 2015 John Törnblom
 
 import sys
-import os
+import xtuml
 
-base_dir = '%s/..' % os.path.dirname(__file__)
-sys.path.append(base_dir)
-
-from xtuml import io
-
-loader = io.load.ModelLoader()
-loader.build_parser()
-loader.filename_input('%s/resources/ooaofooa_schema.sql' % base_dir)
-loader.filename_input(sys.argv[1])
+m = xtuml.load_metamodel(sys.argv[1:])
 
 by_name = lambda inst: inst.Name
-m = loader.build_metamodel()
-
 for o_obj in sorted(m.select_many('O_OBJ'), key=by_name):
     print(o_obj.Name)
 

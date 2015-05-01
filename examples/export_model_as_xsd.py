@@ -1,19 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Copyright (C) 2014 John Törnblom
+# Copyright (C) 2015 John Törnblom
 
 import sys
-import os
 import optparse
 import logging
 
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
-base_dir = '%s/..' % os.path.dirname(__file__)
-sys.path.append(base_dir)
-
-from xtuml import io
+import xtuml
 
 
 logger = logging.getLogger('xsd_export')
@@ -273,7 +269,7 @@ def prettify(xml_string):
 
 if __name__ == '__main__':
     
-    parser = optparse.OptionParser(usage="%prog [OPTION]... {filename}", formatter=optparse.TitledHelpFormatter())
+    parser = optparse.OptionParser(usage="%prog [options] file1.sql file2.sql ...", formatter=optparse.TitledHelpFormatter())
     parser.add_option("-c", "--component", dest="component", metavar="NAME", help="export xsd schema for the component named NAME", action="store", default=None)
     parser.add_option("-o", "--output", dest='output', metavar="PATH", action="store", help="save xsd schema to PATH", default=None)
     parser.add_option("-v", "--verbosity", dest='verbosity', action="count", help="increase debug logging level", default=1)
@@ -291,13 +287,7 @@ if __name__ == '__main__':
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
-    loader = io.load.ModelLoader()
-    loader.build_parser()
-    loader.filename_input('%s/resources/ooaofooa_schema.sql' % base_dir)
-    for filename in args:
-        loader.filename_input(filename)
-        
-    m = loader.build_metamodel()
+    m = xtuml.load_metamodel(args)
     
     c_c = m.select_any('C_C', lambda inst: inst.Name == opts.component)
     if c_c:

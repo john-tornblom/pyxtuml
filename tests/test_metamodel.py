@@ -1,20 +1,18 @@
 # encoding: utf-8
-# Copyright (C) 2014 John Törnblom
+# Copyright (C) 2014-2015 John Törnblom
 
 import unittest
 import os
 
-import xtuml.io
+import xtuml
 
 class TestModel(unittest.TestCase):
-
+    resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
+    schema = resources + os.sep + 'ooaofooa_schema.sql'
+    globals = resources + os.sep + 'Globals.xtuml'
+    
     def setUp(self):
-        base_dir = '%s/../resources' % os.path.dirname(__file__)
-        loader = xtuml.io.load.ModelLoader()
-        loader.build_parser()
-        loader.filename_input('%s/ooaofooa_schema.sql' % base_dir)
-        loader.filename_input('%s/Globals.xtuml' % base_dir)
-        self.metamodel = loader.build_metamodel()
+        self.metamodel = xtuml.load_metamodel([self.schema, self.globals])
 
     def tearDown(self):
         del self.metamodel
@@ -43,13 +41,8 @@ class TestModel(unittest.TestCase):
         s_dt = m.select_many('S_DT')
         pe_pe = m.navigate_many(s_dt).PE_PE[8001](lambda inst: True)
         self.assertEqual(len(s_dt), len(pe_pe))
-
-
-def populate_suite(s):
-    loader = unittest.TestLoader()
-    s.addTests(loader.loadTestsFromTestCase(TestModel))
-    
+   
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
+

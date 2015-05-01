@@ -1,23 +1,11 @@
 # encoding: utf-8
-# Copyright (C) 2014 John Törnblom
+# Copyright (C) 2015 John Törnblom
 
 import uuid
 import logging
 
 
 logger = logging.getLogger(__name__)
-
-
-def serialize_model(model):
-    s = ''
-    for lst in model.instances.values():
-        for inst in lst:
-            table = inst.__class__.__name__
-            params = model.param_names[table]
-            types = model.param_types[table]
-            s += serialize_instance(inst, table, zip(params, types))
-            
-    return s
 
 
 def serialize_value(value):
@@ -56,3 +44,22 @@ def serialize_instance(inst, table, attributes):
     s += '\n);\n'
 
     return s
+
+
+def serialize_metamodel(metamodel):
+    s = ''
+    for lst in metamodel.instances.values():
+        for inst in lst:
+            table = inst.__class__.__name__
+            params = metamodel.param_names[table]
+            types = metamodel.param_types[table]
+            s += serialize_instance(inst, table, zip(params, types))
+            
+    return s
+
+
+def persist_metamodel(metamodel, path):
+    with open(path, 'w') as f:
+        s = serialize_metamodel(metamodel)
+        f.write(s)
+
