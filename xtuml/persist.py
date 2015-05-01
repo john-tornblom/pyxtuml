@@ -1,5 +1,9 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
+'''
+Serialize xtuml models to an sql-based file format and persist to disk.
+'''
+
 
 import uuid
 import logging

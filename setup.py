@@ -52,7 +52,7 @@ setup(name='pyxtuml',
       author_email='john.tornblom@gmail.com',
       url='https://github.com/john-tornblom/pyxtuml',
       license='GPLv3',
-      classifiers = [
+      classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
           'Topic :: Software Development :: Code Generators',
