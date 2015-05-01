@@ -4,41 +4,41 @@ pyxtuml |Build Status| |Coverage Status|
 pyxtuml is a python library for parsing, manipulating, and generating
 `BridgePoint <https://www.xtuml.org>`__ xtUML models.
 
-Getting Started
-~~~~~~~~~~~~~~~
+Dependencies
+~~~~~~~~~~~~
 
 For people running Ubuntu, all dependencies are available via apt-get:
 
 ::
 
-    $ sudo apt-get install python2.7 python-ply
+   $ sudo apt-get install python2.7 python-ply
+   
 
-Once the dependencies have been met, the source code needs to be
-prepared by issuing the following set of commands.
+   
+Installation
+~~~~~~~~~~~~
+
+Install from pypi:
+
+::
+
+    $ python -m pip install pyxtuml
+
+Or fetch the source from github:
 
 ::
 
     $ git clone https://github.com/john-tornblom/pyxtuml.git
     $ cd pyxtuml
     $ python setup.py prepare
-
+    $ python setup.py install
+   
 Optionally, you can also execute a test suite:
 
 ::
 
     $ python setup.py test
 
-Next, install pyxtuml on your system:
-
-::
-
-    $ python setup.py install
-
-Or if you prefer, install only for the current user:
-
-::
-
-    $ python setup.py install --user
 
 Usage example
 ~~~~~~~~~~~~~
