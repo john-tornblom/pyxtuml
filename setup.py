@@ -47,8 +47,7 @@ class TestCommand(Command):
 
 setup(name='pyxtuml',
       version=xtuml.version.release,
-      description='pyxtuml',
-      long_description="pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models.",
+      description='Library for parsing, manipulating, and generating BridgePoint xtUML models',
       author='John Törnblom',
       author_email='john.tornblom@gmail.com',
       url='https://github.com/john-tornblom/pyxtuml',
