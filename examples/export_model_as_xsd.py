@@ -200,7 +200,7 @@ def build_class(m, o_obj):
     '''
     Build an xsd complex element out of a O_OBJ, including its O_ATTR.
     '''
-    cls = ET.Element('xs:element', name=o_obj.key_lett, maxOccurs='unbounded')
+    cls = ET.Element('xs:element', name=o_obj.key_lett, minOccurs='0', maxOccurs='unbounded')
     attributes = ET.SubElement(cls, 'xs:complexType')
     for o_attr in m.navigate_many(o_obj).O_ATTR[102]():
         o_attr_ref = get_refered_attribute(m, o_attr)
