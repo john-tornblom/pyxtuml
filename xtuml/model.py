@@ -206,7 +206,7 @@ class BaseObject(object):
             if attr.lower() == lname:
                 return self.__dict__[attr]
 
-        return  object.__getattr__(self, name)
+        object.__getattribute__(self, name)
     
     def __setattr__(self, name, value):
         name = name.lower()
