@@ -5,10 +5,11 @@
 import sys
 import xtuml
 
-m = xtuml.load_metamodel(sys.argv[1:])
-
 from xtuml import navigate_one as one
 from xtuml import navigate_many as many
+
+
+m = xtuml.load_metamodel(sys.argv[1:])
 
 by_name = lambda inst: inst.Name
 for o_obj in sorted(m.select_many('O_OBJ'), key=by_name):
