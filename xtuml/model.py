@@ -22,7 +22,7 @@ class ModelException(Exception):
 
 class NavChain(object):
     
-    def __init__(self, metamodel, handle, is_many=True):
+    def __init__(self, handle, is_many=True):
         if handle is None:
             self.handle = QuerySet()
         
@@ -35,9 +35,7 @@ class NavChain(object):
         else:
             raise ModelException("Unable to navigate instances of '%s'" % type(handle))
             
-        self.metamodel = metamodel
         self.is_many = is_many
-        
         self._kind = None
     
     def nav(self, kind, relid, phrase=''):
@@ -70,6 +68,18 @@ class NavChain(object):
             return QuerySet(s)
         else:
             return next(s, None)
+
+
+def navigate_one(inst):
+    return navigate_any(inst)
+
+
+def navigate_any(inst):
+    return NavChain(inst, is_many=False)
+
+
+def navigate_many(inst):
+    return NavChain(inst, is_many=True)
 
 
 class AssociationEndPoint(object):
@@ -434,14 +444,5 @@ class MetaModel(object):
             return QuerySet(filter(where_cond, self.instances[kind]))
         else:
             return QuerySet()
-    
-    def navigate_one(self, inst):
-        return self.navigate_any(inst)
-    
-    def navigate_any(self, inst):
-        return NavChain(self, inst, is_many=False)
-    
-    def navigate_many(self, inst):
-        return NavChain(self, inst, is_many=True)
-    
-    
+
+

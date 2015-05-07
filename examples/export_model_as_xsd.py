@@ -10,44 +10,47 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
 import xtuml
+from xtuml import navigate_any as nav_any
+from xtuml import navigate_any as nav_one
+from xtuml import navigate_many as nav_many
 
 
 logger = logging.getLogger('xsd_export')
 
 
-def get_type_name(m, s_dt):
+def get_type_name(s_dt):
     '''
     get the xsd name of a S_DT
     '''
-    s_cdt = m.navigate_one(s_dt).S_CDT[17]()
+    s_cdt = nav_one(s_dt).S_CDT[17]()
     if s_cdt and s_cdt.core_typ in range(1, 6):
         return s_dt.name
     
-    s_edt = m.navigate_one(s_dt).S_EDT[17]()
+    s_edt = nav_one(s_dt).S_EDT[17]()
     if s_edt:
         return s_dt.name
     
-    s_udt = m.navigate_one(s_dt).S_UDT[17]()
+    s_udt = nav_one(s_dt).S_UDT[17]()
     if s_udt:
         return s_dt.name
 
-#    s_sdt = m.navigate_one(s_dt).S_SDT[17]()
+#    s_sdt = nav_one(s_dt).S_SDT[17]()
 #    if s_sdt:
 #        return s_dt.name
     
     
-def get_refered_attribute(m, o_attr):
+def get_refered_attribute(o_attr):
     '''
     Get the the referred attribute.
     '''
-    o_attr_ref = m.navigate_one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
+    o_attr_ref = nav_one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
     if o_attr_ref:
-        return get_refered_attribute(m, o_attr_ref)
+        return get_refered_attribute(o_attr_ref)
     else:
         return o_attr
     
     
-def is_contained_in(m, pe_pe, root):
+def is_contained_in(pe_pe, root):
     '''
     Determine if a PE_PE is contained within a EP_PKG or a C_C.
     '''
@@ -55,46 +58,46 @@ def is_contained_in(m, pe_pe, root):
         return False
     
     if pe_pe.__class__.__name__ != 'PE_PE':
-        pe_pe = m.navigate_one(pe_pe).PE_PE[8001]()
+        pe_pe = nav_one(pe_pe).PE_PE[8001]()
     
-    ep_pkg = m.navigate_one(pe_pe).EP_PKG[8000]()
-    c_c = m.navigate_one(pe_pe).C_C[8003]()
+    ep_pkg = nav_one(pe_pe).EP_PKG[8000]()
+    c_c = nav_one(pe_pe).C_C[8003]()
     
     if root in [ep_pkg, c_c]:
         return True
     
-    elif is_contained_in(m, ep_pkg, root):
+    elif is_contained_in(ep_pkg, root):
         return True
     
-    elif is_contained_in(m, c_c, root):
+    elif is_contained_in(c_c, root):
         return True
     
     else:
         return False
 
 
-def is_global(m, pe_pe):
+def is_global(pe_pe):
     '''
     Check if a PE_PE is globally defined, i.e. not inside a C_C
     '''
     if pe_pe.__class__.__name__ != 'PE_PE':
-        pe_pe = m.navigate_one(pe_pe).PE_PE[8001]()
+        pe_pe = nav_one(pe_pe).PE_PE[8001]()
     
-    if m.navigate_one(pe_pe).C_C[8003]():
+    if nav_one(pe_pe).C_C[8003]():
         return False
     
-    pe_pe = m.navigate_one(pe_pe).EP_PKG[8000].PE_PE[8001]()
+    pe_pe = nav_one(pe_pe).EP_PKG[8000].PE_PE[8001]()
     if not pe_pe:
         return True
     
-    return is_global(m, pe_pe)
+    return is_global(pe_pe)
 
 
-def build_core_type(m, s_cdt):
+def build_core_type(s_cdt):
     '''
     Build an xsd simpleType out of a S_CDT.
     '''
-    s_dt = m.navigate_one(s_cdt).S_DT[17]()
+    s_dt = nav_one(s_cdt).S_DT[17]()
     
     if s_dt.name == 'void':
         type_name = None
@@ -123,51 +126,51 @@ def build_core_type(m, s_cdt):
         return mapped_type
 
 
-def build_enum_type(m, s_edt):
+def build_enum_type(s_edt):
     '''
     Build an xsd simpleType out of a S_EDT.
     '''
-    s_dt = m.navigate_one(s_edt).S_DT[17]()
+    s_dt = nav_one(s_edt).S_DT[17]()
     enum = ET.Element('xs:simpleType', name=s_dt.name)
     enum_list = ET.SubElement(enum, 'xs:restriction', base='xs:string')
     
-    first_filter = lambda selected: not m.navigate_one(selected).S_ENUM[56, 'precedes']()
+    first_filter = lambda selected: not nav_one(selected).S_ENUM[56, 'precedes']()
     
-    s_enum = m.navigate_any(s_edt).S_ENUM[27](first_filter)
+    s_enum = nav_any(s_edt).S_ENUM[27](first_filter)
     while s_enum:
         ET.SubElement(enum_list, 'xs:enumeration', value=s_enum.name)
-        s_enum = m.navigate_one(s_enum).S_ENUM[56, 'succeeds']()
+        s_enum = nav_one(s_enum).S_ENUM[56, 'succeeds']()
     
     return enum
 
 
-def build_struct_type(m, s_sdt):
+def build_struct_type(s_sdt):
     '''
     Build an xsd complexType out of a S_SDT.
     '''
-    s_dt = m.navigate_one(s_sdt).S_DT[17]()
+    s_dt = nav_one(s_sdt).S_DT[17]()
     struct = ET.Element('xs:complexType', name=s_dt.name)
     
-    first_filter = lambda selected: not m.navigate_one(selected).S_MBR[46, 'precedes']()
+    first_filter = lambda selected: not nav_one(selected).S_MBR[46, 'precedes']()
     
-    s_mbr = m.navigate_any(s_sdt).S_MBR[44](first_filter)
+    s_mbr = nav_any(s_sdt).S_MBR[44](first_filter)
     while s_mbr:
-        s_dt = m.navigate_one(s_mbr).S_DT[45]()
-        type_name = get_type_name(m, s_dt)
+        s_dt = nav_one(s_mbr).S_DT[45]()
+        type_name = get_type_name(s_dt)
         ET.SubElement(struct, 'xs:attribute', name=s_mbr.name, type=type_name)
-        s_mbr = m.navigate_one(s_mbr).S_MBR[46, 'succeeds']()
+        s_mbr = nav_one(s_mbr).S_MBR[46, 'succeeds']()
     
     return struct
 
 
-def build_user_type(m, s_udt):
+def build_user_type(s_udt):
     '''
     Build an xsd simpleType out of a S_UDT.
     '''
-    s_dt_user = m.navigate_one(s_udt).S_DT[17]()
-    s_dt_base = m.navigate_one(s_udt).S_DT[18]()
+    s_dt_user = nav_one(s_udt).S_DT[17]()
+    s_dt_base = nav_one(s_udt).S_DT[18]()
     
-    base_name = get_type_name(m, s_dt_base)
+    base_name = get_type_name(s_dt_base)
     if base_name:
         user = ET.Element('xs:simpleType', name=s_dt_user.name)
         ET.SubElement(user, 'xs:restriction', base=base_name)
@@ -175,40 +178,40 @@ def build_user_type(m, s_udt):
         return user
 
 
-def build_type(m, s_dt):
+def build_type(s_dt):
     '''
     Build a partial xsd tree out of a S_DT and its sub types S_CDT, S_EDT, S_SDT and S_UDT.
     '''
-    s_cdt = m.navigate_one(s_dt).S_CDT[17]()
+    s_cdt = nav_one(s_dt).S_CDT[17]()
     if s_cdt:
-        return build_core_type(m, s_cdt)
+        return build_core_type(s_cdt)
     
-    s_edt = m.navigate_one(s_dt).S_EDT[17]()
+    s_edt = nav_one(s_dt).S_EDT[17]()
     if s_edt:
-        return build_enum_type(m, s_edt)
+        return build_enum_type(s_edt)
     
-    s_udt = m.navigate_one(s_dt).S_UDT[17]()
+    s_udt = nav_one(s_dt).S_UDT[17]()
     if s_udt:
-        return build_user_type(m, s_udt)
+        return build_user_type(s_udt)
     
-#    s_sdt = m.navigate_one(s_dt).S_SDT[17]()
+#    s_sdt = nav_one(s_dt).S_SDT[17]()
 #    if s_sdt:
-#        return build_struct_type(m, s_sdt)
+#        return build_struct_type(s_sdt)
 
 
-def build_class(m, o_obj):
+def build_class(o_obj):
     '''
     Build an xsd complex element out of a O_OBJ, including its O_ATTR.
     '''
     cls = ET.Element('xs:element', name=o_obj.key_lett, minOccurs='0', maxOccurs='unbounded')
     attributes = ET.SubElement(cls, 'xs:complexType')
-    for o_attr in m.navigate_many(o_obj).O_ATTR[102]():
-        o_attr_ref = get_refered_attribute(m, o_attr)
-        s_dt = m.navigate_one(o_attr_ref).S_DT[114]()
-        while m.navigate_one(s_dt).S_UDT[17]():
-            s_dt = m.navigate_one(s_dt).S_UDT[17].S_DT[18]()
+    for o_attr in nav_many(o_obj).O_ATTR[102]():
+        o_attr_ref = get_refered_attribute(o_attr)
+        s_dt = nav_one(o_attr_ref).S_DT[114]()
+        while nav_one(s_dt).S_UDT[17]():
+            s_dt = nav_one(s_dt).S_UDT[17].S_DT[18]()
         
-        type_name = get_type_name(m, s_dt)
+        type_name = get_type_name(s_dt)
         if type_name:
             ET.SubElement(attributes, 'xs:attribute', name=o_attr.name, type=type_name)
         else:
@@ -225,10 +228,10 @@ def build_component(m, c_c):
     classes = ET.SubElement(component, 'xs:complexType')
     classes = ET.SubElement(classes, 'xs:sequence')
     
-    scope_filter = lambda selected: is_contained_in(m, selected, c_c)
+    scope_filter = lambda selected: is_contained_in(selected, c_c)
     
     for o_obj in m.select_many('O_OBJ', scope_filter):
-        cls = build_class(m, o_obj)
+        cls = build_class(o_obj)
         classes.append(cls)
     
     return component
@@ -241,15 +244,15 @@ def build_schema(m, c_c):
     schema = ET.Element('xs:schema')
     schema.set('xmlns:xs', 'http://www.w3.org/2001/XMLSchema')
 
-    global_filter = lambda selected: is_global(m, selected)
+    global_filter = lambda selected: is_global(selected)
     for s_dt in m.select_many('S_DT', global_filter):
-        datatype = build_type(m, s_dt)
+        datatype = build_type(s_dt)
         if datatype is not None:
             schema.append(datatype)
     
-    scope_filter = lambda selected: is_contained_in(m, selected, c_c)
+    scope_filter = lambda selected: is_contained_in(selected, c_c)
     for s_dt in m.select_many('S_DT', scope_filter):
-        datatype = build_type(m, s_dt)
+        datatype = build_type(s_dt)
         if datatype is not None:
             schema.append(datatype)
             

@@ -33,13 +33,13 @@ class TestModel(unittest.TestCase):
     def testNavOne(self):
         m = self.metamodel
         s_dt = m.select_any('S_DT', lambda inst: inst.name == 'void')
-        pe_pe = m.navigate_one(s_dt).PE_PE[8001](lambda inst: True)
+        pe_pe = xtuml.navigate_one(s_dt).PE_PE[8001](lambda inst: True)
         self.assertEqual(s_dt.DT_ID, pe_pe.Element_ID)
         
     def testNavMany(self):
         m = self.metamodel
         s_dt = m.select_many('S_DT')
-        pe_pe = m.navigate_many(s_dt).PE_PE[8001](lambda inst: True)
+        pe_pe = xtuml.navigate_many(s_dt).PE_PE[8001](lambda inst: True)
         self.assertEqual(len(s_dt), len(pe_pe))
    
 
