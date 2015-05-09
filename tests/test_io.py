@@ -5,6 +5,7 @@ import unittest
 import os
 import uuid
 import ply
+import tempfile
 
 import xtuml.load
 
@@ -290,7 +291,7 @@ class TestLoader(unittest.TestCase):
 
 class TestPersist(unittest.TestCase):
 
-    def testPersist(self):
+    def testSerialize(self):
         
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
@@ -324,6 +325,39 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, -5.5)
         self.assertEqual(x.UNIQUE_ID, uuid.UUID(int=0))
         
+    def testSerializeDefaultValues(self):
+        
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        
+        loader = xtuml.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        
+        id_generator = xtuml.IdGenerator(readfunc=lambda: 0)
+        m = loader.build_metamodel(id_generator)
+        m.new('X')
+        
+        s = xtuml.serialize_metamodel(m)
+  
+        loader = xtuml.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        loader.input(s)
+        
+        m = loader.build_metamodel(id_generator)
+        x = m.select_any('X')
+        self.assertEqual(x.BOOLEAN, False)
+        self.assertEqual(x.INTEGER, 0)
+        self.assertEqual(x.REAL, 0.0)
+        self.assertEqual(x.UNIQUE_ID, 0)
+
+
     def testPersistDefaultValues(self):
         
         schema = '''
@@ -343,6 +377,14 @@ class TestPersist(unittest.TestCase):
         m.new('X')
         
         s = xtuml.serialize_metamodel(m)
+        
+        (_, filename) = tempfile.mkstemp()
+        try:
+            xtuml.persist_metamodel(m, filename)
+            with open(filename) as f:
+                self.assertEqual(s, f.read())
+        finally:
+            os.remove(filename)
         
         loader = xtuml.load.ModelLoader()
         loader.build_parser()
