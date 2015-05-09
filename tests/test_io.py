@@ -152,7 +152,6 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(val is not None)
         self.assertEqual(val.Id, 1.1)
         
-        
     @load
     def testInsertREAL_Negative(self, m):
         '''
