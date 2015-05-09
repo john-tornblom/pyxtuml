@@ -42,6 +42,78 @@ class TestModel(unittest.TestCase):
         pe_pe = xtuml.navigate_many(s_dt).PE_PE[8001](lambda inst: True)
         self.assertEqual(len(s_dt), len(pe_pe))
    
+    def testEmpty(self):
+        m = self.metamodel
+        self.assertTrue(m.empty(None))
+        self.assertTrue(m.empty(m.select_many('S_DT', lambda inst: False)))
+        self.assertFalse(m.empty(m.select_many('S_DT')))
+        self.assertFalse(m.empty(m.select_any('S_DT')))
+
+    def testNotEmpty(self):
+        m = self.metamodel
+        self.assertFalse(m.not_empty(None))
+        self.assertFalse(m.not_empty(m.select_many('S_DT', lambda inst: False)))
+        self.assertTrue(m.not_empty(m.select_many('S_DT')))
+        self.assertTrue(m.not_empty(m.select_any('S_DT')))
+        
+    def testCardinality(self):
+        m = self.metamodel
+        self.assertEqual(0, m.cardinality(None))
+        self.assertEqual(1, m.cardinality(m.select_any('S_DT')))
+        
+        q = m.select_many('S_DT', lambda inst: False)
+        self.assertEqual(0, m.cardinality(q))
+        
+        q = m.select_many('S_DT')
+        self.assertTrue(m.cardinality(q) > 0)
+        
+        x = 0
+        for inst in q:
+            x += 1
+            
+        self.assertEqual(x, len(q))
+        self.assertEqual(x, m.cardinality(q))
+        
+    def testIsSet(self):
+        m = self.metamodel
+
+        q = m.select_many('S_DT', lambda inst: False)
+        self.assertTrue(m.is_set(q))
+        
+        q = m.select_many('S_DT')
+        self.assertTrue(m.is_set(q))
+
+        q = m.select_any('S_DT')
+        self.assertFalse(m.is_set(q))
+        
+        self.assertFalse(m.is_set(None))
+                
+    def testIsInstance(self):
+        m = self.metamodel
+        
+        q = m.select_many('S_DT', lambda inst: False)
+        self.assertFalse(m.is_instance(q))
+        
+        q = m.select_many('S_DT')
+        self.assertFalse(m.is_instance(q))
+        
+        q = m.select_any('S_DT')
+        self.assertTrue(m.is_instance(q))
+        
+        self.assertFalse(m.is_instance(None))
+
+    def testQueryOrder(self):
+        m = self.metamodel
+        q = m.select_many('S_DT')
+        
+        length = m.cardinality(q)
+        
+        for index, inst in enumerate(q):
+            self.assertEqual(index == 0, m.first(inst, q))
+            self.assertEqual(index != 0, m.not_first(inst, q))
+            self.assertEqual(index == length - 1, m.last(inst, q))
+            self.assertEqual(index != length - 1, m.not_last(inst, q))
+
 
 if __name__ == "__main__":
     unittest.main()
