@@ -4,6 +4,7 @@
 import unittest
 import os
 import uuid
+import ply
 
 import xtuml.load
 
@@ -15,6 +16,14 @@ def load(fn):
         fn(self, metamodel)
     
     return load_wrapper
+
+
+def expect_exception(exception):
+    def test_decorator(fn):
+        def test_decorated(self, *args, **kwargs):
+            self.assertRaises(exception, fn, self, *args, **kwargs)
+        return test_decorated
+    return test_decorator
 
 
 class TestLoader(unittest.TestCase):
@@ -181,6 +190,103 @@ class TestLoader(unittest.TestCase):
         val = m.select_any('X')
         self.assertTrue(val is not None)
         self.assertEqual(val.Id, -1000) 
+
+    @load
+    def testROPNamedAsCardinality(self, m):
+        '''
+        CREATE TABLE M  (Id INTEGER, MC_Id INTEGER);
+        CREATE TABLE MC (Id INTEGER);
+        
+        CREATE ROP REF_ID R1 FROM M M ( MC_Id )
+                             TO   1 MC ( Id );
+                             
+        INSERT INTO MC VALUES (2);
+        INSERT INTO M  VALUES (1, 2);
+        '''
+        val = m.select_any('M')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, 1) 
+        
+        val = xtuml.navigate_one(val).MC[1]()
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, 2) 
+
+    @load
+    def testROPWithoutIdentifiers(self, m):
+        '''
+        CREATE TABLE X  ();
+        CREATE TABLE Y ();
+        
+        CREATE ROP REF_ID R1 FROM MC X ()
+                             TO   MC Y ();
+                             
+        INSERT INTO X VALUES ();
+        INSERT INTO Y VALUES ();
+        '''
+        x = m.select_any('X')
+        self.assertTrue(x is not None)
+
+        y = xtuml.navigate_one(x).Y[1]()
+        self.assertTrue(y is not None)
+
+    @expect_exception(ply.lex.LexError)
+    @load
+    def testIllegalCharacter(self, m):
+        '''
+        CREATE TABLE & (Id INTEGER);
+        '''
+
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testMissingSemiColon(self, m):
+        '''
+        CREATE TABLE X (Id INTEGER)
+        '''
+        
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidTokenSequence(self, m):
+        '''
+        TABLE CREATE X (Id INTEGER);
+        '''
+        self.assertTrue(False) # Should not execute
+        
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidFirstCardinalityNumber(self, m):
+        '''
+        CREATE ROP REF_ID R1 FROM 2 X ( Id )
+                             TO   1 Y ( Id );
+        '''
+        self.assertTrue(False) # Should not execute
+        
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidSecondCardinalityNumber(self, m):
+        '''
+        CREATE ROP REF_ID R1 FROM 1 X ( Id )
+                             TO   2 Y ( Id );
+        '''
+        self.assertTrue(False) # Should not execute
+        
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidFirstCardinalityLetter(self, m):
+        '''
+        CREATE ROP REF_ID R1 FROM 1 X ( Id )
+                             TO   X Y ( Id );
+        '''
+        self.assertTrue(False) # Should not execute
+        
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidSecondCardinalityLetter(self, m):
+        '''
+        CREATE ROP REF_ID R1 FROM Y X ( Id )
+                             TO   1 Y ( Id );
+        '''
+        self.assertTrue(False) # Should not execute
+        
 
 class TestPersist(unittest.TestCase):
 

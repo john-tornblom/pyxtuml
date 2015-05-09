@@ -14,7 +14,12 @@ from ply import yacc
 
 from xtuml import model
 
+
 logger = logging.getLogger(__name__)
+
+
+class ParsingException(Exception):
+    pass
 
 
 class CreateInstanceStmt(object):
@@ -301,13 +306,13 @@ class ModelLoader(object):
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''
         if p[1] != '1':
-            logger.error("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
+            raise ParsingException("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
         p[0] = p[1]
 
     def p_cardinality_2(self, p):
         '''cardinality : ID'''
         if p[1] not in ['M', 'MC']:
-            logger.error("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
+            raise ParsingException("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
         p[0] = p[1]
 
     def p_cardinality_3(self, p):
@@ -372,9 +377,9 @@ class ModelLoader(object):
 
     def p_error(self, p):
         if p:
-            logger.error("invalid token '%s' at (%s, %d)" % (p.value, p.lineno, p.lexpos))
+            raise ParsingException("invalid token '%s' at (%s, %d)" % (p.value, p.lineno, p.lexpos))
         else:
-            logger.error("unknown error")
+            raise ParsingException("unknown error")
 
 
 def load_metamodel(filenames):
