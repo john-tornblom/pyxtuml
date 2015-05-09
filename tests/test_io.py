@@ -50,7 +50,6 @@ class TestLoader(unittest.TestCase):
         '''
         self.assertTrue(m.select_any('TABLE') is not None)
         
-        
     @load
     def testTableNamedINSERT(self, m):
         '''
@@ -122,7 +121,6 @@ class TestLoader(unittest.TestCase):
         INSERT INTO X VALUES ();
         '''
         self.assertTrue(m.select_any('X') is not None)
-
 
     @load
     def testInsertSTRING(self, m):
