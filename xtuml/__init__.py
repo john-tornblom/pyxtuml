@@ -10,6 +10,7 @@ from .persist import serialize_value
 
 from .model import MetaModel
 from .model import IdGenerator
+from .model import ModelException
 from .model import navigate_any
 from .model import navigate_one
 from .model import navigate_many
