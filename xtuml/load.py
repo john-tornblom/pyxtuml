@@ -108,8 +108,10 @@ class ModelLoader(object):
         return self.input(f.read())
 
 
-    def build_metamodel(self, id_generator=model.IdGenerator()):
+    def build_metamodel(self, id_generator=model.IdGenerator(), ignore_undefined_classes=False):
         m = model.MetaModel(id_generator)
+        m.ignore_undefined_classes = ignore_undefined_classes
+        
         # TODO: consider speeding up by using one single loop
         schema = [s for s in self.statements if isinstance(s, CreateClassStmt)]
         relations = [s for s in self.statements if isinstance(s, CreateRelatationStmt)]
