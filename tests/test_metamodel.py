@@ -6,6 +6,15 @@ import os
 
 import xtuml
 
+
+def expect_exception(exception):
+    def test_decorator(fn):
+        def test_decorated(self, *args, **kwargs):
+            self.assertRaises(exception, fn, self, *args, **kwargs)
+        return test_decorated
+    return test_decorator
+
+
 class TestModel(unittest.TestCase):
     resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
     schema = resources + os.sep + 'ooaofooa_schema.sql'
@@ -114,7 +123,17 @@ class TestModel(unittest.TestCase):
             self.assertEqual(index == length - 1, m.last(inst, q))
             self.assertEqual(index != length - 1, m.not_last(inst, q))
 
+    def testIgnoreUndefinedClass(self):
+        self.metamodel.ignore_undefined_classes = True
+        self.metamodel.new('MY_UNDEFINED_CLASS')
+        
+    @expect_exception(xtuml.ModelException)
+    def testUndefinedClass(self):
+        self.metamodel.new('MY_UNDEFINED_CLASS')
+        
 
+        
+            
 if __name__ == "__main__":
     unittest.main()
 

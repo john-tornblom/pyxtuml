@@ -258,6 +258,7 @@ class MetaModel(object):
     param_names = None
     param_types = None
     id_generator = None
+    ignore_undefined_classes = False
     
     def __init__(self, id_generator=IdGenerator()):
         self.classes = dict()
@@ -312,8 +313,11 @@ class MetaModel(object):
         
     def new(self, kind, *args, **kwargs):
         if kind not in self.classes:
-            raise ModelException("Unknown class %s" % kind)
-        
+            if not self.ignore_undefined_classes:
+                raise ModelException("Unknown class %s" % kind)
+            else:
+                return
+            
         Cls = self.classes[kind]
         inst = Cls()
         
