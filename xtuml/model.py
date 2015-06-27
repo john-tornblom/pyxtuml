@@ -82,6 +82,14 @@ def navigate_many(inst):
     return NavChain(inst, is_many=True)
 
 
+class Association(object):
+    
+    def __init__(self, relid, source, target):
+        self.id = relid
+        self.source = source
+        self.target = target    
+
+
 class AssociationLink(object):
     
     def __init__(self, kind, cardinality, ids, phrase=''):
@@ -195,6 +203,7 @@ class QuerySet(OrderedSet):
 
 
 class BaseObject(object):
+    __r__ = None # store relations
     __q__ = None # store predefined queries
     __c__ = None # store a cached results from queries
     
@@ -271,7 +280,7 @@ class MetaModel(object):
         '''
         Define a new class in the meta model.
         '''
-        Cls = type(kind, (BaseObject,), dict(__q__=dict(), __c__=dict()))
+        Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(), __c__=dict()))
         self.classes[kind] = Cls
         self.param_names[kind] = [name for name, _ in attributes]
         self.param_types[kind] = [ty for _, ty in attributes]
@@ -468,9 +477,19 @@ class MetaModel(object):
         '''
         Define a directed association from source to target.
         '''
+        ass = Association(rel_id, source, target)
+        
         Source = self.classes[source.kind]
         Target = self.classes[target.kind]
 
+        if rel_id not in Source.__r__:
+            Source.__r__[rel_id] = set()
+            
+        if rel_id not in Target.__r__:
+            Target.__r__[rel_id] = set()
+            
+        Source.__r__[rel_id].add(ass)
+        Target.__r__[rel_id].add(ass)
         
         if target.kind not in Source.__q__:
             Source.__q__[target.kind] = dict()
@@ -510,4 +529,56 @@ class MetaModel(object):
         else:
             return QuerySet()
 
+
+def _match_instances_to_accociation(inst1, inst2, rel_id, phrase):
+    if isinstance(rel_id, int):
+        rel_id = 'R%d' % rel_id
+    
+    kind1 = inst1.__class__.__name__
+    kind2 = inst2.__class__.__name__
+    
+    if (rel_id not in inst1.__r__ or
+        rel_id not in inst2.__r__):
+        raise ModelException('Unknown association %s---(%s)---%s' % (kind1, rel_id, kind2))
+
+    for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
+        if kind1 == ass.source.kind and ass.source.phrase == phrase:
+            return (ass, inst1, inst2)
+        elif kind1 == ass.target.kind and ass.target.phrase == phrase:
+            return (ass, inst2, inst1)
+        elif kind2 == ass.source.kind and ass.source.phrase == phrase:
+            return (ass, inst2, inst1)
+        elif kind2 == ass.target.kind and ass.target.phrase == phrase:
+            return (ass, inst1, inst2)
+    else:
+        raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1, rel_id, phrase, kind2))
+    
+    
+def unrelate(inst1, inst2, rel_id, phrase=''):
+    '''
+    Unrelate two instances from an association.
+    
+    Note: Reflexive associations require a phrase, and that the order amongst
+    the instances is as intended.
+    '''
+    ass, _, target = _match_instances_to_accociation(inst1, inst2, rel_id, phrase)
+    for target_attr in ass.target.ids:
+        setattr(target, target_attr, None)
+
+    return target
+        
+        
+def relate(inst1, inst2, rel_id, phrase=''):
+    '''
+    Relate two instances across a directed association.
+    
+    Note: Reflexive associations require a phrase, and that the order amongst
+    the instances is as intended.
+    '''
+    ass, source, target = _match_instances_to_accociation(inst1, inst2, rel_id, phrase)
+    for source_attr, target_attr in zip(ass.source.ids, ass.target.ids):
+        value = getattr(source, source_attr)
+        setattr(target, target_attr, value)
+
+    return target
 

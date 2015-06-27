@@ -131,9 +131,54 @@ class TestModel(unittest.TestCase):
     def testUndefinedClass(self):
         self.metamodel.new('MY_UNDEFINED_CLASS')
         
-
+    def testRelate(self):
+        s_edt = self.metamodel.new('S_EDT')
+        s_dt = self.metamodel.new('S_DT')
         
-            
+        xtuml.relate(s_dt, s_edt, 17)
+        self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
+
+    def testRelateReflexive1(self):
+        inst1 = self.metamodel.new('ACT_SMT')
+        inst2 = self.metamodel.new('ACT_SMT')
+        
+        xtuml.relate(inst1, inst2, 661, 'precedes')
+        self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
+        
+    def testRelateReflexive2(self):
+        inst1 = self.metamodel.new('ACT_SMT')
+        inst2 = self.metamodel.new('ACT_SMT')
+        
+        xtuml.relate(inst2, inst1, 661, 'succeeds')
+        self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'precedes']())
+        
+    @expect_exception(xtuml.ModelException)
+    def testRelateReflexiveWithoutPhrase(self):
+        inst1 = self.metamodel.new('ACT_SMT')
+        inst2 = self.metamodel.new('ACT_SMT')
+        
+        xtuml.relate(inst1, inst2, 661, '<invalid phrase>')
+        
+    def testRelateInvertedOrder(self):
+        s_edt = self.metamodel.new('S_EDT')
+        s_dt = self.metamodel.new('S_DT')
+        xtuml.relate(s_edt, s_dt, 17)
+        self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
+    
+    @expect_exception(xtuml.ModelException)
+    def testRelateInvalidRelId(self):
+        s_edt = self.metamodel.new('S_EDT')
+        s_dt = self.metamodel.new('S_DT')
+        xtuml.relate(s_edt, s_dt, 0)
+        self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
+        
+    def testUnrelate(self):
+        s_dt = self.metamodel.select_any('S_DT', lambda inst: inst.name == 'void')
+        s_cdt = xtuml.navigate_one(s_dt).S_CDT[17]()
+        xtuml.unrelate(s_dt, s_cdt, 17)
+        self.assertIsNone(xtuml.navigate_one(s_dt).S_CDT[17]())
+
+
 if __name__ == "__main__":
     unittest.main()
 
