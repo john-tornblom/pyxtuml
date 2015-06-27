@@ -276,6 +276,9 @@ class MetaModel(object):
         return Cls
     
     def default_value(self, ty_name):
+        '''
+        Obtain the default value for a named meta model type.
+        '''
         if   ty_name == 'boolean': return False
         elif ty_name == 'integer': return 0
         elif ty_name == 'integer': return 0
@@ -285,6 +288,9 @@ class MetaModel(object):
         else: raise ModelException("Unknown type named '%s'" % ty_name)
     
     def type_name(self, ty):
+        '''
+        Determine the named meta model type of a python type, e.g. bool --> boolean.
+        '''
         if   issubclass(ty, bool): return 'boolean'
         elif issubclass(ty, int): return 'integer'
         elif issubclass(ty, float): return 'real'
@@ -296,6 +302,9 @@ class MetaModel(object):
         else: raise ModelException("Unknown type '%s'" % ty.__name__)
         
     def named_type(self, name):
+        '''
+        Determine the python-type of a named meta model type, e.g. boolean --> bool.
+        '''
         lookup_table = {
           'boolean'     : bool,
           'integer'     : int,
@@ -312,6 +321,9 @@ class MetaModel(object):
             raise ModelException("Unknown type named '%s'" % name)
         
     def new(self, kind, *args, **kwargs):
+        '''
+        Create a new meta model instance of some kind.
+        '''
         if kind not in self.classes:
             if not self.ignore_undefined_classes:
                 raise ModelException("Unknown class %s" % kind)
@@ -344,46 +356,73 @@ class MetaModel(object):
         return inst
         
     @staticmethod
-    def empty(inst):
-        if   inst is None: return True
-        elif isinstance(inst, QuerySet): return len(inst) == 0
+    def empty(arg):
+        '''
+        Determine if arg is empty
+        '''
+        if   arg is None: return True
+        elif isinstance(arg, QuerySet): return len(arg) == 0
         return False
     
     @staticmethod
-    def not_empty(inst):
-        return not MetaModel.empty(inst)
+    def not_empty(arg):
+        '''
+        Determine if arg is not empty
+        '''
+        return not MetaModel.empty(arg)
     
     @staticmethod
-    def cardinality(inst):
-        if   inst is None: return 0
-        elif isinstance(inst, QuerySet): return len(inst)
+    def cardinality(arg):
+        '''
+        Determine the cardinality of arg.
+        '''
+        if   arg is None: return 0
+        elif isinstance(arg, QuerySet): return len(arg)
         else: return 1
 
     @staticmethod
-    def is_set(inst):
-        return isinstance(inst, QuerySet)
+    def is_set(arg):
+        '''
+        Determine if arg is a set of meta model instances.
+        '''
+        return isinstance(arg, QuerySet)
     
     @staticmethod
-    def is_instance(inst):
-        return isinstance(inst, BaseObject)
+    def is_instance(arg):
+        '''
+        Determine if arg is a meta model instance.
+        '''
+        return isinstance(arg, BaseObject)
     
     @staticmethod
     def first(inst, query_set):
+        '''
+        Determine if an instance is the first item in a query set.
+        '''
         assert isinstance(query_set, QuerySet)
         return inst == query_set.first
     
     @staticmethod
     def not_first(inst, query_set):
+        '''
+        Determine if an instance is not the first item in a query set.
+        '''
         assert isinstance(query_set, QuerySet)
         return inst != query_set.first
     
     @staticmethod
     def last(inst, query_set):
+        '''
+        Determine if an instance is the last item in a query set.
+        '''
         assert isinstance(query_set, QuerySet)
         return inst == query_set.last
 
     @staticmethod
     def not_last(inst, query_set):
+        '''
+        Determine if an instance is not the last item in a query set.
+        '''
         assert isinstance(query_set, QuerySet)
         return inst != query_set.last
     
@@ -436,14 +475,23 @@ class MetaModel(object):
         Cls2.__q__[end1.kind][rel_id][end1.phrase] = self._formalized_query(end2, end1)
     
     def select_one(self, kind, where_cond=None):
+        '''
+        Query the model for an instance.
+        '''
         return self.select_any(kind, where_cond)
     
     def select_any(self, kind, where_cond=None):
+        '''
+        Query the model for an instance.
+        '''
         if kind in self.instances:
             s = filter(where_cond, self.instances[kind])
             return next(s, None)
         
     def select_many(self, kind, where_cond=None):
+        '''
+        Query the model for a set of instances.
+        '''
         if kind in self.instances:
             return QuerySet(filter(where_cond, self.instances[kind]))
         else:
