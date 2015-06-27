@@ -268,6 +268,9 @@ class MetaModel(object):
         self.id_generator = id_generator
         
     def define_class(self, kind, attributes):
+        '''
+        Define a new class in the meta model.
+        '''
         Cls = type(kind, (BaseObject,), dict(__q__=dict(), __c__=dict()))
         self.classes[kind] = Cls
         self.param_names[kind] = [name for name, _ in attributes]
