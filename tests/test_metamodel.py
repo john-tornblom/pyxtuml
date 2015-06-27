@@ -77,7 +77,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(m.cardinality(q) > 0)
         
         x = 0
-        for inst in q:
+        for _ in q:
             x += 1
             
         self.assertEqual(x, len(q))
