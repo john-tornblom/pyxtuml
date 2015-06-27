@@ -178,6 +178,12 @@ class TestModel(unittest.TestCase):
         xtuml.unrelate(s_dt, s_cdt, 17)
         self.assertIsNone(xtuml.navigate_one(s_dt).S_CDT[17]())
 
+    def testRelateInWrongOrder(self):
+        s_ee = self.metamodel.new('S_EE')
+        pe_pe = self.metamodel.new('PE_PE')
+        guid = pe_pe.Element_ID
+        xtuml.relate(s_ee, pe_pe, 8001)
+        self.assertEqual(guid, pe_pe.Element_ID)
 
 if __name__ == "__main__":
     unittest.main()

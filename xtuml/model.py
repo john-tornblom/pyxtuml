@@ -530,7 +530,7 @@ class MetaModel(object):
             return QuerySet()
 
 
-def _match_instances_to_accociation(inst1, inst2, rel_id, phrase):
+def _match_instances_to_links(inst1, inst2, rel_id, phrase):
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
     
@@ -542,16 +542,12 @@ def _match_instances_to_accociation(inst1, inst2, rel_id, phrase):
         raise ModelException('Unknown association %s---(%s)---%s' % (kind1, rel_id, kind2))
 
     for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
-        if kind1 == ass.source.kind and ass.source.phrase == phrase:
-            return (ass, inst1, inst2)
-        elif kind1 == ass.target.kind and ass.target.phrase == phrase:
-            return (ass, inst2, inst1)
-        elif kind2 == ass.source.kind and ass.source.phrase == phrase:
-            return (ass, inst2, inst1)
-        elif kind2 == ass.target.kind and ass.target.phrase == phrase:
-            return (ass, inst1, inst2)
-    else:
-        raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1, rel_id, phrase, kind2))
+        if  kind1 == ass.source.kind and kind2 == ass.target.kind and ass.source.phrase == phrase:
+            return inst1, ass.source, inst2, ass.target
+        elif kind1 == ass.target.kind and kind2 == ass.source.kind and ass.target.phrase == phrase:
+            return inst1, ass.target, inst2, ass.source
+
+    raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1, rel_id, phrase, kind2))
     
     
 def unrelate(inst1, inst2, rel_id, phrase=''):
@@ -561,11 +557,11 @@ def unrelate(inst1, inst2, rel_id, phrase=''):
     Note: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    ass, _, target = _match_instances_to_accociation(inst1, inst2, rel_id, phrase)
-    for target_attr in ass.target.ids:
-        setattr(target, target_attr, None)
+    inst1, end1, _, _ = _match_instances_to_links(inst1, inst2, rel_id, phrase)
+    for inst1_attr in end1.ids:
+        setattr(inst1, inst1_attr, None)
 
-    return target
+    return inst1
         
         
 def relate(inst1, inst2, rel_id, phrase=''):
@@ -575,10 +571,10 @@ def relate(inst1, inst2, rel_id, phrase=''):
     Note: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    ass, source, target = _match_instances_to_accociation(inst1, inst2, rel_id, phrase)
-    for source_attr, target_attr in zip(ass.source.ids, ass.target.ids):
-        value = getattr(source, source_attr)
-        setattr(target, target_attr, value)
+    inst1, end1, inst2, end2 = _match_instances_to_links(inst1, inst2, rel_id, phrase)
+    for inst1_attr, inst2_attr in zip(end1.ids, end2.ids):
+        value = getattr(inst2, inst2_attr)
+        setattr(inst1, inst1_attr, value)
 
-    return target
+    return inst1
 
