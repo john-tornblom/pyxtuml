@@ -299,11 +299,11 @@ class ModelLoader(object):
 
     def p_association_end_1(self, p):
         '''association_end : cardinality ident LPAREN id_list RPAREN'''
-        p[0] = model.AssociationEndPoint(p[2].upper(), p[1], p[4])
+        p[0] = model.AssociationLink(p[2].upper(), p[1], p[4])
 
     def p_association_end_2(self, p):
         '''association_end : cardinality ident LPAREN id_list RPAREN PHRASE STRING'''
-        p[0] = model.AssociationEndPoint(p[2].upper(), p[1], p[4], p[7][1:-1])
+        p[0] = model.AssociationLink(p[2].upper(), p[1], p[4], p[7][1:-1])
 
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''

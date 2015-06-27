@@ -82,7 +82,7 @@ def navigate_many(inst):
     return NavChain(inst, is_many=True)
 
 
-class AssociationEndPoint(object):
+class AssociationLink(object):
     
     def __init__(self, kind, cardinality, ids, phrase=''):
         self.cardinality = cardinality
@@ -99,20 +99,20 @@ class AssociationEndPoint(object):
         return 'C' in self.cardinality.upper()
 
 
-class SingleEndPoint(AssociationEndPoint):
+class SingleAssociationLink(AssociationLink):
     
     def __init__(self, kind, conditional=False, ids=[], phrase=''):
         if conditional: cardinality = '1C'
         else:           cardinality = '1'
-        AssociationEndPoint.__init__(self, kind, cardinality, ids, phrase)
+        AssociationLink.__init__(self, kind, cardinality, ids, phrase)
 
 
-class ManyEndPoint(AssociationEndPoint):
+class ManyAssociationLink(AssociationLink):
     
     def __init__(self, kind, conditional=False, ids=[], phrase=''):
         if conditional: cardinality = 'MC'
         else:           cardinality = 'M'
-        AssociationEndPoint.__init__(self, kind, cardinality, ids, phrase)
+        AssociationLink.__init__(self, kind, cardinality, ids, phrase)
         
 
 class OrderedSet(collections.MutableSet):
@@ -455,24 +455,34 @@ class MetaModel(object):
     def _formalized_query(self, source, target):
         return lambda inst, **kwargs: self._select_endpoint(inst, source, target, kwargs)
     
-    def define_relation(self, rel_id, end1, end2):
-        Cls1 = self.classes[end1.kind]
-        Cls2 = self.classes[end2.kind]
+    def define_relation(self, rel_id, source, target):
+        '''
+        Define a directed association from source to target.
+        '''
+        return self.define_association(rel_id, source, target)
+    
+    def define_association(self, rel_id, source, target):
+        '''
+        Define a directed association from source to target.
+        '''
+        Source = self.classes[source.kind]
+        Target = self.classes[target.kind]
 
-        if end2.kind not in Cls1.__q__:
-            Cls1.__q__[end2.kind] = dict()
-            
-        if end1.kind not in Cls2.__q__:
-            Cls2.__q__[end1.kind] = dict()
         
-        if rel_id not in Cls1.__q__[end2.kind]:
-            Cls1.__q__[end2.kind][rel_id] = dict()
+        if target.kind not in Source.__q__:
+            Source.__q__[target.kind] = dict()
             
-        if rel_id not in Cls2.__q__[end1.kind]:
-            Cls2.__q__[end1.kind][rel_id] = dict()
+        if source.kind not in Target.__q__:
+            Target.__q__[source.kind] = dict()
         
-        Cls1.__q__[end2.kind][rel_id][end2.phrase] = self._formalized_query(end1, end2)
-        Cls2.__q__[end1.kind][rel_id][end1.phrase] = self._formalized_query(end2, end1)
+        if rel_id not in Source.__q__[target.kind]:
+            Source.__q__[target.kind][rel_id] = dict()
+            
+        if rel_id not in Target.__q__[source.kind]:
+            Target.__q__[source.kind][rel_id] = dict()
+        
+        Source.__q__[target.kind][rel_id][target.phrase] = self._formalized_query(source, target)
+        Target.__q__[source.kind][rel_id][source.phrase] = self._formalized_query(target, source)
     
     def select_one(self, kind, where_cond=None):
         '''
