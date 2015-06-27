@@ -195,8 +195,8 @@ class QuerySet(OrderedSet):
 
 
 class BaseObject(object):
-    __q__ = None
-    __c__ = None
+    __q__ = None # store predefined queries
+    __c__ = None # store a cached results from queries
     
     def __init__(self):
         self.__c__.clear()
