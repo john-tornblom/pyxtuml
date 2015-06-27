@@ -23,7 +23,6 @@ xtuml.relate(pe_pe, ep_pkg, 8001)
 #
 s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
 pe_pe = m.new('PE_PE', Visibility=True, type=5)
-p1 = str(pe_pe)
 xtuml.relate(s_ee, pe_pe, 8001)
 xtuml.relate(pe_pe, ep_pkg, 8000)
 
