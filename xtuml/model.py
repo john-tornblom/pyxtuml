@@ -542,39 +542,42 @@ def _match_instances_to_links(inst1, inst2, rel_id, phrase):
 
     for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
         if  kind1 == ass.source.kind and kind2 == ass.target.kind and ass.source.phrase == phrase:
-            return inst1, ass.source, inst2, ass.target
+            return inst2, ass.target, inst1, ass.source
         elif kind1 == ass.target.kind and kind2 == ass.source.kind and ass.target.phrase == phrase:
-            return inst1, ass.target, inst2, ass.source
+            return inst2, ass.source, inst1, ass.target
 
     raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1, rel_id, phrase, kind2))
     
     
 def unrelate(inst1, inst2, rel_id, phrase=''):
     '''
-    Unrelate two instances from an association.
+    Unrelate two instances from eachother by reseting the identifying
+    attributes on the TO side of the accociation.
     
-    Note: Reflexive associations require a phrase, and that the order amongst
+    NOTE: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    inst1, end1, _, _ = _match_instances_to_links(inst1, inst2, rel_id, phrase)
-    for name, ty in filter(lambda x: x[0] in end1.ids, inst1.__a__):
-        value = inst1.__m__.default_value(ty)
-        setattr(inst1, name, value)
+    _, _, to_inst, to_end = _match_instances_to_links(inst1, inst2, rel_id, phrase)
+    for name, ty in filter(lambda x: x[0] in to_end.ids, inst1.__a__):
+        value = to_inst.__m__.default_value(ty)
+        setattr(to_inst, name, value)
 
-    return inst1
-        
-        
+    return to_inst
+
+
 def relate(inst1, inst2, rel_id, phrase=''):
     '''
-    Relate two instances across a directed association.
+    Relate two instances to eachother by copying the identifying attributes
+    from the instance on the TO side of a association to the instance on the
+    FROM side. 
     
-    Note: Reflexive associations require a phrase, and that the order amongst
+    NOTE: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    inst1, end1, inst2, end2 = _match_instances_to_links(inst1, inst2, rel_id, phrase)
-    for inst1_attr, inst2_attr in zip(end1.ids, end2.ids):
-        value = getattr(inst2, inst2_attr)
-        setattr(inst1, inst1_attr, value)
+    from_inst, from_end, to_inst, to_end = _match_instances_to_links(inst1, inst2, rel_id, phrase)
+    for from_attr, to_attr in zip(from_end.ids, to_end.ids):
+        value = getattr(from_inst, from_attr)
+        setattr(to_inst, to_attr, value)
 
-    return inst1
+    return to_inst
 
