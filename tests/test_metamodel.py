@@ -190,6 +190,42 @@ class TestModel(unittest.TestCase):
         self.assertNotEqual(EE_ID, s_ee.EE_ID)
         self.assertEqual(Element_ID, pe_pe.Element_ID)
 
+
+    def testRelateTopDown(self):
+        m = self.metamodel
+        s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
+        s_bparm = m.new('S_BPARM', Name='My_Parameter')
+        s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
+        pe_pe = m.new('PE_PE', Visibility=True, type=5)
+        s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
+
+        xtuml.relate(s_ee, pe_pe, 8001)
+        xtuml.relate(s_brg, s_ee, 19)
+        xtuml.relate(s_brg, s_dt, 20)
+        xtuml.relate(s_bparm, s_brg, 21)
+        xtuml.relate(s_bparm, s_dt, 22)
+            
+        inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
+        self.assertEqual(inst, s_bparm)
+        
+    def testRelateBottomUp(self):
+        m = self.metamodel
+        s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
+        s_bparm = m.new('S_BPARM', Name='My_Parameter')
+        s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
+        pe_pe = m.new('PE_PE', Visibility=True, type=5)
+        s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
+        
+        xtuml.relate(s_bparm, s_dt, 22)
+        xtuml.relate(s_bparm, s_brg, 21)
+        xtuml.relate(s_brg, s_dt, 20)
+        xtuml.relate(s_brg, s_ee, 19)
+        xtuml.relate(s_ee, pe_pe, 8001)
+            
+        inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
+        self.assertEqual(inst, s_bparm)
+    
+        
 if __name__ == "__main__":
     unittest.main()
 
