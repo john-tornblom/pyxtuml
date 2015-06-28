@@ -184,9 +184,11 @@ class TestModel(unittest.TestCase):
     def testRelateInWrongOrder(self):
         s_ee = self.metamodel.new('S_EE')
         pe_pe = self.metamodel.new('PE_PE')
-        guid = pe_pe.Element_ID
+        preserved_guid = s_ee.EE_ID
+        reset_guid = pe_pe.Element_ID
         xtuml.relate(s_ee, pe_pe, 8001)
-        self.assertEqual(guid, pe_pe.Element_ID)
+        self.assertEqual(preserved_guid, s_ee.EE_ID)
+        self.assertNotEqual(reset_guid, pe_pe.Element_ID)
 
 if __name__ == "__main__":
     unittest.main()

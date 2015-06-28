@@ -552,17 +552,17 @@ def _match_instances_to_links(inst1, inst2, rel_id, phrase):
 def unrelate(inst1, inst2, rel_id, phrase=''):
     '''
     Unrelate two instances from eachother by reseting the identifying
-    attributes on the TO side of the accociation.
+    attributes on the FROM side of the accociation.
     
     NOTE: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    _, _, to_inst, to_end = _match_instances_to_links(inst1, inst2, rel_id, phrase)
-    for name, ty in filter(lambda x: x[0] in to_end.ids, inst1.__a__):
-        value = to_inst.__m__.default_value(ty)
-        setattr(to_inst, name, value)
+    from_inst, from_end, _, _ = _match_instances_to_links(inst1, inst2, rel_id, phrase)
+    for name, ty in filter(lambda x: x[0] in from_end.ids, inst1.__a__):
+        value = from_inst.__m__.default_value(ty)
+        setattr(from_inst, name, value)
 
-    return to_inst
+    return from_inst
 
 
 def relate(inst1, inst2, rel_id, phrase=''):
@@ -576,8 +576,8 @@ def relate(inst1, inst2, rel_id, phrase=''):
     '''
     from_inst, from_end, to_inst, to_end = _match_instances_to_links(inst1, inst2, rel_id, phrase)
     for from_attr, to_attr in zip(from_end.ids, to_end.ids):
-        value = getattr(from_inst, from_attr)
-        setattr(to_inst, to_attr, value)
+        value = getattr(to_inst, to_attr)
+        setattr(from_inst, from_attr, value)
 
-    return to_inst
+    return from_inst
 
