@@ -542,9 +542,9 @@ def _match_instances_to_links(inst1, inst2, rel_id, phrase):
 
     for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
         if  kind1 == ass.source.kind and kind2 == ass.target.kind and ass.source.phrase == phrase:
-            return inst2, ass.target, inst1, ass.source
+            return inst1, ass.source, inst2, ass.target
         elif kind1 == ass.target.kind and kind2 == ass.source.kind and ass.target.phrase == phrase:
-            return inst2, ass.source, inst1, ass.target
+            return inst1, ass.target, inst2, ass.source
 
     raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1, rel_id, phrase, kind2))
     
