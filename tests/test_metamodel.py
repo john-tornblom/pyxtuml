@@ -16,12 +16,20 @@ def expect_exception(exception):
 
 
 class TestModel(unittest.TestCase):
-    resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
-    schema = resources + os.sep + 'ooaofooa_schema.sql'
-    globals = resources + os.sep + 'Globals.xtuml'
     
+    @classmethod
+    def setUpClass(cls):
+        resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
+        schema = resources + os.sep + 'ooaofooa_schema.sql'
+        globs = resources + os.sep + 'Globals.xtuml'
+    
+        cls.loader = xtuml.load.ModelLoader()
+        cls.loader.build_parser()
+        cls.loader.filename_input(schema)
+        cls.loader.filename_input(globs)
+ 
     def setUp(self):
-        self.metamodel = xtuml.load_metamodel([self.schema, self.globals])
+        self.metamodel = self.loader.build_metamodel()
 
     def tearDown(self):
         del self.metamodel
