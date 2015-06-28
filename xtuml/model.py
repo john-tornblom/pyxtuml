@@ -562,22 +562,38 @@ def unrelate(inst1, inst2, rel_id, phrase=''):
         value = from_inst.__m__.default_value(ty)
         setattr(from_inst, name, value)
 
-    return from_inst
+
+def _defered_relate(inst1, inst2, rel_id, phrase):
+    return lambda: relate(inst1, inst2, rel_id, phrase)
 
 
 def relate(inst1, inst2, rel_id, phrase=''):
     '''
     Relate two instances to eachother by copying the identifying attributes
     from the instance on the TO side of a association to the instance on the
-    FROM side. 
+    FROM side. Updated values which affect existing associations are propagated.
     
     NOTE: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
+    if isinstance(rel_id, int):
+        rel_id = 'R%d' % rel_id
+    
     from_inst, from_end, to_inst, to_end = _match_instances_to_links(inst1, inst2, rel_id, phrase)
+    
+    post_process = list()
+    for ass in chain(*from_inst.__r__.values()):
+        if ass.id == rel_id or from_inst.__class__.__name__ != ass.target.kind:
+            continue
+        
+        for inst in navigate_many(from_inst).nav(ass.source.kind, ass.id, ass.source.phrase)():
+            fn = _defered_relate(inst, from_inst, ass.id, ass.source.phrase)
+            post_process.append(fn)
+        
     for from_attr, to_attr in zip(from_end.ids, to_end.ids):
         value = getattr(to_inst, to_attr)
         setattr(from_inst, from_attr, value)
-
-    return from_inst
+    
+    for fn in post_process:
+        fn()
 
