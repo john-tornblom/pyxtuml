@@ -29,18 +29,18 @@ def serialize_value(value):
         return '"%s"' % value
 
 
-def serialize_instance(inst, table, attributes):
+def serialize_instance(inst):
     attr_count = 0
-    attributes = list(attributes)
 
+    table = inst.__class__.__name__
     s = 'INSERT INTO %s VALUES (' % table
-    for name, ty in attributes:
+    for name, ty in inst.__a__:
         value = getattr(inst, name)
         s += '\n    '
         s += serialize_value(value)
 
         attr_count += 1
-        if attr_count < len(attributes):
+        if attr_count < len(inst.__a__):
             s += ', -- %s : %s' % (name, ty)
         else:
             s += ' -- %s : %s' % (name, ty)
@@ -54,10 +54,7 @@ def serialize_metamodel(metamodel):
     s = ''
     for lst in metamodel.instances.values():
         for inst in lst:
-            table = inst.__class__.__name__
-            params = metamodel.param_names[table]
-            types = metamodel.param_types[table]
-            s += serialize_instance(inst, table, zip(params, types))
+            s += serialize_instance(inst)
             
     return s
 

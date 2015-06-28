@@ -173,9 +173,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
         
     def testUnrelate(self):
-        s_dt = self.metamodel.select_any('S_DT', lambda inst: inst.name == 'void')
+        s_dt = self.metamodel.select_any('S_DT', lambda inst: inst.name == 'integer')
         s_cdt = xtuml.navigate_one(s_dt).S_CDT[17]()
+        self.assertEqual(s_cdt.Core_Typ, 2)
         xtuml.unrelate(s_dt, s_cdt, 17)
+        self.assertEqual(s_dt.Name, 'integer')
+        self.assertEqual(s_cdt.Core_Typ, 2)
         self.assertIsNone(xtuml.navigate_one(s_dt).S_CDT[17]())
 
     def testRelateInWrongOrder(self):

@@ -203,9 +203,11 @@ class QuerySet(OrderedSet):
 
 
 class BaseObject(object):
-    __r__ = None # store relations
-    __q__ = None # store predefined queries
-    __c__ = None # store a cached results from queries
+    __r__ = None  # store relations
+    __q__ = None  # store predefined queries
+    __c__ = None  # store a cached results from queries
+    __a__ = None  # store a list of attributes (name, type)
+    __m__ = None  # store a handle to the metamodel which created the instace
     
     def __init__(self):
         self.__c__.clear()
@@ -264,26 +266,22 @@ class MetaModel(object):
     
     classes = None
     instances = None
-    param_names = None
-    param_types = None
     id_generator = None
     ignore_undefined_classes = False
     
     def __init__(self, id_generator=IdGenerator()):
         self.classes = dict()
         self.instances = dict()
-        self.param_names = dict()
-        self.param_types = dict()
         self.id_generator = id_generator
         
     def define_class(self, kind, attributes):
         '''
         Define a new class in the meta model.
         '''
-        Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(), __c__=dict()))
+        Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
+                                             __c__=dict(), __m__=self,
+                                             __a__=attributes))
         self.classes[kind] = Cls
-        self.param_names[kind] = [name for name, _ in attributes]
-        self.param_types[kind] = [ty for _, ty in attributes]
         
         return Cls
     
@@ -346,11 +344,12 @@ class MetaModel(object):
         inst = Cls()
         
         # set all parameters with an initial default value
-        for key, ty in zip(self.param_names[kind], self.param_types[kind]):
-            inst.__dict__[key] = self.default_value(ty)
+        for name, ty in inst.__a__:
+            inst.__dict__[name] = self.default_value(ty)
 
         # set all positional arguments
-        for name, ty, value in zip(self.param_names[kind], self.param_types[kind], args):
+        for attr, value in zip(inst.__a__, args):
+            name, ty = attr
             Type = self.named_type(ty)
             if not isinstance(value, Type):
                 value = Type(value)
@@ -558,8 +557,9 @@ def unrelate(inst1, inst2, rel_id, phrase=''):
     the instances is as intended.
     '''
     inst1, end1, _, _ = _match_instances_to_links(inst1, inst2, rel_id, phrase)
-    for inst1_attr in end1.ids:
-        setattr(inst1, inst1_attr, None)
+    for name, ty in filter(lambda x: x[0] in end1.ids, inst1.__a__):
+        value = inst1.__m__.default_value(ty)
+        setattr(inst1, name, value)
 
     return inst1
         
