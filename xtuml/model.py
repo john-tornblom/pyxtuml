@@ -529,7 +529,10 @@ class MetaModel(object):
             return QuerySet()
 
 
-def _match_instances_to_links(inst1, inst2, rel_id, phrase):
+def _find_association_links(inst1, inst2, rel_id, phrase):
+    '''
+    Find association links which correspond to the given arguments.
+    '''
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
     
@@ -538,62 +541,84 @@ def _match_instances_to_links(inst1, inst2, rel_id, phrase):
     
     if (rel_id not in inst1.__r__ or
         rel_id not in inst2.__r__):
-        raise ModelException('Unknown association %s---(%s)---%s' % (kind1, rel_id, kind2))
-
+        raise ModelException('Unknown association %s---(%s)---%s' % (kind1,
+                                                                     rel_id,
+                                                                     kind2))
     for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
-        if  kind1 == ass.source.kind and kind2 == ass.target.kind and ass.source.phrase == phrase:
-            return inst1, ass.source, inst2, ass.target
-        elif kind1 == ass.target.kind and kind2 == ass.source.kind and ass.target.phrase == phrase:
-            return inst1, ass.target, inst2, ass.source
+        if  (kind1 == ass.source.kind and 
+             kind2 == ass.target.kind and 
+             ass.source.phrase == phrase):
+            return ass.source, ass.target
+        
+        elif (kind1 == ass.target.kind and 
+              kind2 == ass.source.kind and 
+              ass.target.phrase == phrase):
+            return ass.target, ass.source
 
-    raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1, rel_id, phrase, kind2))
+    raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1,
+                                                                      rel_id,
+                                                                      phrase,
+                                                                      kind2))
     
     
-def unrelate(inst1, inst2, rel_id, phrase=''):
+def unrelate(from_inst, to_inst, rel_id, phrase=''):
     '''
-    Unrelate two instances from eachother by reseting the identifying
-    attributes on the FROM side of the accociation.
+    Unrelate two instances from each other by reseting the identifying
+    attributes on the FROM side of the association.
     
     NOTE: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    from_inst, from_end, _, _ = _match_instances_to_links(inst1, inst2, rel_id, phrase)
-    for name, ty in filter(lambda x: x[0] in from_end.ids, inst1.__a__):
-        value = from_inst.__m__.default_value(ty)
-        setattr(from_inst, name, value)
+    from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
+    for name, ty in from_inst.__a__:
+        if name in from_end.ids:
+            value = from_inst.__m__.default_value(ty)
+            setattr(from_inst, name, value)
 
 
-def _defered_relate(inst1, inst2, rel_id, phrase):
-    return lambda: relate(inst1, inst2, rel_id, phrase)
+def _defered_relate(from_inst, to_inst, rel_id, phrase):
+    return lambda: relate(from_inst, to_inst, rel_id, phrase)
 
 
-def relate(inst1, inst2, rel_id, phrase=''):
+def _defered_batch_relate(inst, end):
     '''
-    Relate two instances to eachother by copying the identifying attributes
+    Generate list of deferred relates which needs to be invoked after an 
+    update to identifying attributes on the association end point is made.
+    '''
+    kind = inst.__class__.__name__
+    l = list()
+    for ass in chain(*inst.__r__.values()):
+        if end in [ass.target, ass.source]:
+            continue
+        if kind != ass.target.kind:
+            continue
+        elif len(set(end.ids) & set(ass.source.ids)) == 0:
+            continue
+        
+        nav = navigate_many(inst).nav(ass.source.kind, ass.id, ass.source.phrase)
+        for from_inst in nav():
+            fn = _defered_relate(from_inst, inst, ass.id, ass.source.phrase)
+            l.append(fn)
+
+    return l
+
+
+def relate(from_inst, to_inst, rel_id, phrase=''):
+    '''
+    Relate two instances to each other by copying the identifying attributes
     from the instance on the TO side of a association to the instance on the
     FROM side. Updated values which affect existing associations are propagated.
     
     NOTE: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    if isinstance(rel_id, int):
-        rel_id = 'R%d' % rel_id
-    
-    from_inst, from_end, to_inst, to_end = _match_instances_to_links(inst1, inst2, rel_id, phrase)
-    
-    post_process = list()
-    for ass in chain(*from_inst.__r__.values()):
-        if ass.id == rel_id or from_inst.__class__.__name__ != ass.target.kind:
-            continue
-        
-        for inst in navigate_many(from_inst).nav(ass.source.kind, ass.id, ass.source.phrase)():
-            fn = _defered_relate(inst, from_inst, ass.id, ass.source.phrase)
-            post_process.append(fn)
+    from_end, to_end = _find_association_links(from_inst, to_inst, rel_id, phrase)
+    post_process = _defered_batch_relate(from_inst, from_end)
         
     for from_attr, to_attr in zip(from_end.ids, to_end.ids):
         value = getattr(to_inst, to_attr)
         setattr(from_inst, from_attr, value)
     
-    for fn in post_process:
-        fn()
+    for defered_relate in post_process:
+        defered_relate()
 
