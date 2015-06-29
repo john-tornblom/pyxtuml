@@ -561,21 +561,6 @@ def _find_association_links(inst1, inst2, rel_id, phrase):
                                                                       rel_id,
                                                                       phrase,
                                                                       kind2))
-    
-    
-def unrelate(from_inst, to_inst, rel_id, phrase=''):
-    '''
-    Unrelate two instances from each other by reseting the identifying
-    attributes on the FROM side of the association.
-    
-    NOTE: Reflexive associations require a phrase, and that the order amongst
-    the instances is as intended.
-    '''
-    from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    for name, ty in from_inst.__a__:
-        if name in from_end.ids:
-            value = from_inst.__m__.default_value(ty)
-            setattr(from_inst, name, value)
 
 
 def _defered_relate(from_inst, to_inst, rel_id, phrase):
@@ -623,4 +608,20 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     
     for defered_relate in post_process:
         defered_relate()
+
+    
+def unrelate(from_inst, to_inst, rel_id, phrase=''):
+    '''
+    Unrelate two instances from each other by reseting the identifying
+    attributes on the FROM side of the association.
+    
+    NOTE: Reflexive associations require a phrase, and that the order amongst
+    the instances is as intended.
+    '''
+    from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
+    for name, ty in from_inst.__a__:
+        if name in from_end.ids:
+            value = from_inst.__m__.default_value(ty)
+            setattr(from_inst, name, value)
+
 
