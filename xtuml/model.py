@@ -207,7 +207,7 @@ class BaseObject(object):
     __q__ = None  # store predefined queries
     __c__ = None  # store a cached results from queries
     __a__ = None  # store a list of attributes (name, type)
-    __m__ = None  # store a handle to the metamodel which created the instace
+    __m__ = None  # store a handle to the metamodel which created the instance
     
     def __init__(self):
         self.__c__.clear()
@@ -299,7 +299,8 @@ class MetaModel(object):
     
     def type_name(self, ty):
         '''
-        Determine the named meta model type of a python type, e.g. bool --> boolean.
+        Determine the named meta model type of a python type, 
+            e.g. bool --> boolean.
         '''
         if   issubclass(ty, bool): return 'boolean'
         elif issubclass(ty, int): return 'integer'
@@ -313,7 +314,8 @@ class MetaModel(object):
         
     def named_type(self, name):
         '''
-        Determine the python-type of a named meta model type, e.g. boolean --> bool.
+        Determine the python-type of a named meta model type, 
+            e.g. boolean --> bool.
         '''
         lookup_table = {
           'boolean'     : bool,
