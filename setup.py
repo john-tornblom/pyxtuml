@@ -5,9 +5,14 @@ import logging
 import unittest
 import sys
 
-from distutils.core import setup
-from distutils.core import Command
-from distutils.command.install import install
+try:
+    from setuptools import setup
+    from setuptools import Command
+    from setuptools.command.install import install
+except ImportError:
+    from distutils.core import setup
+    from distutils.core  import Command
+    from distutils.command.install import install
 
 import xtuml
 
