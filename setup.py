@@ -7,6 +7,7 @@ import sys
 
 from distutils.core import setup
 from distutils.core import Command
+from distutils.command.install import install
 
 import xtuml
 
@@ -14,18 +15,11 @@ import xtuml
 logging.basicConfig(level=logging.DEBUG)
 
 
-class PrepareCommand(Command):
-    description = "Prepare the source code by generating lexers and parsers"
-    user_options = []
-
-    def initialize_options(self):
-        pass
+class InstallCommand(install):
     
-    def finalize_options(self):
-        pass
-
     def run(self):
         xtuml.load_metamodel([])
+        install.run(self)
 
 
 class TestCommand(Command):
@@ -64,6 +58,7 @@ setup(name='pyxtuml',
       platforms=["Linux"],
       packages=['xtuml'],
       requires=['ply'],
-      cmdclass={'prepare': PrepareCommand, 'test': TestCommand}
+      cmdclass={'install': InstallCommand,
+                'test': TestCommand}
       )
 
