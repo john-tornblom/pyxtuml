@@ -2,7 +2,7 @@
 # Copyright (C) 2015 John Törnblom
 
 '''
-lexer and parser for xtUML source code (based on sql).
+loading support for xtUML models (based on sql).
 '''
 
 import uuid
@@ -44,7 +44,9 @@ class CreateRelatationStmt(object):
         
 
 class ModelLoader(object):
-
+    '''
+    Lexer and parser for xtUML source code (based on sql).
+    '''
     reserved = (
         'CREATE',
         'INSERT',
@@ -95,20 +97,32 @@ class ModelLoader(object):
                                 tabmodule='xtuml.__xtuml_parsetab')
 
     def input(self, data):
+        '''
+        Parse input as raw data.
+        '''
         s = self.parser.parse(lexer=self.lexer, input=data)
         self.statements.extend(s)
     
 
     def filename_input(self, filename):
+        '''
+        Open and read a filename, and parse ints content.
+        '''
         with open(filename, 'r') as f:
             return self.file_input(f)
     
     
     def file_input(self, f):
+        '''
+        Read and parse data from a file handle.
+        '''
         return self.input(f.read())
 
 
     def build_metamodel(self, id_generator=model.IdGenerator(), ignore_undefined_classes=False):
+        '''
+        Build and return a metamodel from previously parsed input.
+        '''
         m = model.MetaModel(id_generator)
         m.ignore_undefined_classes = ignore_undefined_classes
         
@@ -385,6 +399,9 @@ class ModelLoader(object):
 
 
 def load_metamodel(filenames):
+    '''
+    Load and return a metamodel from a list of filenames.
+    '''
     loader = ModelLoader()
     loader.build_parser()
     for filename in filenames:
