@@ -56,7 +56,7 @@ def serialize_instance(inst):
     return s
 
 
-def serialize_metamodel(metamodel):
+def serialize_instances(metamodel):
     '''
     Serialize instances located in a xtUML meta model.
     '''
@@ -124,7 +124,7 @@ def persist_instances(metamodel, path):
     Persist instances from a metamodel to disk.
     '''
     with open(path, 'w') as f:
-        s = serialize_metamodel(metamodel)
+        s = serialize_instances(metamodel)
         f.write(s)
 
 
