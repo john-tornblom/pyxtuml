@@ -311,7 +311,7 @@ class TestPersist(unittest.TestCase):
                    REAL=-5.5,
                    UNIQUE_ID=uuid.UUID(int=0))
         
-        s = xtuml.serialize_metamodel(m)
+        s = xtuml.serialize_instances(m)
         
         loader = xtuml.load.ModelLoader()
         loader.build_parser()
@@ -343,7 +343,7 @@ class TestPersist(unittest.TestCase):
         m = loader.build_metamodel(id_generator)
         m.new('X')
         
-        s = xtuml.serialize_metamodel(m)
+        s = xtuml.serialize_instances(m)
   
         loader = xtuml.load.ModelLoader()
         loader.build_parser()
@@ -377,11 +377,11 @@ class TestPersist(unittest.TestCase):
         m = loader.build_metamodel(id_generator)
         m.new('X')
         
-        s = xtuml.serialize_metamodel(m)
+        s = xtuml.serialize_instances(m)
         
         (_, filename) = tempfile.mkstemp()
         try:
-            xtuml.persist_metamodel(m, filename)
+            xtuml.persist_instances(m, filename)
             with open(filename) as f:
                 self.assertEqual(s, f.read())
         finally:
