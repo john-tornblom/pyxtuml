@@ -259,7 +259,7 @@ class IdGenerator(object):
     
     def __init__(self):
         '''
-        Initilize an id generator with a start value.
+        Initialize an id generator with a start value.
         '''
         self._current = self.readfunc()
     
@@ -311,7 +311,8 @@ class MetaModel(object):
     
     def __init__(self, id_generator=None):
         '''
-        Create a new, empty metamodel. Optionally, specify an id generator used to obtain uniquie identifiers.
+        Create a new, empty meta model. 
+        Optionally, specify an id generator used to obtain unique identifiers.
         '''
         if id_generator is None:
             id_generator = UUIDGenerator()
