@@ -136,13 +136,15 @@ class TestModel(unittest.TestCase):
         
         xtuml.relate(inst1, inst2, 661, 'precedes')
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
+        self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
     def testRelateReflexive2(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
         
         xtuml.relate(inst2, inst1, 661, 'succeeds')
-        self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'precedes']())
+        self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
+        self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
     @expect_exception(xtuml.ModelException)
     def testRelateReflexiveWithoutPhrase(self):
@@ -218,6 +220,59 @@ class TestModel(unittest.TestCase):
         self.assertEqual(inst, s_bparm)
     
         
+        
+class TestDefineModel(unittest.TestCase):
+    
+ 
+    def setUp(self):
+        self.metamodel = xtuml.MetaModel()
+
+    def tearDown(self):
+        del self.metamodel
+
+    def testReflexive(self):
+        self.metamodel.define_class('A', [('Id', 'unique_id'),
+                                          ('Next_Id', 'unique_id'),
+                                          ('Name', 'string')])
+        
+        endpint1 = xtuml.SingleAssociationLink('A', ids=['Id'], phrase='prev')
+        endpint2 = xtuml.SingleAssociationLink('A', ids=['Next_Id'], phrase='next')
+        self.metamodel.define_relation('R1', endpint1, endpint2)
+        
+        first = self.metamodel.new('A', Name="First")
+        second = self.metamodel.new('A', Name="Second")
+
+        xtuml.model.relate(first, second, 1, 'prev')
+
+        inst = xtuml.navigate_one(first).A[1, 'next']()
+        self.assertEqual(inst.Name, second.Name)
+
+        inst = xtuml.navigate_one(first).A[1, 'prev']()
+        self.assertIsNone(inst)
+        
+        inst = xtuml.navigate_one(second).A[1, 'prev']()
+        self.assertEqual(inst.Name, first.Name)
+        
+        inst = xtuml.navigate_one(second).A[1, 'next']()
+        self.assertIsNone(inst)
+
+
+    def testOneToMany(self):
+        self.metamodel.define_class('A', [('Id', 'unique_id')])
+        self.metamodel.define_class('B', [('Id', 'unique_id'), ('A_Id', 'unique_id')])
+        a_endpint = xtuml.SingleAssociationLink('A')
+        b_endpint = xtuml.ManyAssociationLink('B')
+        
+        self.metamodel.define_relation('R1', a_endpint, b_endpint)
+        
+        a = self.metamodel.new('A')
+        b = self.metamodel.new('B')
+        xtuml.relate(a, b, 1)
+        
+        self.assertEqual(a, xtuml.navigate_one(b).A[1]())
+        
+
+
 if __name__ == "__main__":
     unittest.main()
 
