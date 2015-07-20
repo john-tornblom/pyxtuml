@@ -119,7 +119,7 @@ class ModelLoader(object):
         return self.input(f.read())
 
 
-    def build_metamodel(self, id_generator=model.IdGenerator(), ignore_undefined_classes=False):
+    def build_metamodel(self, id_generator=None, ignore_undefined_classes=False):
         '''
         Build and return a meta model from previously parsed input.
         '''
