@@ -1,5 +1,8 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
+'''
+pyxtuml is a python library for parsing, manipulating, and generating BridgePoint xtUML models.
+'''
 
 from .load import load_metamodel
 from .load import ParsingException
