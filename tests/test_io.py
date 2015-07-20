@@ -19,6 +19,44 @@ def load(fn):
     return load_wrapper
 
 
+def compare_metamodel_classes(m1, m2):
+    if len(m1.classes.keys()) != len(m2.classes.keys()):
+        return False
+    
+    for kind in m1.classes.keys():
+        Cls1 = m1.classes[kind]
+        Cls2 = m2.classes[kind]
+        
+        if Cls1.__name__ != Cls2.__name__:
+            return False
+        
+        if Cls1.__a__ != Cls2.__a__:
+            return False
+
+    return True
+
+            
+def schema_compare(fn):
+
+    def compare_wrapper(self, *args, **kwargs):
+        loader = xtuml.load.ModelLoader()
+        loader.build_parser()
+        loader.input(fn.__doc__)
+        m1 = loader.build_metamodel()
+        
+        s = xtuml.serialize_schema(m1)
+
+        loader = xtuml.load.ModelLoader()
+        loader.build_parser()
+        loader.input(s)
+        m2 = loader.build_metamodel()
+        
+        self.assertTrue(compare_metamodel_classes(m1, m2))
+        fn(self)
+    
+    return compare_wrapper
+
+
 def expect_exception(exception):
     def test_decorator(fn):
         def test_decorated(self, *args, **kwargs):
@@ -397,6 +435,38 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, 0.0)
         self.assertEqual(x.UNIQUE_ID, 1)
 
+
+class TestSchema(unittest.TestCase):
+
+    @schema_compare
+    def testClassWithDataTypeNames(self):
+        '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        
+    @schema_compare
+    def testROPNamedAsCardinality(self):
+        '''
+        CREATE TABLE M  (Id INTEGER, MC_Id INTEGER);
+        CREATE TABLE MC (Id INTEGER);
+        
+        CREATE ROP REF_ID R1 FROM M M ( MC_Id )
+                             TO   1 MC ( Id );
+        '''
+
+    @schema_compare
+    def testROPWithoutIdentifiers(self):
+        '''
+        CREATE TABLE X ();
+        CREATE TABLE Y ();
+        
+        CREATE ROP REF_ID R1 FROM MC X ()
+                             TO   MC Y ();
+        '''
 
 if __name__ == "__main__":
     unittest.main()
