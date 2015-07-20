@@ -272,6 +272,11 @@ class TestDefineModel(unittest.TestCase):
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
         
 
+    @expect_exception(xtuml.ModelException)
+    def testUnknownType(self):
+        self.metamodel.define_class('A', [('Id', '<invalid type>')])
+        self.metamodel.new('A')
+
 
 if __name__ == "__main__":
     unittest.main()
