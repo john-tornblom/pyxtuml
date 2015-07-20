@@ -341,7 +341,7 @@ class TestQuerySet(unittest.TestCase):
         q2 = xtuml.QuerySet([1, 2, 3])
         
         self.assertEqual(q1, q2)
-
+        self.assertEqual(q1, [1, 2, 3])
         
     def testNotEqualOperator(self):
         q1 = xtuml.QuerySet()

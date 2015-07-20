@@ -186,9 +186,13 @@ class OrderedSet(collections.MutableSet):
         return '%s(%r)' % (self.__class__.__name__, list(self))
 
     def __eq__(self, other):
-        if isinstance(other, OrderedSet):
-            return len(self) == len(other) and list(self) == list(other)
-        return set(self) == set(other)
+        if not isinstance(other, OrderedSet):
+            return self == OrderedSet(iter(other))
+        
+        if not len(self) == len(other):
+            return False
+        
+        return list(self) == list(other)
 
 
 class QuerySet(OrderedSet):
