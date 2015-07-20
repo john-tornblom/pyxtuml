@@ -83,7 +83,9 @@ def navigate_many(inst):
 
 
 class Association(object):
-    
+    '''
+    An association connects two classes to each other via association links.
+    '''
     def __init__(self, relid, source, target):
         self.id = relid
         self.source = source
@@ -91,6 +93,9 @@ class Association(object):
 
 
 class AssociationLink(object):
+    '''
+    An association link represent an end point in an association.
+    '''
     
     def __init__(self, kind, cardinality, ids, phrase=''):
         self.cardinality = cardinality
@@ -108,6 +113,9 @@ class AssociationLink(object):
 
 
 class SingleAssociationLink(AssociationLink):
+    '''
+    An association link that identifies an end point with cardinality 0..1 or 1.
+    '''
     
     def __init__(self, kind, conditional=False, ids=[], phrase=''):
         if conditional: cardinality = '1C'
@@ -116,6 +124,9 @@ class SingleAssociationLink(AssociationLink):
 
 
 class ManyAssociationLink(AssociationLink):
+    '''
+    An association link that identifies an end point with cardinality * or 1..*.
+    '''
     
     def __init__(self, kind, conditional=False, ids=[], phrase=''):
         if conditional: cardinality = 'MC'
@@ -124,6 +135,9 @@ class ManyAssociationLink(AssociationLink):
         
 
 class OrderedSet(collections.MutableSet):
+    '''
+    Set that remembers original insertion order.
+    '''
     # Originally posted on http://code.activestate.com/recipes/576694
     # by Raymond Hettinger.
     
@@ -133,12 +147,6 @@ class OrderedSet(collections.MutableSet):
         self.map = {}                   # key --> [key, prev, next]
         if iterable is not None:
             self |= iterable
-
-    def __len__(self):
-        return len(self.map)
-
-    def __contains__(self, key):
-        return key in self.map
 
     def add(self, key):
         if key not in self.map:
@@ -151,6 +159,24 @@ class OrderedSet(collections.MutableSet):
             key, prev, next_ = self.map.pop(key)
             prev[2] = next_
             next[1] = prev
+
+    def pop(self, last=True):
+        if not self:
+            raise KeyError('set is empty')
+        
+        if last:
+            key = self.end[1][0]
+        else:
+            key = self.end[2][0]
+            
+        self.discard(key)
+        return key
+    
+    def __len__(self):
+        return len(self.map)
+
+    def __contains__(self, key):
+        return key in self.map
 
     def __iter__(self):
         end = self.end
@@ -166,18 +192,6 @@ class OrderedSet(collections.MutableSet):
             yield curr[0]
             curr = curr[1]
 
-    def pop(self, last=True):
-        if not self:
-            raise KeyError('set is empty')
-        
-        if last:
-            key = self.end[1][0]
-        else:
-            key = self.end[2][0]
-            
-        self.discard(key)
-        return key
-
     def __repr__(self):
         if not self:
             return '%s()' % (self.__class__.__name__,)
@@ -190,6 +204,9 @@ class OrderedSet(collections.MutableSet):
 
 
 class QuerySet(OrderedSet):
+    '''
+    An ordered set which holds instances that match queries from a meta model.
+    '''
     
     @property
     def first(self):
@@ -203,6 +220,10 @@ class QuerySet(OrderedSet):
 
 
 class BaseObject(object):
+    '''
+    A common base object for all instances created in a meta model. Accesses 
+    to attributes, e.g. getattr/setattr, on these objects are case insensitive.
+    '''
     __r__ = None  # store relations
     __q__ = None  # store predefined queries
     __c__ = None  # store a cached results from queries
@@ -242,15 +263,24 @@ class BaseObject(object):
     
     
 class IdGenerator(object):
+    '''
+    Base class for generating unique identifiers in a metamodel.
+    '''
     
     def __init__(self, readfunc=uuid.uuid4):
         self.readfunc = readfunc
         self._current = readfunc()
     
     def peek(self):
+        '''
+        Peek at the current value without progressing to the next one.
+        '''
         return self._current
     
     def next(self):
+        '''
+        Progress to the next identifier, and return the current one.
+        '''
         val = self._current
         self._current = self.readfunc()
         return val
@@ -270,6 +300,9 @@ class MetaModel(object):
     ignore_undefined_classes = False
     
     def __init__(self, id_generator=IdGenerator()):
+        '''
+        Create a new, empty metamodel. Optionally, specify an id generator used to obtain uniquie identifiers.
+        '''
         self.classes = dict()
         self.instances = dict()
         self.id_generator = id_generator
@@ -291,7 +324,6 @@ class MetaModel(object):
         '''
         if   ty_name == 'boolean': return False
         elif ty_name == 'integer': return 0
-        elif ty_name == 'integer': return 0
         elif ty_name == 'real': return 0.0
         elif ty_name == 'string': return ''
         elif ty_name == 'unique_id': return next(self.id_generator)
@@ -300,7 +332,7 @@ class MetaModel(object):
     def type_name(self, ty):
         '''
         Determine the named meta model type of a python type, 
-            e.g. bool --> boolean.
+            e.g. bool --> 'boolean'.
         '''
         if   issubclass(ty, bool): return 'boolean'
         elif issubclass(ty, int): return 'integer'
@@ -596,7 +628,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     from the instance on the TO side of a association to the instance on the
     FROM side. Updated values which affect existing associations are propagated.
     
-    NOTE: Reflexive associations require a phrase, and that the order amongst
+    **NOTE**: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
     from_end, to_end = _find_association_links(from_inst, to_inst, rel_id, phrase)
@@ -615,7 +647,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     Unrelate two instances from each other by reseting the identifying
     attributes on the FROM side of the association.
     
-    NOTE: Reflexive associations require a phrase, and that the order amongst
+    **NOTE**: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
     from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
