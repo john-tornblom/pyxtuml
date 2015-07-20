@@ -255,9 +255,13 @@ class IdGenerator(object):
     Base class for generating unique identifiers in a metamodel.
     '''
     
-    def __init__(self, readfunc=uuid.uuid4):
-        self.readfunc = readfunc
-        self._current = readfunc()
+    readfunc = None
+    
+    def __init__(self):
+        '''
+        Initilize an id generator with a start value.
+        '''
+        self._current = self.readfunc()
     
     def peek(self):
         '''
@@ -280,6 +284,24 @@ class IdGenerator(object):
         return self.next()
 
 
+class UUIDGenerator(IdGenerator):
+    '''
+    A uuid-based unique id generator for meta models.
+    '''
+    def readfunc(self):
+        return uuid.uuid4()
+
+
+class IntegerGenerator(IdGenerator):
+    '''
+    An integer-based unique id generator for meta models.
+    '''
+    _current = 0
+    
+    def readfunc(self):
+        return self._current + 1
+
+    
 class MetaModel(object):
     
     classes = None
@@ -287,7 +309,7 @@ class MetaModel(object):
     id_generator = None
     ignore_undefined_classes = False
     
-    def __init__(self, id_generator=IdGenerator()):
+    def __init__(self, id_generator=None):
         '''
         Create a new, empty metamodel. Optionally, specify an id generator used to obtain uniquie identifiers.
         '''
