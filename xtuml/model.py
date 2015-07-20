@@ -146,7 +146,7 @@ class OrderedSet(collections.MutableSet):
         if key in self.map:        
             key, prev, next_ = self.map.pop(key)
             prev[2] = next_
-            next[1] = prev
+            next_[1] = prev
 
     def pop(self, last=True):
         if not self:
