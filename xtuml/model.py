@@ -458,10 +458,7 @@ class MetaModel(object):
           'unique_id'   : type(self.id_generator.peek())
         }
         
-        if name in lookup_table:
-            return lookup_table[name]
-        else:
-            raise ModelException("Unknown type named '%s'" % name)
+        return lookup_table[name]
         
     def _query(self, kind, many, **kwargs):
         for inst in iter(self.instances[kind]):
