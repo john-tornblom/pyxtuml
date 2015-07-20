@@ -18,6 +18,7 @@ from .model import SingleAssociationLink
 from .model import ManyAssociationLink
 
 from .model import QuerySet
+from .model import BaseObject
 from .model import IdGenerator
 from .model import UUIDGenerator
 from .model import IntegerGenerator

@@ -331,52 +331,7 @@ class MetaModel(object):
         self.classes[kind] = Cls
         
         return Cls
-    
-    def default_value(self, ty_name):
-        '''
-        Obtain the default value for a named meta model type.
-        '''
-        if   ty_name == 'boolean': return False
-        elif ty_name == 'integer': return 0
-        elif ty_name == 'real': return 0.0
-        elif ty_name == 'string': return ''
-        elif ty_name == 'unique_id': return next(self.id_generator)
-        else: raise ModelException("Unknown type named '%s'" % ty_name)
-    
-    def type_name(self, ty):
-        '''
-        Determine the named meta model type of a python type, 
-            e.g. bool --> 'boolean'.
-        '''
-        if   issubclass(ty, bool): return 'boolean'
-        elif issubclass(ty, int): return 'integer'
-        elif issubclass(ty, float): return 'real'
-        elif issubclass(ty, str): return 'string'
-        elif issubclass(ty, BaseObject): return 'inst_ref'
-        elif issubclass(ty, type(None)): return 'inst_ref'
-        elif issubclass(ty, QuerySet): return 'inst_ref_set'
-        elif issubclass(ty, type(self.id_generator.peek())): return 'unique_id'
-        else: raise ModelException("Unknown type '%s'" % ty.__name__)
-        
-    def named_type(self, name):
-        '''
-        Determine the python-type of a named meta model type, 
-            e.g. boolean --> bool.
-        '''
-        lookup_table = {
-          'boolean'     : bool,
-          'integer'     : int,
-          'real'        : float,
-          'string'      : str,
-          'inst_ref'    : BaseObject,
-          'inst_ref_set': QuerySet,
-          'unique_id'   : type(self.id_generator.peek())
-        }
-        
-        if name in lookup_table:
-            return lookup_table[name]
-        else:
-            raise ModelException("Unknown type named '%s'" % name)
+
         
     def new(self, kind, *args, **kwargs):
         '''
@@ -393,12 +348,12 @@ class MetaModel(object):
         
         # set all parameters with an initial default value
         for name, ty in inst.__a__:
-            inst.__dict__[name] = self.default_value(ty)
+            inst.__dict__[name] = self._default_value(ty)
 
         # set all positional arguments
         for attr, value in zip(inst.__a__, args):
             name, ty = attr
-            Type = self.named_type(ty)
+            Type = self._named_type(ty)
             if not isinstance(value, Type):
                 value = Type(value)
                 
@@ -413,107 +368,7 @@ class MetaModel(object):
         self.instances[kind].append(inst)
         
         return inst
-        
-    @staticmethod
-    def empty(arg):
-        '''
-        Determine if arg is empty
-        '''
-        if   arg is None: return True
-        elif isinstance(arg, QuerySet): return len(arg) == 0
-        return False
-    
-    @staticmethod
-    def not_empty(arg):
-        '''
-        Determine if arg is not empty
-        '''
-        return not MetaModel.empty(arg)
-    
-    @staticmethod
-    def cardinality(arg):
-        '''
-        Determine the cardinality of arg.
-        '''
-        if   arg is None: return 0
-        elif isinstance(arg, QuerySet): return len(arg)
-        else: return 1
 
-    @staticmethod
-    def is_set(arg):
-        '''
-        Determine if arg is a set of meta model instances.
-        '''
-        return isinstance(arg, QuerySet)
-    
-    @staticmethod
-    def is_instance(arg):
-        '''
-        Determine if arg is a meta model instance.
-        '''
-        return isinstance(arg, BaseObject)
-    
-    @staticmethod
-    def first(inst, query_set):
-        '''
-        Determine if an instance is the first item in a query set.
-        '''
-        assert isinstance(query_set, QuerySet)
-        return inst == query_set.first
-    
-    @staticmethod
-    def not_first(inst, query_set):
-        '''
-        Determine if an instance is not the first item in a query set.
-        '''
-        assert isinstance(query_set, QuerySet)
-        return inst != query_set.first
-    
-    @staticmethod
-    def last(inst, query_set):
-        '''
-        Determine if an instance is the last item in a query set.
-        '''
-        assert isinstance(query_set, QuerySet)
-        return inst == query_set.last
-
-    @staticmethod
-    def not_last(inst, query_set):
-        '''
-        Determine if an instance is not the last item in a query set.
-        '''
-        assert isinstance(query_set, QuerySet)
-        return inst != query_set.last
-    
-    def _query(self, kind, many, **kwargs):
-        for inst in iter(self.instances[kind]):
-            for name, value in kwargs.items():
-                if getattr(inst, name) != value:
-                    break
-            else:
-                yield inst
-                if not many:
-                    return
-                    
-    def _select_endpoint(self, inst, source, target, kwargs):
-        if not target.kind in self.instances:
-            return QuerySet()
-        
-        keys = chain(target.ids, kwargs.keys())
-        values = chain([getattr(inst, name) for name in source.ids], kwargs.values())
-        kwargs = dict(zip(keys, values))
-                            
-        cache_key = frozenset(list(kwargs.items()))
-        cache = self.classes[target.kind].__c__
-        
-        if cache_key not in cache:
-            cache[cache_key] = QuerySet(self._query(target.kind, target.is_many, **kwargs))
-            
-        return cache[cache_key]
-    
-    def _formalized_query(self, source, target):
-        return lambda inst, **kwargs: self._select_endpoint(inst, source, target, kwargs)
-    
     def define_relation(self, rel_id, source, target):
         '''
         Define a directed association from source to target.
@@ -576,6 +431,67 @@ class MetaModel(object):
         else:
             return QuerySet()
 
+        
+    def _default_value(self, ty_name):
+        '''
+        Obtain the default value for a named meta model type.
+        '''
+        if   ty_name == 'boolean': return False
+        elif ty_name == 'integer': return 0
+        elif ty_name == 'real': return 0.0
+        elif ty_name == 'string': return ''
+        elif ty_name == 'unique_id': return next(self.id_generator)
+        else: raise ModelException("Unknown type named '%s'" % ty_name)
+            
+    def _named_type(self, name):
+        '''
+        Determine the python-type of a named meta model type, 
+            e.g. boolean --> bool.
+        '''
+        lookup_table = {
+          'boolean'     : bool,
+          'integer'     : int,
+          'real'        : float,
+          'string'      : str,
+          'inst_ref'    : BaseObject,
+          'inst_ref_set': QuerySet,
+          'unique_id'   : type(self.id_generator.peek())
+        }
+        
+        if name in lookup_table:
+            return lookup_table[name]
+        else:
+            raise ModelException("Unknown type named '%s'" % name)
+        
+    def _query(self, kind, many, **kwargs):
+        for inst in iter(self.instances[kind]):
+            for name, value in kwargs.items():
+                if getattr(inst, name) != value:
+                    break
+            else:
+                yield inst
+                if not many:
+                    return
+                    
+    def _select_endpoint(self, inst, source, target, kwargs):
+        if not target.kind in self.instances:
+            return QuerySet()
+        
+        keys = chain(target.ids, kwargs.keys())
+        values = chain([getattr(inst, name) for name in source.ids], kwargs.values())
+        kwargs = dict(zip(keys, values))
+                            
+        cache_key = frozenset(list(kwargs.items()))
+        cache = self.classes[target.kind].__c__
+        
+        if cache_key not in cache:
+            cache[cache_key] = QuerySet(self._query(target.kind, target.is_many, **kwargs))
+            
+        return cache[cache_key]
+    
+    def _formalized_query(self, source, target):
+        return lambda inst, **kwargs: self._select_endpoint(inst, source, target, kwargs)
+    
 
 def _find_association_links(inst1, inst2, rel_id, phrase):
     '''
@@ -691,7 +607,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
     for name, ty in from_inst.__a__:
         if name in from_end.ids:
-            value = from_inst.__m__.default_value(ty)
+            value = from_inst.__m__._default_value(ty)
             setattr(from_inst, name, value)
 
 
