@@ -312,6 +312,7 @@ class MetaModel(object):
     
     classes = None
     instances = None
+    associations = None
     id_generator = None
     ignore_undefined_classes = False
     
@@ -325,6 +326,7 @@ class MetaModel(object):
             
         self.classes = dict()
         self.instances = dict()
+        self.associations = list()
         self.id_generator = id_generator
         
     def define_class(self, kind, attributes):
@@ -386,6 +388,7 @@ class MetaModel(object):
         Define a directed association from source to target.
         '''
         ass = Association(rel_id, source, target)
+        self.associations.append(ass)
         
         Source = self.classes[source.kind]
         Target = self.classes[target.kind]
