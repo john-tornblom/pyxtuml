@@ -184,7 +184,6 @@ class TestModel(unittest.TestCase):
         self.assertNotEqual(EE_ID, s_ee.EE_ID)
         self.assertEqual(Element_ID, pe_pe.Element_ID)
 
-
     def testRelateTopDown(self):
         m = self.metamodel
         s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
@@ -278,6 +277,110 @@ class TestDefineModel(unittest.TestCase):
         self.metamodel.new('A')
 
 
+class TestBaseObject(unittest.TestCase):
+ 
+    def testPlusOperator(self):
+        inst1 = xtuml.BaseObject()
+        inst2 = xtuml.BaseObject()
+
+        q = inst1 + inst2
+        self.assertEqual(2, len(q))
+        self.assertIn(inst1, q)
+        self.assertIn(inst2, q)
+        
+    def testMinusOperator(self):
+        inst1 = xtuml.BaseObject()
+        inst2 = xtuml.BaseObject()
+
+        q = inst1 - inst2
+        self.assertEqual(1, len(q))
+        self.assertIn(inst1, q)
+        self.assertNotIn(inst2, q)
+        
+    def testNonPersistingAttribute(self):
+        inst = xtuml.BaseObject()
+        
+        setattr(inst, 'test1', 1)
+        self.assertEqual(getattr(inst, 'test1'), 1)
+        self.assertEqual(inst.test1, 1)
+        
+        inst.__dict__['test2'] = 2
+        self.assertEqual(getattr(inst, 'test2'), 2)
+        self.assertEqual(inst.test2, 2)
+
+        inst.test3 = 3
+        self.assertEqual(getattr(inst, 'test3'), 3)
+        self.assertEqual(inst.test3, 3)
+        
+    @expect_exception(AttributeError)
+    def testUndefinedAttribute1(self):
+        inst = xtuml.BaseObject()
+        _ = getattr(inst, 'test')
+        
+        
+    @expect_exception(AttributeError)
+    def testUndefinedAttribute2(self):
+        inst = xtuml.BaseObject()
+        _ = inst.test
+        
+        
+class TestQuerySet(unittest.TestCase):
+ 
+    def testEqualOperator(self):
+        q1 = xtuml.QuerySet()
+        q2 = xtuml.QuerySet()
+        
+        self.assertEqual(q1, q2)
+        
+        q1 = xtuml.QuerySet([1])
+        q2 = xtuml.QuerySet([1])
+        
+        self.assertEqual(q1, q2)
+        
+        q1 = xtuml.QuerySet([1, 2, 3])
+        q2 = xtuml.QuerySet([1, 2, 3])
+        
+        self.assertEqual(q1, q2)
+
+        
+    def testNotEqualOperator(self):
+        q1 = xtuml.QuerySet()
+        q2 = xtuml.QuerySet([1])
+        self.assertNotEqual(q1, q2)
+        self.assertNotEqual(q2, q1)
+        
+        q1 = xtuml.QuerySet([1, 2, 3])
+        q2 = xtuml.QuerySet([1, 3])
+        self.assertNotEqual(q1, q2)
+        self.assertNotEqual(q2, q1)
+        
+        q1 = xtuml.QuerySet([1, 2, 3])
+        q2 = xtuml.QuerySet([1, 3, 2])
+        self.assertNotEqual(q1, q2)
+        
+    @expect_exception(KeyError)
+    def testPopEmpty(self):
+        q = xtuml.QuerySet()
+        q.pop()
+        
+
+    def testPopLast(self):
+        q1 = xtuml.QuerySet([1, 2])
+        q2 = xtuml.QuerySet([1])
+        self.assertNotEqual(q1, q2)
+
+        q1.pop()
+        self.assertEqual(q1, q2)
+        
+        
+    def testPopFirst(self):
+        q1 = xtuml.QuerySet([2, 1])
+        q2 = xtuml.QuerySet([1])
+        self.assertNotEqual(q1, q2)
+
+        q1.pop(last=False)
+        self.assertEqual(q1, q2)
+        
 if __name__ == "__main__":
     unittest.main()
 
