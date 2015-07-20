@@ -8,11 +8,11 @@ import sys
 try:
     from setuptools import setup
     from setuptools import Command
-    from setuptools.command.install import install
+    from setuptools.command.build_py import build_py
 except ImportError:
     from distutils.core import setup
     from distutils.core  import Command
-    from distutils.command.install import install
+    from distutils.command.build_py import build_py
 
 import xtuml
 
@@ -20,11 +20,11 @@ import xtuml
 logging.basicConfig(level=logging.DEBUG)
 
 
-class InstallCommand(install):
+class BuildCommand(build_py):
     
     def run(self):
         xtuml.load_metamodel([])
-        install.run(self)
+        build_py.run(self)
 
 
 class TestCommand(Command):
@@ -63,7 +63,7 @@ setup(name='pyxtuml',
       platforms=["Linux"],
       packages=['xtuml'],
       requires=['ply'],
-      cmdclass={'install': InstallCommand,
+      cmdclass={'build_py': BuildCommand,
                 'test': TestCommand}
       )
 
