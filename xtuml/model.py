@@ -70,18 +70,6 @@ class NavChain(object):
             return next(s, None)
 
 
-def navigate_one(inst):
-    return navigate_any(inst)
-
-
-def navigate_any(inst):
-    return NavChain(inst, is_many=False)
-
-
-def navigate_many(inst):
-    return NavChain(inst, is_many=True)
-
-
 class Association(object):
     '''
     An association connects two classes to each other via association links.
@@ -622,6 +610,30 @@ def _defered_batch_relate(inst, end):
     return l
 
 
+def navigate_one(inst):
+    '''
+    Initialize a navigation which is modeled as a one-to-one association.
+    Return value will be an instance or None.
+    '''
+    return navigate_any(inst)
+
+
+def navigate_any(inst_or_set):
+    '''
+    Initialize a navigation which is modeled as a one-to-many or many-to-many association.
+    and reduce the set to a single instance. Return value will be an instance, or None.
+    '''
+    return NavChain(inst_or_set, is_many=False)
+
+
+def navigate_many(inst_or_set):
+    '''
+    Initialize a navigation which is modeled as a one-to-many or many-to-many association.
+    Return value will be a set of instances.
+    '''
+    return NavChain(inst_or_set, is_many=True)
+
+    
 def relate(from_inst, to_inst, rel_id, phrase=''):
     '''
     Relate two instances to each other by copying the identifying attributes
