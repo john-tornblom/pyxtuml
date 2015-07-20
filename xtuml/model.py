@@ -214,9 +214,9 @@ class BaseObject(object):
     '''
     __r__ = None  # store relations
     __q__ = None  # store predefined queries
-    __c__ = None  # store a cached results from queries
-    __a__ = None  # store a list of attributes (name, type)
     __m__ = None  # store a handle to the metamodel which created the instance
+    __c__ = dict()  # store a cached results from queries
+    __a__ = list()  # store a list of attributes (name, type)
     
     def __init__(self):
         self.__c__.clear()
