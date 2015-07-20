@@ -9,6 +9,10 @@ from .load import ParsingException
 from .load import ModelLoader
 
 from .persist import persist_instances
+from .persist import persist_schema
+
+from .persist import serialize_schema
+from .persist import serialize_class
 from .persist import serialize_instances
 from .persist import serialize_instance
 
