@@ -232,20 +232,22 @@ class BaseObject(object):
 
     def __getattr__(self, name):
         lname = name.lower()
-        for attr in self.__dict__.keys():
+        for attr, _ in self.__a__:
             if attr.lower() == lname:
                 return self.__dict__[attr]
 
-        object.__getattribute__(self, name)
+        return object.__getattribute__(self, name)
     
     def __setattr__(self, name, value):
-        name = name.lower()
-        for attr in self.__dict__.keys():
-            if attr.lower() == name:
+        lname = name.lower()
+        for attr, _ in self.__a__:
+            if attr.lower() == lname:
                 self.__dict__[attr] = value
                 self.__c__.clear()
                 return
 
+        self.__dict__[name] = value
+        
     def __str__(self):
         return str(self.__dict__)
     
