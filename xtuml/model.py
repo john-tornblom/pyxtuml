@@ -452,7 +452,7 @@ class MetaModel(object):
     def _named_type(self, name):
         '''
         Determine the python-type of a named meta model type, 
-            e.g. boolean --> bool.
+            e.g. 'boolean' --> bool.
         '''
         lookup_table = {
           'boolean'     : bool,
