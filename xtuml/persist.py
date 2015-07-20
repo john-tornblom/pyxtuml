@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def serialize_value(value):
     '''
-    Serialize a value from a xtUML metamodel instance.
+    Serialize a value from a xtUML meta model instance.
     '''
     if   isinstance(value, bool):
         return '%d' % int(value)
@@ -34,7 +34,7 @@ def serialize_value(value):
 
 def serialize_instance(inst):
     '''
-    Serialize an xtUML metamodel instance.
+    Serialize an xtUML meta model instance.
     '''
     attr_count = 0
 
@@ -58,7 +58,7 @@ def serialize_instance(inst):
 
 def serialize_metamodel(metamodel):
     '''
-    Serialize instances located in a xtUML metamodel.
+    Serialize instances located in a xtUML meta model.
     '''
     s = ''
     for lst in metamodel.instances.values():
