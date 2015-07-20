@@ -1,7 +1,7 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
 '''
-Serialize xtuml models to an sql-based file format and persist to disk.
+Serialize xtuml models and its scema to an sql-based file format and persist to disk.
 '''
 
 
@@ -68,11 +68,71 @@ def serialize_metamodel(metamodel):
     return s
 
 
+
+def serialize_association_link(lnk):
+    '''
+    Serialize an xtUML meta model association link.
+    '''
+    s = '%s %s (%s)' % (lnk.cardinality.upper(),
+                        lnk.kind,
+                        ', '.join(lnk.ids))
+
+    if lnk.phrase:
+        s += " PHRASE '%s'"
+        
+    return s
+
+
+def serialize_association(ass):
+    '''
+    Serialize an xtUML metamodel association.
+    '''
+    source = serialize_association_link(ass.source)
+    target = serialize_association_link(ass.target)
+    return 'CREATE ROP REF_ID %s FROM %s TO %s;\n' % (ass.id,
+                                                      source,
+                                                      target)
+
+
+def serialize_class(Cls):
+    '''
+    Serialize an xtUML metamodel class.
+    '''
+    s = 'CREATE TABLE %s (\n    ' % Cls.__name__
+    s += ',\n    '.join(['%s %s' % (name, ty.upper()) for name, ty in Cls.__a__])
+    s += '\n);\n'
+
+    return s
+
+
+def serialize_schema(metamodel):
+    '''
+    Serialize schema for a xtUML meta model.
+    '''
+    s = ''
+    for kind in sorted(metamodel.classes.keys()):
+        s += serialize_class(metamodel.classes[kind])
+            
+    for ass in sorted(metamodel.associations, key=lambda x: x.id):
+        s += serialize_association(ass)
+        
+    return s
+
+
 def persist_instances(metamodel, path):
     '''
     Persist instances from a metamodel to disk.
     '''
     with open(path, 'w') as f:
         s = serialize_metamodel(metamodel)
+        f.write(s)
+
+
+def persist_schema(metamodel, path):
+    '''
+    Persist a schema of a metamodel to disk.
+    '''
+    with open(path, 'w') as f:
+        s = serialize_schema(metamodel)
         f.write(s)
 
