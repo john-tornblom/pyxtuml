@@ -313,6 +313,9 @@ class MetaModel(object):
         '''
         Create a new, empty metamodel. Optionally, specify an id generator used to obtain uniquie identifiers.
         '''
+        if id_generator is None:
+            id_generator = UUIDGenerator()
+            
         self.classes = dict()
         self.instances = dict()
         self.id_generator = id_generator
