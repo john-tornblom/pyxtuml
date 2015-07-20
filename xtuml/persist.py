@@ -68,7 +68,7 @@ def serialize_metamodel(metamodel):
     return s
 
 
-def persist_metamodel(metamodel, path):
+def persist_instances(metamodel, path):
     '''
     Persist instances from a metamodel to disk.
     '''

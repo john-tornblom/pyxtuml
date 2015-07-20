@@ -8,7 +8,7 @@ from .load import load_metamodel
 from .load import ParsingException
 from .load import ModelLoader
 
-from .persist import persist_metamodel
+from .persist import persist_instances
 from .persist import serialize_metamodel
 from .persist import serialize_instance
 
