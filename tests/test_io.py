@@ -338,8 +338,8 @@ class TestPersist(unittest.TestCase):
         loader = xtuml.load.ModelLoader()
         loader.build_parser()
         loader.input(schema)
-        
-        id_generator = xtuml.IdGenerator(readfunc=lambda: 0)
+
+        id_generator = xtuml.IntegerGenerator()
         m = loader.build_metamodel(id_generator)
         m.new('X')
         
@@ -349,13 +349,14 @@ class TestPersist(unittest.TestCase):
         loader.build_parser()
         loader.input(schema)
         loader.input(s)
-        
+
+        id_generator = xtuml.IntegerGenerator()
         m = loader.build_metamodel(id_generator)
         x = m.select_any('X')
         self.assertEqual(x.BOOLEAN, False)
         self.assertEqual(x.INTEGER, 0)
         self.assertEqual(x.REAL, 0.0)
-        self.assertEqual(x.UNIQUE_ID, 0)
+        self.assertEqual(x.UNIQUE_ID, 1)
 
 
     def testPersistDefaultValues(self):
@@ -372,7 +373,7 @@ class TestPersist(unittest.TestCase):
         loader.build_parser()
         loader.input(schema)
         
-        id_generator = xtuml.IdGenerator(readfunc=lambda: 0)
+        id_generator = xtuml.IntegerGenerator()
         m = loader.build_metamodel(id_generator)
         m.new('X')
         
@@ -390,13 +391,14 @@ class TestPersist(unittest.TestCase):
         loader.build_parser()
         loader.input(schema)
         loader.input(s)
-        
+
+        id_generator = xtuml.IntegerGenerator()
         m = loader.build_metamodel(id_generator)
         x = m.select_any('X')
         self.assertEqual(x.BOOLEAN, False)
         self.assertEqual(x.INTEGER, 0)
         self.assertEqual(x.REAL, 0.0)
-        self.assertEqual(x.UNIQUE_ID, 0)
+        self.assertEqual(x.UNIQUE_ID, 1)
 
 
 if __name__ == "__main__":
