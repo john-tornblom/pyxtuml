@@ -292,7 +292,6 @@ class TestLoader(unittest.TestCase):
 class TestPersist(unittest.TestCase):
 
     def testSerialize(self):
-        
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -326,7 +325,6 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.UNIQUE_ID, uuid.UUID(int=0))
         
     def testSerializeDefaultValues(self):
-        
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -360,7 +358,6 @@ class TestPersist(unittest.TestCase):
 
 
     def testPersistDefaultValues(self):
-        
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
