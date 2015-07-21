@@ -21,6 +21,15 @@ class ModelException(Exception):
 
 
 class NavChain(object):
+    '''
+    A navigation chain initializes a query from one or more instances.
+    Queries may be syntactically cascaded in several ways:
+    
+       res = NavChain(inst).nav('X', 'R100', 'phrase').nav('Y', 101)
+
+    or using an OAL/RSL inspired syntax:
+       NavChain(inst).X[100, 'phrase'].Y[101](lamda x: <filter expression>)
+    '''
     
     def __init__(self, handle, is_many=True):
         if handle is None:
@@ -74,6 +83,7 @@ class Association(object):
     '''
     An association connects two classes to each other via association links.
     '''
+    
     def __init__(self, relid, source, target):
         self.id = relid
         self.source = source
@@ -294,6 +304,7 @@ class UUIDGenerator(IdGenerator):
     '''
     A uuid-based unique id generator for meta models.
     '''
+    
     def readfunc(self):
         return uuid.uuid4()
 
@@ -302,6 +313,7 @@ class IntegerGenerator(IdGenerator):
     '''
     An integer-based unique id generator for meta models.
     '''
+    
     _current = 0
     
     def readfunc(self):
@@ -309,6 +321,10 @@ class IntegerGenerator(IdGenerator):
 
     
 class MetaModel(object):
+    '''
+    A meta model contains class definitions with associations between them,
+    and instances of different class definitions.
+    '''
     
     classes = None
     instances = None
