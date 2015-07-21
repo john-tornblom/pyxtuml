@@ -461,26 +461,26 @@ class MetaModel(object):
         '''
         Obtain the default value for a named meta model type.
         '''
-        if   ty_name == 'boolean': return False
-        elif ty_name == 'integer': return 0
-        elif ty_name == 'real': return 0.0
-        elif ty_name == 'string': return ''
-        elif ty_name == 'unique_id': return next(self.id_generator)
+        lname = ty_name.upper()
+        if   lname == 'BOOLEAN': return False
+        elif lname == 'INTEGER': return 0
+        elif lname == 'REAL': return 0.0
+        elif lname == 'STRING': return ''
+        elif lname == 'UNIQUE_ID': return next(self.id_generator)
         else: raise ModelException("Unknown type named '%s'" % ty_name)
             
     def _named_type(self, name):
         '''
         Determine the python-type of a named meta model type, 
-            e.g. 'boolean' --> bool.
+            e.g. 'Boolean' --> bool.
         '''
+        name = name.upper()
         lookup_table = {
-          'boolean'     : bool,
-          'integer'     : int,
-          'real'        : float,
-          'string'      : str,
-          'inst_ref'    : BaseObject,
-          'inst_ref_set': QuerySet,
-          'unique_id'   : type(self.id_generator.peek())
+          'BOOLEAN'     : bool,
+          'INTEGER'     : int,
+          'REAL'        : float,
+          'STRING'      : str,
+          'UNIQUE_ID'   : type(self.id_generator.peek())
         }
         
         return lookup_table[name]

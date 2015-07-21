@@ -260,7 +260,7 @@ class ModelLoader(object):
 
     def p_attr(self, p):
         '''attr : ident ident'''
-        p[0] = (p[1], p[2].lower())
+        p[0] = (p[1], p[2])
 
     def p_insert_into_statement(self, p):
         '''
