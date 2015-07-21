@@ -126,7 +126,6 @@ class ModelLoader(object):
         m = model.MetaModel(id_generator)
         m.ignore_undefined_classes = ignore_undefined_classes
         
-        # TODO: consider speeding up by using one single loop
         schema = [s for s in self.statements if isinstance(s, CreateClassStmt)]
         relations = [s for s in self.statements if isinstance(s, CreateRelatationStmt)]
         instances = [s for s in self.statements if isinstance(s, CreateInstanceStmt)]
