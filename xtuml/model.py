@@ -81,7 +81,7 @@ class NavChain(object):
 
 class Association(object):
     '''
-    An association connects two classes to each other via association links.
+    An association connects two classes to each other via two association links.
     '''
     
     def __init__(self, relid, source, target):
@@ -228,7 +228,7 @@ class BaseObject(object):
     '''
     __r__ = None  # store relations
     __q__ = None  # store predefined queries
-    __m__ = None  # store a handle to the metamodel which created the instance
+    __m__ = None  # store a handle to the meta model which created the instance
     __c__ = dict()  # store a cached results from queries
     __a__ = list()  # store a list of attributes (name, type)
     
@@ -268,7 +268,7 @@ class BaseObject(object):
     
 class IdGenerator(object):
     '''
-    Base class for generating unique identifiers in a metamodel.
+    Base class for generating unique identifiers in a meta model.
     '''
     
     readfunc = None
@@ -347,7 +347,7 @@ class MetaModel(object):
         
     def define_class(self, kind, attributes):
         '''
-        Define a new class in the meta model.
+        Define and return a new class in the meta model.
         '''
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
@@ -356,10 +356,9 @@ class MetaModel(object):
         
         return Cls
 
-        
     def new(self, kind, *args, **kwargs):
         '''
-        Create a new meta model instance of some kind.
+        Create and return a new meta model instance of some kind.
         '''
         if kind not in self.classes:
             if not self.ignore_undefined_classes:
@@ -395,13 +394,13 @@ class MetaModel(object):
 
     def define_relation(self, rel_id, source, target):
         '''
-        Define a directed association from source to target.
+        Define and return an association between source to target.
         '''
         return self.define_association(rel_id, source, target)
     
     def define_association(self, rel_id, source, target):
         '''
-        Define a directed association from source to target.
+        Define and return an association between source to target.
         '''
         ass = Association(rel_id, source, target)
         self.associations.append(ass)
@@ -432,6 +431,8 @@ class MetaModel(object):
         
         Source.__q__[target.kind][rel_id][target.phrase] = self._formalized_query(source, target)
         Target.__q__[source.kind][rel_id][source.phrase] = self._formalized_query(target, source)
+    
+        return ass
     
     def select_one(self, kind, where_cond=None):
         '''
@@ -577,6 +578,7 @@ def _defered_batch_relate(inst, end):
 def navigate_one(inst):
     '''
     Initialize a navigation which is modeled as a one-to-one association.
+    
     Return value will be an instance or None.
     '''
     return navigate_any(inst)
@@ -584,15 +586,19 @@ def navigate_one(inst):
 
 def navigate_any(inst_or_set):
     '''
-    Initialize a navigation which is modeled as a one-to-many or many-to-many association.
-    and reduce the set to a single instance. Return value will be an instance, or None.
+    Initialize a navigation which is modeled as a one-to-many or many-to-many
+    association and reduce the set to a single instance. 
+    
+    Return value will be an instance, or None.
     '''
     return NavChain(inst_or_set, is_many=False)
 
 
 def navigate_many(inst_or_set):
     '''
-    Initialize a navigation which is modeled as a one-to-many or many-to-many association.
+    Initialize a navigation which is modeled as a one-to-many or many-to-many
+    association.
+    
     Return value will be a set of instances.
     '''
     return NavChain(inst_or_set, is_many=True)
@@ -602,10 +608,11 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     '''
     Relate two instances to each other by copying the identifying attributes
     from the instance on the TO side of a association to the instance on the
-    FROM side. Updated values which affect existing associations are propagated.
+    FROM side. Updated values which affect existing associations are 
+    propagated.
     
-    **NOTE**: Reflexive associations require a phrase, and that the order amongst
-    the instances is as intended.
+    **NOTE**: Reflexive associations require a phrase, and that the order 
+    amongst the instances is as intended.
     '''
     from_end, to_end = _find_association_links(from_inst, to_inst, rel_id, phrase)
     post_process = _defered_batch_relate(from_inst, from_end)
