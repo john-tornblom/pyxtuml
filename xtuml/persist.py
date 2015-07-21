@@ -1,7 +1,7 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
 '''
-Serialize xtuml models and its scema to an sql-based file format and persist to disk.
+Serialize xtuml models and its schema to an sql-based file format and persist to disk.
 '''
 
 
@@ -64,9 +64,8 @@ def serialize_instances(metamodel):
     for lst in metamodel.instances.values():
         for inst in lst:
             s += serialize_instance(inst)
-            
+    
     return s
-
 
 
 def serialize_association_link(lnk):
@@ -76,7 +75,7 @@ def serialize_association_link(lnk):
     s = '%s %s (%s)' % (lnk.cardinality.upper(),
                         lnk.kind,
                         ', '.join(lnk.ids))
-
+    
     if lnk.phrase:
         s += " PHRASE '%s'"
         
@@ -85,7 +84,7 @@ def serialize_association_link(lnk):
 
 def serialize_association(ass):
     '''
-    Serialize an xtUML metamodel association.
+    Serialize an xtUML meta model association.
     '''
     source = serialize_association_link(ass.source)
     target = serialize_association_link(ass.target)
@@ -96,7 +95,7 @@ def serialize_association(ass):
 
 def serialize_class(Cls):
     '''
-    Serialize an xtUML metamodel class.
+    Serialize an xtUML meta model class.
     '''
     s = 'CREATE TABLE %s (\n    ' % Cls.__name__
     s += ',\n    '.join(['%s %s' % (name, ty.upper()) for name, ty in Cls.__a__])
@@ -112,16 +111,16 @@ def serialize_schema(metamodel):
     s = ''
     for kind in sorted(metamodel.classes.keys()):
         s += serialize_class(metamodel.classes[kind])
-            
+    
     for ass in sorted(metamodel.associations, key=lambda x: x.id):
         s += serialize_association(ass)
-        
+    
     return s
 
 
 def persist_instances(metamodel, path):
     '''
-    Persist instances from a metamodel to disk.
+    Persist instances from a meta model to disk.
     '''
     with open(path, 'w') as f:
         s = serialize_instances(metamodel)
@@ -130,7 +129,7 @@ def persist_instances(metamodel, path):
 
 def persist_schema(metamodel, path):
     '''
-    Persist a schema of a metamodel to disk.
+    Persist a schema of a meta model to disk.
     '''
     with open(path, 'w') as f:
         s = serialize_schema(metamodel)
