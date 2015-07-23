@@ -13,6 +13,7 @@ from .persist import persist_schema
 
 from .persist import serialize_schema
 from .persist import serialize_class
+from .persist import serialize_association
 from .persist import serialize_instances
 from .persist import serialize_instance
 
