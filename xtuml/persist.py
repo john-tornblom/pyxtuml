@@ -77,7 +77,7 @@ def serialize_association_link(lnk):
                         ', '.join(lnk.ids))
     
     if lnk.phrase:
-        s += " PHRASE '%s'"
+        s += " PHRASE '%s'" % lnk.phrase
         
     return s
 
