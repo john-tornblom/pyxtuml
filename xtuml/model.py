@@ -29,7 +29,7 @@ class NavChain(object):
 
     or using an OAL/RSL inspired syntax:
     
-       NavChain(inst).X[100, 'phrase'].Y[101](lamda x: <filter expression>)
+       res = NavChain(inst).X[100, 'phrase'].Y[101](lamda x: <filter expression>)
     '''
     
     def __init__(self, handle, is_many=True):
