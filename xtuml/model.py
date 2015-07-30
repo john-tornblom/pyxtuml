@@ -28,6 +28,7 @@ class NavChain(object):
        res = NavChain(inst).nav('X', 'R100', 'phrase').nav('Y', 101)
 
     or using an OAL/RSL inspired syntax:
+    
        NavChain(inst).X[100, 'phrase'].Y[101](lamda x: <filter expression>)
     '''
     
