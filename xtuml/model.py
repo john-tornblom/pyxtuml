@@ -346,13 +346,13 @@ class MetaModel(object):
         self.associations = list()
         self.id_generator = id_generator
         
-    def define_class(self, kind, attributes):
+    def define_class(self, kind, attributes, doc=''):
         '''
         Define and return a new class in the meta model.
         '''
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
-                                             __a__=attributes))
+                                             __a__=attributes, __doc__=doc))
         self.classes[kind] = Cls
         
         return Cls
