@@ -244,7 +244,7 @@ def mk_derived_association(m, inst):
     '''
     Create a pyxtuml association from a derived association in BridgePoint.
     '''
-    r_rel = one(inst).R_REL[206]()
+    pass
 
 
 def mk_association(m, r_rel):
