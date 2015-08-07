@@ -86,6 +86,8 @@ class Association(object):
     '''
     
     def __init__(self, relid, source, target):
+        if isinstance(relid, int):
+            relid = 'R%d' % relid
         self.id = relid
         self.source = source
         self.target = target    
