@@ -13,67 +13,38 @@ import optparse
 import logging
 
 
-import xtuml.tools
+import xtuml
 from xtuml import navigate_one as one
+from xtuml import navigate_many as many
+
+from . import ooaofooa
+
 
 logger = logging.getLogger('gen_sql_schema')
 
 
-# parts of the meta model for BridgePoint (ooaofooa) which are used by this script
-bp_schema = '''
-CREATE TABLE PE_PE (Element_ID UNIQUE_ID,Visibility INTEGER,Package_ID UNIQUE_ID,Component_ID UNIQUE_ID,type INTEGER);
-CREATE TABLE C_C (Id UNIQUE_ID,Package_ID UNIQUE_ID,NestedComponent_Id UNIQUE_ID,Name STRING,Descrip STRING,Mult INTEGER,Root_Package_ID UNIQUE_ID,isRealized BOOLEAN,Realized_Class_Path STRING);
-CREATE TABLE EP_PKG (Package_ID UNIQUE_ID,Sys_ID UNIQUE_ID,Direct_Sys_ID UNIQUE_ID,Name STRING,Descrip STRING,Num_Rng INTEGER);
-CREATE TABLE S_DT (DT_ID UNIQUE_ID,Dom_ID UNIQUE_ID,Name STRING,Descrip STRING,DefaultValue STRING);
-CREATE TABLE S_CDT (DT_ID UNIQUE_ID,Core_Typ INTEGER);
-CREATE TABLE S_EDT (DT_ID UNIQUE_ID);
-CREATE TABLE S_UDT (DT_ID UNIQUE_ID,CDT_DT_ID UNIQUE_ID,Gen_Type INTEGER);
-CREATE TABLE O_OBJ (Obj_ID UNIQUE_ID,Name STRING,Numb INTEGER,Key_Lett STRING,Descrip STRING,SS_ID UNIQUE_ID);
-CREATE TABLE O_ATTR (Attr_ID UNIQUE_ID,Obj_ID UNIQUE_ID,PAttr_ID UNIQUE_ID,Name STRING,Descrip STRING,Prefix STRING,Root_Nam STRING,Pfx_Mode INTEGER,DT_ID UNIQUE_ID,Dimensions STRING,DefaultValue STRING);
-CREATE TABLE O_RATTR (Attr_ID UNIQUE_ID,Obj_ID UNIQUE_ID,BAttr_ID UNIQUE_ID,BObj_ID UNIQUE_ID,Ref_Mode INTEGER,BaseAttrName STRING);
-CREATE TABLE O_BATTR (Attr_ID UNIQUE_ID,Obj_ID UNIQUE_ID);
-CREATE TABLE O_NBATTR (Attr_ID UNIQUE_ID,Obj_ID UNIQUE_ID);
+def subtype(inst, relid, *kinds):
+    '''
+    Navigate a list of BrifgePoint subtypes and return the first non-empty hit.
+    '''
+    for kind in kinds:
+        child = one(inst).nav(kind, relid)()
+        if child: 
+            return child
 
-CREATE ROP REF_ID R102 FROM MC O_ATTR (Obj_ID) TO 1 O_OBJ (Obj_ID);
-CREATE ROP REF_ID R103 FROM 1C O_ATTR (PAttr_ID, Obj_ID) PHRASE 'succeeds' TO 1C O_ATTR (Attr_ID, Obj_ID) PHRASE 'precedes';
-CREATE ROP REF_ID R113 FROM MC O_RATTR (BAttr_ID, BObj_ID) TO 1 O_BATTR (Attr_ID, Obj_ID);
-CREATE ROP REF_ID R114 FROM MC O_ATTR (DT_ID) TO 1 S_DT (DT_ID);
-CREATE ROP REF_ID R106 FROM 1C O_BATTR (Attr_ID, Obj_ID) TO 1 O_ATTR (Attr_ID, Obj_ID);
-CREATE ROP REF_ID R106 FROM 1C O_RATTR (Attr_ID, Obj_ID) TO 1 O_ATTR (Attr_ID, Obj_ID);
-CREATE ROP REF_ID R107 FROM 1C O_NBATTR (Attr_ID, Obj_ID) TO 1 O_BATTR (Attr_ID, Obj_ID);
-CREATE ROP REF_ID R17  FROM 1C S_CDT (DT_ID) TO 1 S_DT (DT_ID);
-CREATE ROP REF_ID R17  FROM 1C S_UDT (DT_ID) TO 1 S_DT (DT_ID);
-CREATE ROP REF_ID R17  FROM 1C S_EDT (DT_ID) TO 1 S_DT (DT_ID);
-CREATE ROP REF_ID R18  FROM MC S_UDT (CDT_DT_ID) TO 1 S_DT (DT_ID);
-CREATE ROP REF_ID R8000 FROM MC PE_PE (Package_ID) TO 1C EP_PKG (Package_ID);
-CREATE ROP REF_ID R8001 FROM 1C EP_PKG (Package_ID) TO 1 PE_PE (Element_ID);
-CREATE ROP REF_ID R8001 FROM 1C C_C (Id) TO 1 PE_PE (Element_ID);
-CREATE ROP REF_ID R8001 FROM 1C O_OBJ (Obj_ID) TO 1 PE_PE (Element_ID);
-CREATE ROP REF_ID R8003 FROM MC PE_PE (Component_ID) TO 1C C_C (Id);
-'''
 
-# global data types used by BridgePoint.
-bp_globals = '''
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000000", 0);
-INSERT INTO PE_PE VALUES ("ba5eda7a-def5-0000-0000-000000000001", 1, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000", 3);
-INSERT INTO S_DT  VALUES ("ba5eda7a-def5-0000-0000-000000000001", "00000000-0000-0000-0000-000000000000", 'boolean', '', '');
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000001",1);
-INSERT INTO PE_PE VALUES ("ba5eda7a-def5-0000-0000-000000000002",1,"00000000-0000-0000-0000-000000000000","00000000-0000-0000-0000-000000000000",3);
-INSERT INTO S_DT  VALUES ("ba5eda7a-def5-0000-0000-000000000002","00000000-0000-0000-0000-000000000000",'integer','','');
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000002",2);
-INSERT INTO PE_PE VALUES ("ba5eda7a-def5-0000-0000-000000000003",1,"00000000-0000-0000-0000-000000000000","00000000-0000-0000-0000-000000000000",3);
-INSERT INTO S_DT  VALUES ("ba5eda7a-def5-0000-0000-000000000003","00000000-0000-0000-0000-000000000000",'real','','');
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000003",3);
-INSERT INTO PE_PE VALUES ("ba5eda7a-def5-0000-0000-000000000004",1,"00000000-0000-0000-0000-000000000000","00000000-0000-0000-0000-000000000000",3);
-INSERT INTO S_DT  VALUES ("ba5eda7a-def5-0000-0000-000000000004","00000000-0000-0000-0000-000000000000",'string','','');
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000004",4);
-INSERT INTO PE_PE VALUES ("ba5eda7a-def5-0000-0000-000000000005",1,"00000000-0000-0000-0000-000000000000","00000000-0000-0000-0000-000000000000",3);
-INSERT INTO S_DT  VALUES ("ba5eda7a-def5-0000-0000-000000000005","00000000-0000-0000-0000-000000000000",'unique_id','','');
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000005",5);
-INSERT INTO PE_PE VALUES ("ba5eda7a-def5-0000-0000-000000000007",1,"00000000-0000-0000-0000-000000000000","00000000-0000-0000-0000-000000000000",3);
-INSERT INTO S_DT  VALUES ("ba5eda7a-def5-0000-0000-000000000007","00000000-0000-0000-0000-000000000000",'same_as<Base_Attribute>','','');
-INSERT INTO S_CDT VALUES ("ba5eda7a-def5-0000-0000-000000000007",7);
-'''
+def mult_cond(mult, cond):
+    '''
+    Create the cardinality string used on xtuml associations.
+    '''
+    if mult:
+        s = 'M'
+    else:
+        s = '1'
+    if cond:
+        s += 'C'
+        
+    return s
 
 
 def is_contained_in(pe_pe, root):
@@ -102,66 +73,178 @@ def is_contained_in(pe_pe, root):
         return False
 
 
-class BPModelTransformation(xtuml.tools.Walker):
+def get_data_type_name(s_dt):
     '''
-    Transforms a BridgePoint xtUML model into an xtUML meta model.
+    Convert a BridgePoint data type to a pyxtuml metamodel type.
     '''
+    s_cdt = one(s_dt).S_CDT[17]()
+    if s_cdt and s_cdt.core_typ in range(1, 6):
+        return s_dt.name
     
-    source = None
-    target = None
+    if one(s_dt).S_EDT[17]():
+        return 'INTEGER'
     
-    def __init__(self, source, target):
-        self.source = source
-        self.target = target
-        xtuml.tools.Walker.__init__(self)
-        
-    def transform(self, c_c=None):
-        filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
-        for o_obj in self.source.select_many('O_OBJ', filt):
-            self.accept(o_obj)
-        
-    def accept_S_DT(self, inst):
-        for kind in ['S_CDT', 'S_EDT', 'S_UDT']:
-            child = one(inst).nav(kind, 17)()
-            if child: 
-                return self.accept(child)
+    s_dt = one(s_dt).S_UDT[17].S_DT[18]()
+    if s_dt:
+        return get_data_type_name(s_dt)
+    
 
-    def accept_S_CDT(self, inst):
-        s_dt = one(inst).S_DT[17]()
-        if s_dt.Name in ['boolean', 'integer', 'real', 'string', 'unique_id']:
-            return s_dt.Name
-        
-    def accept_S_EDT(self, inst):
-        return 'integer'
-        
-    def accept_S_UDT(self, inst):
-        return self.accept(one(inst).S_DT[18]())
-        
-    def accept_O_ATTR(self, inst):
-        ref_o_attr = one(inst).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
-        if ref_o_attr:
-            return self.accept(ref_o_attr)
-        
-        elif one(inst).O_BATTR[106].O_NBATTR[107]():
-            return self.accept(one(inst).S_DT[114]())
+def get_attribute_type(o_attr):
+    '''
+    Get the pyxtuml metamodel type associated with a Bridg3ePoint class attribute.
+    '''
+    ref_o_attr = one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
+    if ref_o_attr:
+        return get_attribute_type(ref_o_attr)
+    else:
+        s_dt = one(o_attr).S_DT[114]()
+        return get_data_type_name(s_dt)
     
+    
+def get_attribute_name(o_attr):
+    '''
+    Get the name of a BridgePoint attribute.
+    '''
+    # TODO: Pdf_Mode, Prefix and Root_Nam 
+    return o_attr.Name
+     
+    
+def get_related_attributes(r_rgo, r_rto):
+    '''
+    The two lists of attributes which relates two classes in an association.
+    '''
+    l1 = list()
+    l2 = list()
+    
+    ref_filter = lambda ref: ref.OIR_ID == r_rgo.OIR_ID
+    for o_ref in many(r_rto).O_RTIDA[110].O_REF[111](ref_filter):
+        o_attr = one(o_ref).O_RATTR[108].O_ATTR[106]()
+        l1.append(o_attr.Name)
+            
+    for o_attr in many(r_rto).O_ID[109].O_OIDA[105].O_ATTR[105]():
+        l2.append(o_attr.Name)
+        
+    return l1, l2
+
+            
+def mk_class(m, o_obj):
+    '''
+    Create a pyxtuml class from a BridgePoint class.
+    '''
+    first_filter = lambda selected: not one(selected).O_ATTR[103, 'precedes']()
+    o_attr = xtuml.navigate_any(o_obj).O_ATTR[102](first_filter)
+    attributes = list()
+        
+    while o_attr:
+        name = get_attribute_name(o_attr)
+        ty = get_attribute_type(o_attr)
+
+        if name and ty:
+            attributes.append((name, ty))
         else:
-            return self.accept(one(inst).S_DT[114]())
+            logger.warning('Omitting %s.%s ' % (o_obj.Key_Lett, o_attr.Name))
+            
+        o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
+            
+    return m.define_class(o_obj.Key_Lett, list(attributes))
 
-    def accept_O_OBJ(self, inst):
-        first_filter = lambda selected: not one(selected).O_ATTR[103, 'precedes']()
-        o_attr = xtuml.navigate_any(inst).O_ATTR[102](first_filter)
-        attributes = list()
+
+def mk_simple_association(m, inst):
+    '''
+    Create a pyxtuml association from a simple association in BridgePoint.
+    '''
+    r_rel = one(inst).R_REL[206]()
+    
+    r_form = one(inst).R_FORM[208]()
+    r_part = one(inst).R_PART[207]()
+    
+    r_rgo = one(r_form).R_RGO[205]()
+    r_rto = one(r_part).R_RTO[204]()
+    
+    source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
+    target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
+    
+    source_cardinality = mult_cond(r_form.Mult, r_form.Cond)
+    target_cardinality = mult_cond(r_part.Mult, r_part.Cond)
+    
+    source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
+    
+    source = xtuml.AssociationLink(source_o_obj.Key_Lett, source_cardinality,
+                                   source_ids, r_part.Txt_Phrs)
+
+    target = xtuml.AssociationLink(target_o_obj.Key_Lett, target_cardinality,
+                                   target_ids, r_form.Txt_Phrs)
+    
+    if target.kind != source.kind:
+        target.phrase = source.phrase = ''
         
-        while o_attr:
-            ty = self.accept(o_attr)
-            if ty:
-                attributes.append((o_attr.Name, ty))
-            else:
-                logger.warning('Omitting %s.%s ' % (inst.Key_Lett, o_attr.Name))
-                
-            o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
-        self.target.define_class(inst.Key_Lett, iter(attributes))
+    m.define_association(r_rel.Numb, source, target)
+
+
+def mk_linked_association(m, inst):
+    '''
+    Create a pyxtuml association from a linked association in BridgePoint.
+    '''
+    r_rel = one(inst).R_REL[206]()
+    r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
+    source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
+    
+    def _mk_link(side):
+        r_rto = one(side).R_RTO[204]()
+
+        target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
+        cardinality = mult_cond(side.Mult, side.Cond)
+        source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
+    
+        source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality, source_ids)
+        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids)
+        
+        m.define_association(r_rel.Numb, source, target)
+        
+    r_aone = one(inst).R_AONE[209]()
+    r_aoth = one(inst).R_AOTH[210]()
+    
+    _mk_link(r_aone)
+    _mk_link(r_aoth)
+  
+    
+def mk_subsuper_association(m, inst):
+    '''
+    Create a pyxtuml association from a sub/super association in BridgePoint.
+    '''
+    r_rel = one(inst).R_REL[206]()
+    r_rto = one(inst).R_SUPER[212].R_RTO[204]()
+    target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
+    
+    for r_sub in many(inst).R_SUB[213]():
+        r_rgo = one(r_sub).R_RGO[205]()
+
+        source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
+        source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
+        
+        source = xtuml.AssociationLink(source_o_obj.Key_Lett, '1C', source_ids)
+        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids)
+        
+        m.define_association(r_rel.Numb, source, target)
+
+
+def mk_derived_association(m, inst):
+    '''
+    Create a pyxtuml association from a derived association in BridgePoint.
+    '''
+    r_rel = one(inst).R_REL[206]()
+
+
+def mk_association(m, r_rel):
+    handler = {
+               'R_SIMP': mk_simple_association,
+               'R_ASSOC': mk_linked_association,
+               'R_SUBSUP': mk_subsuper_association,
+               'R_COMP': mk_derived_association,
+    }
+    inst = subtype(r_rel, 206, *handler.keys())
+    fn = handler[inst.__class__.__name__]
+    return fn(m, inst)
 
 
 
@@ -183,8 +266,8 @@ def gen_schema():
 
     loader = xtuml.ModelLoader()
     loader.build_parser()
-    loader.input(bp_schema)
-    loader.input(bp_globals)
+    loader.input(ooaofooa.schema)
+    loader.input(ooaofooa.globals)
     
     for arg in args:
         if os.path.isdir(arg):
@@ -197,15 +280,20 @@ def gen_schema():
     
     source = loader.build_metamodel(ignore_undefined_classes=True)
     target = xtuml.MetaModel()
-    tr = BPModelTransformation(source, target)
     
     c_c = source.select_any('C_C', lambda inst: inst.Name == opts.component)
+    c_c_filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
+    
     if opts.component and not c_c:
         logger.error('unable to find a component named %s' % opts.component)
         logger.info('available components to choose from are: %s' % ', '.join([c_c.Name for c_c in source.select_many('C_C')]))
         sys.exit(1)
-    else:
-        tr.transform(c_c)
+    
+    for o_obj in source.select_many('O_OBJ', c_c_filt):
+        mk_class(target, o_obj)
+        
+    for r_rel in source.select_many('R_REL', c_c_filt):
+        mk_association(target, r_rel)
         
     xtuml.persist_schema(target, opts.output)
 
