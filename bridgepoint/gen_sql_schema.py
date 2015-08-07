@@ -142,7 +142,7 @@ def mk_class(m, o_obj):
         if name and ty:
             attributes.append((name, ty))
         else:
-            logger.warning('Omitting %s.%s ' % (o_obj.Key_Lett, o_attr.Name))
+            logger.warning('Omitting unsupported attribute %s.%s ' % (o_obj.Key_Lett, o_attr.Name))
             
         o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
             
@@ -154,9 +154,13 @@ def mk_simple_association(m, inst):
     Create a pyxtuml association from a simple association in BridgePoint.
     '''
     r_rel = one(inst).R_REL[206]()
-    
+
     r_form = one(inst).R_FORM[208]()
     r_part = one(inst).R_PART[207]()
+    
+    if None in [r_form, r_part]:
+        logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
+        return
     
     r_rgo = one(r_form).R_RGO[205]()
     r_rto = one(r_part).R_RTO[204]()
@@ -204,6 +208,10 @@ def mk_linked_association(m, inst):
     r_aone = one(inst).R_AONE[209]()
     r_aoth = one(inst).R_AOTH[210]()
     
+    if None in [r_rgo, r_aone, r_aoth]:
+        logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
+        return
+    
     _mk_link(r_aone, r_aoth)
     _mk_link(r_aoth, r_aone)
   
@@ -215,6 +223,10 @@ def mk_subsuper_association(m, inst):
     r_rel = one(inst).R_REL[206]()
     r_rto = one(inst).R_SUPER[212].R_RTO[204]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
+    
+    if not r_rto:
+        logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
+        return
     
     for r_sub in many(inst).R_SUB[213]():
         r_rgo = one(r_sub).R_RGO[205]()
