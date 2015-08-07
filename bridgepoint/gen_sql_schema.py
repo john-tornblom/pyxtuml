@@ -146,7 +146,7 @@ def mk_class(m, o_obj):
             
         o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
             
-    return m.define_class(o_obj.Key_Lett, list(attributes))
+    return m.define_class(o_obj.Key_Lett, list(attributes), o_obj.Descrip)
 
 
 def mk_simple_association(m, inst):
