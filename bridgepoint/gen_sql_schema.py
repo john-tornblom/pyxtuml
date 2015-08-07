@@ -189,11 +189,11 @@ def mk_linked_association(m, inst):
     r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     
-    def _mk_link(side):
-        r_rto = one(side).R_RTO[204]()
+    def _mk_link(side1, side2):
+        r_rto = one(side1).R_RTO[204]()
 
         target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
-        cardinality = mult_cond(side.Mult, side.Cond)
+        cardinality = mult_cond(side2.Mult, side2.Cond)
         source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
     
         source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality, source_ids)
@@ -204,8 +204,8 @@ def mk_linked_association(m, inst):
     r_aone = one(inst).R_AONE[209]()
     r_aoth = one(inst).R_AOTH[210]()
     
-    _mk_link(r_aone)
-    _mk_link(r_aoth)
+    _mk_link(r_aone, r_aoth)
+    _mk_link(r_aoth, r_aone)
   
     
 def mk_subsuper_association(m, inst):
