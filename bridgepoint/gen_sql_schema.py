@@ -187,7 +187,7 @@ def mk_simple_association(m, inst):
 
 def mk_linked_association(m, inst):
     '''
-    Create a pyxtuml association from a linked association in BridgePoint.
+    Create a pyxtuml associations from a linked association in BridgePoint.
     '''
     r_rel = one(inst).R_REL[206]()
     r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
@@ -218,7 +218,7 @@ def mk_linked_association(m, inst):
     
 def mk_subsuper_association(m, inst):
     '''
-    Create a pyxtuml association from a sub/super association in BridgePoint.
+    Create a pyxtuml associations from a sub/super association in BridgePoint.
     '''
     r_rel = one(inst).R_REL[206]()
     r_rto = one(inst).R_SUPER[212].R_RTO[204]()
