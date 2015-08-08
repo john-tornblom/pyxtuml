@@ -200,8 +200,11 @@ def mk_linked_association(m, inst):
         cardinality = mult_cond(side2.Mult, side2.Cond)
         source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
     
-        source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality, source_ids)
-        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids)
+        source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality, source_ids, side1.Txt_Phrs)
+        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids, side2.Txt_Phrs)
+
+        if side1.Obj_ID != side2.Obj_ID:
+            target.phrase = source.phrase = ''
         
         m.define_association(r_rel.Numb, source, target)
         
