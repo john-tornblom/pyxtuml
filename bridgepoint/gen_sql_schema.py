@@ -262,8 +262,25 @@ def mk_association(m, r_rel):
     return fn(m, inst)
 
 
+def mk_metamodel(bp_model, c_c=None):
+    '''
+    Create a pyxtuml meta model from a BridgePoint model. 
+    Optionally, restrict to classes and associations contained in the component c_c.
+    '''
+    target = xtuml.MetaModel()
 
-def gen_schema():
+    c_c_filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
+    
+    for o_obj in bp_model.select_many('O_OBJ', c_c_filt):
+        mk_class(target, o_obj)
+        
+    for r_rel in bp_model.select_many('R_REL', c_c_filt):
+        mk_association(target, r_rel)
+        
+    return target
+
+
+def main():
     '''
     Parse argv for options and arguments, and start schema generation.
     '''
@@ -294,25 +311,13 @@ def gen_schema():
             loader.filename_input(arg)
     
     source = loader.build_metamodel(ignore_undefined_classes=True)
-    target = xtuml.MetaModel()
-    
     c_c = source.select_any('C_C', lambda inst: inst.Name == opts.component)
-    c_c_filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
-    
-    if opts.component and not c_c:
-        logger.error('unable to find a component named %s' % opts.component)
-        logger.info('available components to choose from are: %s' % ', '.join([c_c.Name for c_c in source.select_many('C_C')]))
-        sys.exit(1)
-    
-    for o_obj in source.select_many('O_OBJ', c_c_filt):
-        mk_class(target, o_obj)
-        
-    for r_rel in source.select_many('R_REL', c_c_filt):
-        mk_association(target, r_rel)
+    target = mk_metamodel(source, c_c)
         
     xtuml.persist_schema(target, opts.output)
 
     
 if __name__ == '__main__':
-    gen_schema()
-
+    main()
+    
+    
