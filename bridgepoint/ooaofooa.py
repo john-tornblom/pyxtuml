@@ -3370,11 +3370,12 @@ class Loader(xtuml.ModelLoader):
     directory.
     '''
     
-    def __init__(self):
+    def __init__(self, load_globals=True):
         xtuml.ModelLoader.__init__(self)
         self.build_parser()
         self.input(schema)
-        self.input(globals)
+        if load_globals:
+            self.input(globals)
         
     def filename_input(self, filename):
         '''
