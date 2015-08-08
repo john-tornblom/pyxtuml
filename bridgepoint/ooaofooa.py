@@ -1,3 +1,6 @@
+import os
+import xtuml
+
 __version__ = 4.2
 
 schema = '''
@@ -3359,3 +3362,33 @@ INSERT INTO S_UDT
     "ba5eda7a-def5-0000-0000-00000000000b",
     2);
 '''
+
+class Loader(xtuml.ModelLoader):
+    '''
+    A xtuml meta model loader with ooaofooa schema and globals pre-defined.
+    In addition, filename_input has been extended to support loading of
+    directory.
+    '''
+    
+    def __init__(self):
+        xtuml.ModelLoader.__init__(self)
+        self.build_parser()
+        self.input(schema)
+        self.input(globals)
+        
+    def filename_input(self, filename):
+        '''
+        Open and read a filename, and parse its content.
+        
+        If the filename is a directory, files that ends with .xtuml located
+        somewhere in the directory or sub directories will be loaded as well.
+        '''
+        if os.path.isdir(filename):
+            for path, _, files in os.walk(filename):
+                for name in files:
+                    if name.endswith('.xtuml'):
+                        xtuml.ModelLoader.filename_input(self, os.path.join(path, name))
+        else:
+            xtuml.ModelLoader.filename_input(self, filename)
+
+

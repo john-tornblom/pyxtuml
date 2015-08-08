@@ -296,20 +296,10 @@ def main():
         
     logging.basicConfig(level=logging.INFO)
 
-    loader = xtuml.ModelLoader()
-    loader.build_parser()
-    loader.input(ooaofooa.schema)
-    loader.input(ooaofooa.globals)
-    
-    for arg in args:
-        if os.path.isdir(arg):
-            for path, _, files in os.walk(arg):
-                for name in files:
-                    if name.endswith('.xtuml'):
-                        loader.filename_input(os.path.join(path, name))
-        else:
-            loader.filename_input(arg)
-    
+    loader = ooaofooa.Loader()
+    for filename in args:
+        loader.filename_input(filename)
+        
     source = loader.build_metamodel(ignore_undefined_classes=True)
     c_c = source.select_any('C_C', lambda inst: inst.Name == opts.component)
     target = mk_metamodel(source, c_c)
