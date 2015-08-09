@@ -24,7 +24,7 @@ logger = logging.getLogger('gen_sql_schema')
 
 def subtype(inst, relid, *kinds):
     '''
-    Navigate a list of BrifgePoint subtypes and return the first non-empty hit.
+    Navigate a list of BridgePoint sub types and return the first non-empty hit.
     '''
     for kind in kinds:
         child = one(inst).nav(kind, relid)()
@@ -74,7 +74,7 @@ def is_contained_in(pe_pe, root):
 
 def get_data_type_name(s_dt):
     '''
-    Convert a BridgePoint data type to a pyxtuml metamodel type.
+    Convert a BridgePoint data type to a pyxtuml meta model type.
     '''
     s_cdt = one(s_dt).S_CDT[17]()
     if s_cdt and s_cdt.core_typ in range(1, 6):
@@ -90,7 +90,7 @@ def get_data_type_name(s_dt):
 
 def get_attribute_type(o_attr):
     '''
-    Get the pyxtuml metamodel type associated with a Bridg3ePoint class attribute.
+    Get the pyxtuml meta model type associated with a Bridg3ePoint class attribute.
     '''
     ref_o_attr = one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
     if ref_o_attr:
@@ -186,7 +186,7 @@ def mk_simple_association(m, inst):
 
 def mk_linked_association(m, inst):
     '''
-    Create a pyxtuml associations from a linked association in BridgePoint.
+    Create pyxtuml associations from a linked association in BridgePoint.
     '''
     r_rel = one(inst).R_REL[206]()
     r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
@@ -220,7 +220,7 @@ def mk_linked_association(m, inst):
     
 def mk_subsuper_association(m, inst):
     '''
-    Create a pyxtuml associations from a sub/super association in BridgePoint.
+    Create pyxtuml associations from a sub/super association in BridgePoint.
     '''
     r_rel = one(inst).R_REL[206]()
     r_rto = one(inst).R_SUPER[212].R_RTO[204]()
