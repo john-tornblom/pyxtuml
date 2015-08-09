@@ -48,6 +48,7 @@ class NavChain(object):
         self._kind = None
     
     def nav(self, kind, relid, phrase=''):
+        kind = kind.upper()
         if isinstance(relid, int):
             relid = 'R%d' % relid
         
@@ -354,7 +355,7 @@ class MetaModel(object):
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
                                              __a__=attributes, __doc__=doc))
-        self.classes[kind] = Cls
+        self.classes[kind.upper()] = Cls
         
         return Cls
 
@@ -362,13 +363,14 @@ class MetaModel(object):
         '''
         Create and return a new meta model instance of some kind.
         '''
-        if kind not in self.classes:
+        ukind = kind.upper()
+        if ukind not in self.classes:
             if not self.ignore_undefined_classes:
                 raise ModelException("Unknown class %s" % kind)
             else:
                 return
             
-        Cls = self.classes[kind]
+        Cls = self.classes[ukind]
         inst = Cls()
         
         # set all parameters with an initial default value
@@ -387,10 +389,10 @@ class MetaModel(object):
         # set all named arguments
         inst.__dict__.update(kwargs)
 
-        if not kind in self.instances:
-            self.instances[kind] = list()
+        if not ukind in self.instances:
+            self.instances[ukind] = list()
             
-        self.instances[kind].append(inst)
+        self.instances[ukind].append(inst)
         
         return inst
 
@@ -407,8 +409,11 @@ class MetaModel(object):
         ass = Association(rel_id, source, target)
         self.associations.append(ass)
         
-        Source = self.classes[source.kind]
-        Target = self.classes[target.kind]
+        source_kind = source.kind.upper()
+        target_kind = target.kind.upper()
+        
+        Source = self.classes[source_kind]
+        Target = self.classes[target_kind]
 
         if rel_id not in Source.__r__:
             Source.__r__[rel_id] = set()
@@ -419,20 +424,20 @@ class MetaModel(object):
         Source.__r__[rel_id].add(ass)
         Target.__r__[rel_id].add(ass)
         
-        if target.kind not in Source.__q__:
-            Source.__q__[target.kind] = dict()
+        if target_kind not in Source.__q__:
+            Source.__q__[target_kind] = dict()
             
-        if source.kind not in Target.__q__:
-            Target.__q__[source.kind] = dict()
+        if source_kind not in Target.__q__:
+            Target.__q__[source_kind] = dict()
         
-        if rel_id not in Source.__q__[target.kind]:
-            Source.__q__[target.kind][rel_id] = dict()
+        if rel_id not in Source.__q__[target_kind]:
+            Source.__q__[target_kind][rel_id] = dict()
             
-        if rel_id not in Target.__q__[source.kind]:
-            Target.__q__[source.kind][rel_id] = dict()
+        if rel_id not in Target.__q__[source_kind]:
+            Target.__q__[source_kind][rel_id] = dict()
         
-        Source.__q__[target.kind][rel_id][target.phrase] = self._formalized_query(source, target)
-        Target.__q__[source.kind][rel_id][source.phrase] = self._formalized_query(target, source)
+        Source.__q__[target_kind][rel_id][target.phrase] = self._formalized_query(source, target)
+        Target.__q__[source_kind][rel_id][source.phrase] = self._formalized_query(target, source)
     
         return ass
     
