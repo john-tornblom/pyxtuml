@@ -248,17 +248,17 @@ class BaseObject(object):
         else: return QuerySet([self])
 
     def __getattr__(self, name):
-        lname = name.lower()
+        uname = name.upper()
         for attr, _ in self.__a__:
-            if attr.lower() == lname:
+            if attr.upper() == uname:
                 return self.__dict__[attr]
 
         return object.__getattribute__(self, name)
     
     def __setattr__(self, name, value):
-        lname = name.lower()
+        uname = name.upper()
         for attr, _ in self.__a__:
-            if attr.lower() == lname:
+            if attr.upper() == uname:
                 self.__dict__[attr] = value
                 self.__c__.clear()
                 return
@@ -465,12 +465,12 @@ class MetaModel(object):
         '''
         Obtain the default value for a named meta model type.
         '''
-        lname = ty_name.upper()
-        if   lname == 'BOOLEAN': return False
-        elif lname == 'INTEGER': return 0
-        elif lname == 'REAL': return 0.0
-        elif lname == 'STRING': return ''
-        elif lname == 'UNIQUE_ID': return next(self.id_generator)
+        uname = ty_name.upper()
+        if   uname == 'BOOLEAN': return False
+        elif uname == 'INTEGER': return 0
+        elif uname == 'REAL': return 0.0
+        elif uname == 'STRING': return ''
+        elif uname == 'UNIQUE_ID': return next(self.id_generator)
         else: raise ModelException("Unknown type named '%s'" % ty_name)
             
     def _named_type(self, name):
