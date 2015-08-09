@@ -7,7 +7,6 @@ The arguments are either xtuml files, or folders containing *.xtuml files.
 Note that some type of attributes are not supported, e.g. instance handles or timers.
 '''
 
-import os
 import sys
 import optparse
 import logging
