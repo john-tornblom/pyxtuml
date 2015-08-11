@@ -98,15 +98,7 @@ def get_attribute_type(o_attr):
     else:
         s_dt = one(o_attr).S_DT[114]()
         return get_data_type_name(s_dt)
-    
-    
-def get_attribute_name(o_attr):
-    '''
-    Get the name of a BridgePoint attribute.
-    '''
-    # TODO: Pdf_Mode, Prefix and Root_Nam 
-    return o_attr.Name
-     
+ 
     
 def get_related_attributes(r_rgo, r_rto):
     '''
@@ -135,11 +127,9 @@ def mk_class(m, o_obj):
     attributes = list()
         
     while o_attr:
-        name = get_attribute_name(o_attr)
         ty = get_attribute_type(o_attr)
-
-        if name and ty:
-            attributes.append((name, ty))
+        if ty:
+            attributes.append((o_attr.Name, ty))
         else:
             logger.warning('Omitting unsupported attribute %s.%s ' % (o_obj.Key_Lett, o_attr.Name))
             
