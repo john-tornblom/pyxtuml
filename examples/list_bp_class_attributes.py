@@ -3,13 +3,22 @@
 # Copyright (C) 2015 John Törnblom
 
 import sys
-import xtuml
 
 from xtuml import navigate_one as one
 from xtuml import navigate_many as many
+from bridgepoint import ooaofooa
 
 
-m = xtuml.load_metamodel(sys.argv[1:])
+if len(sys.argv) < 2:
+    print('')
+    print('  usage: %s <path to bridgepoint model folder>' % sys.argv[0])
+    print('')
+    sys.exit(1)
+
+    
+loader = ooaofooa.Loader()
+loader.filename_input(sys.argv[1])
+m = loader.build_metamodel(ignore_undefined_classes=True)
 
 by_name = lambda inst: inst.Name
 for o_obj in sorted(m.select_many('O_OBJ'), key=by_name):
