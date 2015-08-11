@@ -46,32 +46,6 @@ def mult_cond(mult, cond):
     return s
 
 
-def is_contained_in(pe_pe, root):
-    '''
-    Determine if a PE_PE is contained within a EP_PKG or a C_C.
-    '''
-    if not pe_pe:
-        return False
-    
-    if pe_pe.__class__.__name__ != 'PE_PE':
-        pe_pe = one(pe_pe).PE_PE[8001]()
-    
-    ep_pkg = one(pe_pe).EP_PKG[8000]()
-    c_c = one(pe_pe).C_C[8003]()
-    
-    if root in [ep_pkg, c_c]:
-        return True
-    
-    elif is_contained_in(ep_pkg, root):
-        return True
-    
-    elif is_contained_in(c_c, root):
-        return True
-    
-    else:
-        return False
-
-
 def get_data_type_name(s_dt):
     '''
     Convert a BridgePoint data type to a pyxtuml meta model type.
@@ -258,7 +232,7 @@ def mk_metamodel(bp_model, c_c=None):
     '''
     target = xtuml.MetaModel()
 
-    c_c_filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
+    c_c_filt = lambda sel: c_c is None or ooaofooa.is_contained_in(sel, c_c)
     
     for o_obj in bp_model.select_many('O_OBJ', c_c_filt):
         mk_class(target, o_obj)

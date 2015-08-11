@@ -3363,6 +3363,50 @@ INSERT INTO S_UDT
     2);
 '''
 
+
+def is_contained_in(pe_pe, root):
+    '''
+    Determine if a PE_PE is contained within a EP_PKG or a C_C.
+    '''
+    if not pe_pe:
+        return False
+    
+    if pe_pe.__class__.__name__ != 'PE_PE':
+        pe_pe = xtuml.navigate_one(pe_pe).PE_PE[8001]()
+    
+    ep_pkg = xtuml.navigate_one(pe_pe).EP_PKG[8000]()
+    c_c = xtuml.navigate_one(pe_pe).C_C[8003]()
+    
+    if root in [ep_pkg, c_c]:
+        return True
+    
+    elif is_contained_in(ep_pkg, root):
+        return True
+    
+    elif is_contained_in(c_c, root):
+        return True
+    
+    else:
+        return False
+    
+
+def is_global(pe_pe):
+    '''
+    Check if a PE_PE is globally defined, i.e. not inside a C_C
+    '''
+    if pe_pe.__class__.__name__ != 'PE_PE':
+        pe_pe = xtuml.navigate_one(pe_pe).PE_PE[8001]()
+    
+    if xtuml.navigate_one(pe_pe).C_C[8003]():
+        return False
+    
+    pe_pe = xtuml.navigate_one(pe_pe).EP_PKG[8000].PE_PE[8001]()
+    if not pe_pe:
+        return True
+    
+    return is_global(pe_pe)
+
+
 class Loader(xtuml.ModelLoader):
     '''
     A xtuml meta model loader with ooaofooa schema and globals pre-defined.
