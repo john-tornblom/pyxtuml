@@ -2,6 +2,7 @@
 # Copyright (C) 2015 John Törnblom
 
 from itertools import chain
+from functools import partial
 
 import logging
 import uuid
@@ -555,13 +556,9 @@ def _find_association_links(inst1, inst2, rel_id, phrase):
                                                                       kind2))
 
 
-def _defered_relate(from_inst, to_inst, rel_id, phrase):
-    return lambda: relate(from_inst, to_inst, rel_id, phrase)
-
-
-def _defered_batch_relate(inst, end):
+def _defered_association_operation(inst, end, op):
     '''
-    Generate list of deferred relates which needs to be invoked after an 
+    Generate list of deferred operations which needs to be invoked after an 
     update to identifying attributes on the association end point is made.
     '''
     kind = inst.__class__.__name__
@@ -576,7 +573,7 @@ def _defered_batch_relate(inst, end):
         
         nav = navigate_many(inst).nav(ass.source.kind, ass.id, ass.source.phrase)
         for from_inst in nav():
-            fn = _defered_relate(from_inst, inst, ass.id, ass.source.phrase)
+            fn = partial(op, from_inst, inst, ass.id, ass.source.phrase)
             l.append(fn)
 
     return l
@@ -622,7 +619,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     amongst the instances is as intended.
     '''
     from_end, to_end = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _defered_batch_relate(from_inst, from_end)
+    post_process = _defered_association_operation(from_inst, from_end, relate)
         
     for from_attr, to_attr in zip(from_end.ids, to_end.ids):
         value = getattr(to_inst, to_attr)
@@ -641,9 +638,14 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     the instances is as intended.
     '''
     from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
+    post_process = _defered_association_operation(from_inst, from_end, unrelate)
+    
     for name, ty in from_inst.__a__:
         if name in from_end.ids:
             value = from_inst.__m__._default_value(ty)
             setattr(from_inst, name, value)
 
-
+    for defered_relate in post_process:
+        defered_relate()
+        
+        
