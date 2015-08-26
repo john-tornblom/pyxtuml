@@ -236,6 +236,8 @@ class BaseObject(object):
     __m__ = None  # store a handle to the meta model which created the instance
     __c__ = dict()  # store a cached results from queries
     __a__ = list()  # store a list of attributes (name, type)
+    __i__ = set() # set of identifying attributes
+    __d__ = set() # set of derived attributes
     
     def __init__(self):
         self.__c__.clear()
@@ -359,6 +361,7 @@ class MetaModel(object):
         '''
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
+                                             __i__=set(), __d__=set(),
                                              __a__=attributes, __doc__=doc))
         kind = kind.upper()
         self.classes[kind] = Cls
@@ -419,6 +422,9 @@ class MetaModel(object):
         Source = self.classes[source_kind]
         Target = self.classes[target_kind]
 
+        Source.__d__ |= set(ass.source.ids)
+        Target.__i__ |= set(ass.target.ids)
+        
         if rel_id not in Source.__r__:
             Source.__r__[rel_id] = set()
             
