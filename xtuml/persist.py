@@ -37,11 +37,21 @@ def serialize_instance(inst):
     Serialize an xtUML meta model instance.
     '''
     attr_count = 0
-
+    null_value = {
+        'BOOLEAN'   : False,
+        'INTEGER'   : 0,
+        'REAL'      : 0.0,
+        'STRING'    : '',
+        'UNIQUE_ID' : inst.__m__.id_generator.null
+    }
+    
     table = inst.__class__.__name__
     s = 'INSERT INTO %s VALUES (' % table
     for name, ty in inst.__a__:
         value = getattr(inst, name)
+        if value is None:
+            value = null_value[ty.upper()]
+            
         s += '\n    '
         s += serialize_value(value)
 
