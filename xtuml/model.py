@@ -382,7 +382,7 @@ class MetaModel(object):
         Cls = self.classes[ukind]
         inst = Cls()
         
-        # set all parameters with an initial default value
+        # set all attributes with an initial default value
         for name, ty in inst.__a__:
             if name in inst.__d__:
                 inst.__dict__[name] = None
