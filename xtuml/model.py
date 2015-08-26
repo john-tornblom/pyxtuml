@@ -356,7 +356,9 @@ class MetaModel(object):
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
                                              __a__=attributes, __doc__=doc))
-        self.classes[kind.upper()] = Cls
+        kind = kind.upper()
+        self.classes[kind] = Cls
+        self.instances[kind] = list()
         
         return Cls
 
@@ -389,9 +391,6 @@ class MetaModel(object):
 
         # set all named arguments
         inst.__dict__.update(kwargs)
-
-        if not ukind in self.instances:
-            self.instances[ukind] = list()
             
         self.instances[ukind].append(inst)
         
