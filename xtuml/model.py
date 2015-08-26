@@ -384,7 +384,9 @@ class MetaModel(object):
         
         # set all attributes with an initial default value
         for name, ty in inst.__a__:
-            if name in inst.__d__:
+            if name in inst.__i__:
+                inst.__dict__[name] = self._default_value(ty)
+            elif name in inst.__d__:
                 inst.__dict__[name] = None
             else:
                 inst.__dict__[name] = self._default_value(ty)
