@@ -276,6 +276,7 @@ class IdGenerator(object):
     '''
     
     readfunc = None
+    null = None
     
     def __init__(self):
         '''
@@ -308,6 +309,7 @@ class UUIDGenerator(IdGenerator):
     '''
     A uuid-based unique id generator for meta models.
     '''
+    null = uuid.UUID(int=0)
     
     def readfunc(self):
         return uuid.uuid4()
@@ -319,6 +321,7 @@ class IntegerGenerator(IdGenerator):
     '''
     
     _current = 0
+    null = 0
     
     def readfunc(self):
         return self._current + 1
