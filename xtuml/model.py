@@ -384,7 +384,10 @@ class MetaModel(object):
         
         # set all parameters with an initial default value
         for name, ty in inst.__a__:
-            inst.__dict__[name] = self._default_value(ty)
+            if name in inst.__d__:
+                inst.__dict__[name] = None
+            else:
+                inst.__dict__[name] = self._default_value(ty)
 
         # set all positional arguments
         for attr, value in zip(inst.__a__, args):
