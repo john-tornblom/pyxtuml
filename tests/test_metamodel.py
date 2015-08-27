@@ -264,14 +264,14 @@ class TestDefineModel(unittest.TestCase):
     def testOneToMany(self):
         self.metamodel.define_class('A', [('Id', 'unique_id')])
         self.metamodel.define_class('B', [('Id', 'unique_id'), ('A_Id', 'unique_id')])
-        a_endpint = xtuml.SingleAssociationLink('A')
-        b_endpint = xtuml.ManyAssociationLink('B')
+        a_endpint = xtuml.SingleAssociationLink('A', ids=['Id'])
+        b_endpint = xtuml.ManyAssociationLink('B', ids=['A_Id'])
         
         self.metamodel.define_relation('R1', a_endpint, b_endpint)
         
         a = self.metamodel.new('A')
         b = self.metamodel.new('B')
-        xtuml.relate(a, b, 1)
+        self.assertTrue(xtuml.relate(a, b, 1))
         
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
         
