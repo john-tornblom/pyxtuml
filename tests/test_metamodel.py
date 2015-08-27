@@ -126,14 +126,18 @@ class TestModel(unittest.TestCase):
     def testRelate(self):
         s_edt = self.metamodel.new('S_EDT')
         s_dt = self.metamodel.new('S_DT')
-        
+        pe_pe = self.metamodel.new('PE_PE')
+        self.assertTrue(xtuml.relate(s_dt, pe_pe, 8001))
         self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
 
     def testRelateReflexive1(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
-        
+        act_blk = self.metamodel.new('ACT_BLK')
+
+        self.assertTrue(xtuml.relate(inst1, act_blk, 602))
+        self.assertTrue(xtuml.relate(inst2, act_blk, 602))
         self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
@@ -141,7 +145,10 @@ class TestModel(unittest.TestCase):
     def testRelateReflexive2(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
-        
+        act_blk = self.metamodel.new('ACT_BLK')
+
+        self.assertTrue(xtuml.relate(inst1, act_blk, 602))
+        self.assertTrue(xtuml.relate(inst2, act_blk, 602))
         self.assertTrue(xtuml.relate(inst2, inst1, 661, 'succeeds'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
@@ -156,6 +163,8 @@ class TestModel(unittest.TestCase):
     def testRelateInvertedOrder(self):
         s_edt = self.metamodel.new('S_EDT')
         s_dt = self.metamodel.new('S_DT')
+        pe_pe = self.metamodel.new('PE_PE')
+        self.assertTrue(xtuml.relate(pe_pe, s_dt, 8001))
         self.assertTrue(xtuml.relate(s_edt, s_dt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
     
@@ -169,7 +178,11 @@ class TestModel(unittest.TestCase):
     def testUnrelate(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
+        act_blk = self.metamodel.new('ACT_BLK')
 
+        self.assertTrue(xtuml.relate(inst1, act_blk, 602))
+        self.assertTrue(xtuml.relate(inst2, act_blk, 602))
+        
         self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
