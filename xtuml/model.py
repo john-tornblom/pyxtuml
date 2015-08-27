@@ -577,8 +577,6 @@ def _defered_association_operation(inst, end, op):
     kind = inst.__class__.__name__
     l = list()
     for ass in chain(*inst.__r__.values()):
-        if end in [ass.target, ass.source]:
-            continue
         if kind != ass.target.kind:
             continue
         elif len(set(end.ids) & set(ass.source.ids)) == 0:
@@ -657,13 +655,14 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     '''
     from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
     post_process = _defered_association_operation(from_inst, from_end, unrelate)
-    
-    for name, ty in from_inst.__a__:
-        if name in from_end.ids:
-            value = from_inst.__m__._default_value(ty)
-            setattr(from_inst, name, value)
 
-    for defered_relate in post_process:
-        defered_relate()
+    updated = False
+    for name in set(from_end.ids) & set(from_inst.__d__):
+        updated |= (getattr(from_inst, name) != None)
+        setattr(from_inst, name, None)
+
+    if updated:
+        for defered_unrelate in post_process:
+            defered_unrelate()
         
-        
+    return updated
