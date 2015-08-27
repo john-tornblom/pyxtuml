@@ -127,14 +127,14 @@ class TestModel(unittest.TestCase):
         s_edt = self.metamodel.new('S_EDT')
         s_dt = self.metamodel.new('S_DT')
         
-        xtuml.relate(s_dt, s_edt, 17)
+        self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
 
     def testRelateReflexive1(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
         
-        xtuml.relate(inst1, inst2, 661, 'precedes')
+        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
@@ -142,7 +142,7 @@ class TestModel(unittest.TestCase):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
         
-        xtuml.relate(inst2, inst1, 661, 'succeeds')
+        self.assertTrue(xtuml.relate(inst2, inst1, 661, 'succeeds'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
@@ -156,7 +156,7 @@ class TestModel(unittest.TestCase):
     def testRelateInvertedOrder(self):
         s_edt = self.metamodel.new('S_EDT')
         s_dt = self.metamodel.new('S_DT')
-        xtuml.relate(s_edt, s_dt, 17)
+        self.assertTrue(xtuml.relate(s_edt, s_dt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
     
     @expect_exception(xtuml.ModelException)
@@ -167,20 +167,25 @@ class TestModel(unittest.TestCase):
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
         
     def testUnrelate(self):
-        s_dt = self.metamodel.select_any('S_DT', lambda inst: inst.name == 'integer')
-        s_cdt = xtuml.navigate_one(s_dt).S_CDT[17]()
-        self.assertEqual(s_cdt.Core_Typ, 2)
-        xtuml.unrelate(s_dt, s_cdt, 17)
-        self.assertEqual(s_dt.Name, 'integer')
-        self.assertEqual(s_cdt.Core_Typ, 2)
-        self.assertIsNone(xtuml.navigate_one(s_dt).S_CDT[17]())
+        inst1 = self.metamodel.new('ACT_SMT')
+        inst2 = self.metamodel.new('ACT_SMT')
 
+        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
+        self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
+        self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
+        
+        self.assertTrue(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
+        self.assertIsNone(xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
+        self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
+
+        self.assertFalse(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
+            
     def testRelateInWrongOrder(self):
         s_ee = self.metamodel.new('S_EE')
         pe_pe = self.metamodel.new('PE_PE')
         EE_ID = s_ee.EE_ID
         Element_ID = pe_pe.Element_ID
-        xtuml.relate(s_ee, pe_pe, 8001)
+        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
         self.assertNotEqual(EE_ID, s_ee.EE_ID)
         self.assertEqual(Element_ID, pe_pe.Element_ID)
 
@@ -192,11 +197,11 @@ class TestModel(unittest.TestCase):
         pe_pe = m.new('PE_PE', Visibility=True, type=5)
         s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
 
-        xtuml.relate(s_ee, pe_pe, 8001)
-        xtuml.relate(s_brg, s_ee, 19)
-        xtuml.relate(s_brg, s_dt, 20)
-        xtuml.relate(s_bparm, s_brg, 21)
-        xtuml.relate(s_bparm, s_dt, 22)
+        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
+        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
+        self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
+        self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
+        self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
             
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
@@ -209,11 +214,11 @@ class TestModel(unittest.TestCase):
         pe_pe = m.new('PE_PE', Visibility=True, type=5)
         s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
         
-        xtuml.relate(s_bparm, s_dt, 22)
-        xtuml.relate(s_bparm, s_brg, 21)
-        xtuml.relate(s_brg, s_dt, 20)
-        xtuml.relate(s_brg, s_ee, 19)
-        xtuml.relate(s_ee, pe_pe, 8001)
+        self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
+        self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
+        self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
+        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
+        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
             
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
@@ -241,7 +246,7 @@ class TestDefineModel(unittest.TestCase):
         first = self.metamodel.new('A', Name="First")
         second = self.metamodel.new('A', Name="Second")
 
-        xtuml.model.relate(first, second, 1, 'prev')
+        self.assertTrue(xtuml.model.relate(first, second, 1, 'prev'))
 
         inst = xtuml.navigate_one(first).A[1, 'next']()
         self.assertEqual(inst.Name, second.Name)
