@@ -629,6 +629,9 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     **NOTE**: Reflexive associations require a phrase, and that the order 
     amongst the instances is as intended.
     '''
+    if None in [from_inst, to_inst]:
+        return False
+    
     from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
     post_process = _defered_association_operation(from_inst, ass.source, relate)
 
@@ -653,6 +656,9 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     **NOTE**: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
+    if None in [from_inst, to_inst]:
+        return False
+    
     from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
     post_process = _defered_association_operation(from_inst, ass.source, unrelate)
 
