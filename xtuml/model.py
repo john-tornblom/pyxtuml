@@ -634,15 +634,20 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     '''
     from_end, to_end = _find_association_links(from_inst, to_inst, rel_id, phrase)
     post_process = _defered_association_operation(from_inst, from_end, relate)
-        
-    for from_attr, to_attr in zip(from_end.ids, to_end.ids):
-        value = getattr(to_inst, to_attr)
-        setattr(from_inst, from_attr, value)
-    
-    for defered_relate in post_process:
-        defered_relate()
 
-    
+    updated = False
+    for from_name, to_name in zip(from_end.ids, to_end.ids):
+        value = getattr(to_inst, to_name)
+        updated |= (getattr(from_inst, from_name) != value)
+        setattr(from_inst, from_name, value)
+
+    if updated:
+        for defered_relate in post_process:
+            defered_relate()
+
+    return updated
+
+
 def unrelate(from_inst, to_inst, rel_id, phrase=''):
     '''
     Unrelate two instances from each other by reseting the identifying
