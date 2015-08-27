@@ -664,7 +664,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     post_process = _defered_association_operation(from_inst, ass.source, unrelate)
 
     updated = False
-    for name in set(ass.source.ids) & set(from_inst.__d__):
+    for name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
         updated |= (getattr(from_inst, name) != None)
         setattr(from_inst, name, None)
 
