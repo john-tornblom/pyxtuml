@@ -556,12 +556,12 @@ def _find_association_links(inst1, inst2, rel_id, phrase):
         if  (kind1 == ass.source.kind and 
              kind2 == ass.target.kind and 
              ass.source.phrase == phrase):
-            return ass.source, ass.target
+            return inst1, inst2, ass
         
         elif (kind1 == ass.target.kind and 
               kind2 == ass.source.kind and 
               ass.target.phrase == phrase):
-            return ass.target, ass.source
+            return inst2, inst1, ass
 
     raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1,
                                                                       rel_id,
@@ -629,11 +629,11 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     **NOTE**: Reflexive associations require a phrase, and that the order 
     amongst the instances is as intended.
     '''
-    from_end, to_end = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _defered_association_operation(from_inst, from_end, relate)
+    from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
+    post_process = _defered_association_operation(from_inst, ass.source, relate)
 
     updated = False
-    for from_name, to_name in zip(from_end.ids, to_end.ids):
+    for from_name, to_name in zip(ass.source.ids, ass.target.ids):
         value = getattr(to_inst, to_name)
         updated |= (getattr(from_inst, from_name) != value)
         setattr(from_inst, from_name, value)
@@ -653,11 +653,11 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     **NOTE**: Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
-    from_end, _ = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _defered_association_operation(from_inst, from_end, unrelate)
+    from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
+    post_process = _defered_association_operation(from_inst, ass.source, unrelate)
 
     updated = False
-    for name in set(from_end.ids) & set(from_inst.__d__):
+    for name in set(ass.source.ids) & set(from_inst.__d__):
         updated |= (getattr(from_inst, name) != None)
         setattr(from_inst, name, None)
 
