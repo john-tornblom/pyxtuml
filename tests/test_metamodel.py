@@ -222,8 +222,8 @@ class TestModel(unittest.TestCase):
         self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
         self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
         self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
-        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
         self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
+        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
             
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
