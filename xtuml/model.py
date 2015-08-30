@@ -675,7 +675,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     updated = False
     for from_name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
         from_value = getattr(from_inst, from_name)
-        if from_value is None:
+        if from_value in [None, from_inst.__m__.id_generator.null]:
             raise ModelException('instances not related')
         
         updated = True
