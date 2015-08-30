@@ -2,10 +2,9 @@
 # Copyright (C) 2014-2015 John Törnblom
 
 import unittest
-import os
 
 import xtuml
-
+from bridgepoint import ooaofooa
 
 def expect_exception(exception):
     def test_decorator(fn):
@@ -19,14 +18,7 @@ class TestModel(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
-        schema = resources + os.sep + 'ooaofooa_schema.sql'
-        globs = resources + os.sep + 'Globals.xtuml'
-    
-        cls.loader = xtuml.load.ModelLoader()
-        cls.loader.build_parser()
-        cls.loader.filename_input(schema)
-        cls.loader.filename_input(globs)
+        cls.loader = ooaofooa.Loader()
  
     def setUp(self):
         self.metamodel = self.loader.build_metamodel()
