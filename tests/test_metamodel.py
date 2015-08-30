@@ -182,8 +182,6 @@ class TestModel(unittest.TestCase):
         self.assertTrue(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
         self.assertIsNone(xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
-
-        self.assertFalse(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
             
     def testRelateInWrongOrder(self):
         s_ee = self.metamodel.new('S_EE')
@@ -224,6 +222,7 @@ class TestModel(unittest.TestCase):
         self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
         self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
         self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
+        
             
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
