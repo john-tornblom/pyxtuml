@@ -3480,8 +3480,11 @@ class ActionTextGenWalker(Walker):
         if self._lvl:
             self.buf_linebreak()
         
-        first_filter = lambda sel: one(sel).ACT_SMT[661, 'succeeds']() is None
-        act_smt = any(inst).ACT_SMT[602](first_filter)
+        first_filter = lambda sel: (not one(sel).ACT_SMT[661, 'succeeds']() and
+                                    not one(sel).ACT_EL[603]() and
+                                    not one(sel).ACT_E[603]())
+        
+        act_smt = one(inst).ACT_SMT[602](first_filter)
         while act_smt:
             self.accept(act_smt)
             act_smt = one(act_smt).ACT_SMT[661, 'precedes']()
