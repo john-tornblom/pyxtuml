@@ -384,9 +384,7 @@ class MetaModel(object):
         
         # set all attributes with an initial default value
         for name, ty in inst.__a__:
-            if name in inst.__i__:
-                inst.__dict__[name] = self._default_value(ty)
-            elif name in inst.__d__:
+            if name in inst.__d__:
                 inst.__dict__[name] = None
             else:
                 inst.__dict__[name] = self._default_value(ty)
@@ -510,7 +508,7 @@ class MetaModel(object):
     def _query(self, kind, many, **kwargs):
         for inst in iter(self.instances[kind]):
             for name, value in kwargs.items():
-                if getattr(inst, name) != value:
+                if value is None or getattr(inst, name) != value:
                     break
             else:
                 yield inst
@@ -637,9 +635,20 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
 
     updated = False
     for from_name, to_name in zip(ass.source.ids, ass.target.ids):
-        value = getattr(to_inst, to_name)
-        updated |= (getattr(from_inst, from_name) != value)
-        setattr(from_inst, from_name, value)
+        from_value = getattr(from_inst, from_name)
+        to_value = getattr(to_inst, to_name)
+        
+        if to_value is None:
+            raise ModelException('missing referential attribute')
+        
+        if from_value == to_value:
+            continue
+        
+        if from_value is not None:
+            raise ModelException('instance is already related')
+        
+        updated = True
+        setattr(from_inst, from_name, to_value)
 
     if updated:
         for defered_relate in post_process:
@@ -663,9 +672,13 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     post_process = _defered_association_operation(from_inst, ass.source, unrelate)
 
     updated = False
-    for name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
-        updated |= (getattr(from_inst, name) != None)
-        setattr(from_inst, name, None)
+    for from_name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
+        from_value = getattr(from_inst, from_name)
+        if from_value is None:
+            raise ModelException('instances not related')
+        
+        updated = True
+        setattr(from_inst, from_name, None)
 
     if updated:
         for defered_unrelate in post_process:
