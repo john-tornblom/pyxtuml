@@ -3436,7 +3436,8 @@ class ActionTextGenWalker(Walker):
         self._buf += value
         self._buf += ''.join(args)
         
-    def buf_linebreak(self):
+    def buf_linebreak(self, *args):
+        self._buf += ''.join(args)
         self._buf += '\n'
         self._buf += '    ' * self._lvl
 
@@ -3484,8 +3485,6 @@ class ActionTextGenWalker(Walker):
         while act_smt:
             self.accept(act_smt)
             act_smt = one(act_smt).ACT_SMT[661, 'precedes']()
-            if act_smt:
-                self.buf_linebreak()
             
         self._lvl -= 1
         self.buf_linebreak()
@@ -3502,8 +3501,8 @@ class ActionTextGenWalker(Walker):
             child = one(inst).nav(key_letter, 603)()
             self.accept(child)
             
-        self.buf(';')
-    
+        self.buf_linebreak(';')
+        
     def accept_ACT_RET(self, inst):
         self.buf('return ')
         self.accept(one(inst).V_VAL[668]())
