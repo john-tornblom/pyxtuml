@@ -645,7 +645,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
         if from_value == to_value:
             continue
         
-        if from_value is not None and from_value != from_inst.__m__.id_generator.null:
+        if from_value not in [None, from_inst.__m__.id_generator.null]:
             raise ModelException('instance is already related')
         
         updated = True
