@@ -576,14 +576,14 @@ def _defered_association_operation(inst, end, op):
     kind = inst.__class__.__name__
     l = list()
     for ass in chain(*inst.__r__.values()):
-        if kind != ass.target.kind:
+        if kind != ass.source.kind:
             continue
         elif len(set(end.ids) & set(ass.source.ids)) == 0:
             continue
         
-        nav = navigate_many(inst).nav(ass.source.kind, ass.id, ass.source.phrase)
+        nav = navigate_many(inst).nav(ass.target.kind, ass.id, ass.target.phrase)
         for from_inst in nav():
-            fn = partial(op, from_inst, inst, ass.id, ass.source.phrase)
+            fn = partial(op, from_inst, inst, ass.id, ass.target.phrase)
             l.append(fn)
 
     return l
