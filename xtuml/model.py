@@ -568,7 +568,7 @@ def _find_association_links(inst1, inst2, rel_id, phrase):
                                                                       kind2))
 
 
-def _defered_association_operation(inst, end, op):
+def _deferred_association_operation(inst, end, op):
     '''
     Generate list of deferred operations which needs to be invoked after an 
     update to identifying attributes on the association end point is made.
@@ -632,7 +632,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
         return False
     
     from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _defered_association_operation(from_inst, ass.source, relate)
+    post_process = _deferred_association_operation(from_inst, ass.source, relate)
 
     updated = False
     for from_name, to_name in zip(ass.source.ids, ass.target.ids):
@@ -652,8 +652,8 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
         setattr(from_inst, from_name, to_value)
 
     if updated:
-        for defered_relate in post_process:
-            defered_relate()
+        for deferred_relate in post_process:
+            deferred_relate()
 
     return updated
 
@@ -670,7 +670,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
         return False
     
     from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _defered_association_operation(from_inst, ass.source, unrelate)
+    post_process = _deferred_association_operation(from_inst, ass.source, unrelate)
 
     updated = False
     for from_name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
@@ -682,8 +682,8 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
         setattr(from_inst, from_name, None)
 
     if updated:
-        for defered_unrelate in post_process:
-            defered_unrelate()
+        for deferred_unrelate in post_process:
+            deferred_unrelate()
         
     return updated
 
