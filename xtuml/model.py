@@ -577,9 +577,10 @@ def _deferred_association_operation(inst, end, op):
     for ass in chain(*inst.__r__.values()):
         if kind != ass.target.kind:
             continue
-        if not set(end.ids) & set(ass.target.ids):
+        if not set(end.ids) & inst.__d__ - inst.__i__ & set(ass.target.ids):
+            # TODO: what about attributes which are both identifying, and referential?
             continue
-        
+
         nav = navigate_many(inst).nav(ass.source.kind, ass.id, ass.source.phrase)
         for from_inst in nav():
             fn = partial(op, from_inst, inst, ass.id, ass.target.phrase)
