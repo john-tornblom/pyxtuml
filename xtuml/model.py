@@ -578,7 +578,7 @@ def _deferred_association_operation(inst, end, op):
     for ass in chain(*inst.__r__.values()):
         if kind != ass.target.kind:
             continue
-        if set(end.ids) & set(ass.target.ids) == 0:
+        if not set(end.ids) & set(ass.target.ids):
             continue
         
         nav = navigate_many(inst).nav(ass.source.kind, ass.id, ass.source.phrase)
