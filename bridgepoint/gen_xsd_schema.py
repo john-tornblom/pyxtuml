@@ -8,14 +8,12 @@ Note that some type of attributes are not supported, e.g. instance handles or ti
 '''
 
 import sys
-import os
 import optparse
 import logging
 
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
-import xtuml
 from xtuml import navigate_any as nav_any
 from xtuml import navigate_any as nav_one
 from xtuml import navigate_many as nav_many

@@ -11,7 +11,6 @@ import sys
 import optparse
 import logging
 
-
 import xtuml
 from xtuml import navigate_one as one
 from xtuml import navigate_many as many
