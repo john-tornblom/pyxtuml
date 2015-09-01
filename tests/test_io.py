@@ -33,6 +33,12 @@ def compare_metamodel_classes(m1, m2):
         if Cls1.__a__ != Cls2.__a__:
             return False
 
+        if Cls1.__i__ != Cls2.__i__:
+            return False
+
+        if Cls1.__d__ != Cls2.__d__:
+            return False
+        
     return True
 
             
