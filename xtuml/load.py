@@ -78,10 +78,13 @@ class ModelLoader(object):
     # A string containing ignored characters (spaces and tabs).
     t_ignore = ' \t\r\x0c'
 
+    parser = None
+    lexer = None
+    statements = None
+    
     def __init__(self):
         self.statements = list()
-
-    def build_parser(self):
+        
         self.lexer = lex.lex(debuglog=logger,
                              errorlog=logger,
                              optimize=1,
@@ -96,6 +99,12 @@ class ModelLoader(object):
                                 outputdir=os.path.dirname(__file__),
                                 tabmodule='xtuml.__xtuml_parsetab')
 
+    def build_parser(self):
+        '''
+        This method is deprecated.
+        '''
+        pass
+    
     def input(self, data):
         '''
         Parse input as raw data.
