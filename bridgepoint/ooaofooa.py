@@ -3990,3 +3990,10 @@ class Loader(xtuml.ModelLoader):
             xtuml.ModelLoader.filename_input(self, filename)
 
 
+def empty_model():
+    '''
+    Create an empty ooaofooa model, expressed in a metamodel
+    '''
+    loader = Loader()
+    return loader.build_metamodel()
+
