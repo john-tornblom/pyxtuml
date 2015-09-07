@@ -616,7 +616,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
         to_value = getattr(to_inst, to_name)
         
         if to_value is None:
-            raise ModelException('missing referential attribute')
+            raise ModelException('undefined referential attribute %s' % to_name)
         
         if from_value == to_value:
             continue
