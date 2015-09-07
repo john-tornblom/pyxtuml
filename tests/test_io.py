@@ -193,7 +193,7 @@ class TestLoader(unittest.TestCase):
         '''
         val = m.select_any('X')
         self.assertTrue(val is not None)
-        self.assertEqual(0L, val.Id)
+        self.assertEqual(0, val.Id)
         
     @load
     def testInsertREAL_Positive(self, m):
@@ -351,7 +351,7 @@ class TestPersist(unittest.TestCase):
         m.new('X', BOOLEAN=True,
                    INTEGER=1,
                    REAL=-5.5,
-                   UNIQUE_ID=1L)
+                   UNIQUE_ID=1)
         
         s = xtuml.serialize_instances(m)
         
@@ -365,7 +365,7 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.BOOLEAN, True)
         self.assertEqual(x.INTEGER, 1)
         self.assertEqual(x.REAL, -5.5)
-        self.assertEqual(x.UNIQUE_ID, 1L)
+        self.assertEqual(x.UNIQUE_ID, 1)
         
     def testSerializeDefaultValues(self):
         schema = '''
