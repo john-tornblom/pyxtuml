@@ -455,20 +455,27 @@ class MetaModel(object):
         '''
         Query the model for an instance.
         '''
-        if kind in self.instances:
-            s = filter(where_cond, self.instances[kind])
-            return next(s, None)
+        ukind = kind.upper()
+        if ukind not in self.instances:
+            if not self.ignore_undefined_classes:
+                raise ModelException("Unknown class %s" % kind)
+            return None
+
+        s = filter(where_cond, self.instances[ukind])
+        return next(s, None)
         
     def select_many(self, kind, where_cond=None):
         '''
         Query the model for a set of instances.
         '''
-        if kind in self.instances:
-            return QuerySet(filter(where_cond, self.instances[kind]))
-        else:
+        ukind = kind.upper()
+        if ukind not in self.instances:
+            if not self.ignore_undefined_classes:
+                raise ModelException("Unknown class %s" % kind)
             return QuerySet()
 
-        
+        return QuerySet(filter(where_cond, self.instances[kind]))
+
     def _default_value(self, ty_name):
         '''
         Obtain the default value for a named meta model type.
