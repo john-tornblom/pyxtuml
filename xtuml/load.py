@@ -302,7 +302,7 @@ class ModelLoader(object):
 
     def p_value_6(self, p):
         '''value : GUID'''
-        p[0] = uuid.UUID(p[1][1:-1])
+        p[0] = uuid.UUID(p[1][1:-1]).int
 
     def p_create_rop_statement(self, p):
         '''

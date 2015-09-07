@@ -279,8 +279,7 @@ class IdGenerator(object):
     '''
     
     readfunc = None
-    null = None
-    
+
     def __init__(self):
         '''
         Initialize an id generator with a start value.
@@ -312,10 +311,8 @@ class UUIDGenerator(IdGenerator):
     '''
     A uuid-based unique id generator for meta models.
     '''
-    null = uuid.UUID(int=0)
-    
     def readfunc(self):
-        return uuid.uuid4()
+        return uuid.uuid4().int
 
 
 class IntegerGenerator(IdGenerator):
@@ -324,8 +321,6 @@ class IntegerGenerator(IdGenerator):
     '''
     
     _current = 0
-    null = 0
-    
     def readfunc(self):
         return self._current + 1
 
@@ -393,12 +388,9 @@ class MetaModel(object):
         # set all positional arguments
         for attr, value in zip(inst.__a__, args):
             name, ty = attr
-            Type = self._named_type(ty)
-            if not isinstance(value, Type):
-                value = Type(value)
-                
+            if ty.upper() == 'UNIQUE_ID' and not value:
+                value = None
             inst.__dict__[name] = value
-
         # set all named arguments
         inst.__dict__.update(kwargs)
             
@@ -489,22 +481,6 @@ class MetaModel(object):
         elif uname == 'STRING': return ''
         elif uname == 'UNIQUE_ID': return next(self.id_generator)
         else: raise ModelException("Unknown type named '%s'" % ty_name)
-            
-    def _named_type(self, name):
-        '''
-        Determine the python-type of a named meta model type, 
-            e.g. 'Boolean' --> bool.
-        '''
-        name = name.upper()
-        lookup_table = {
-          'BOOLEAN'     : bool,
-          'INTEGER'     : int,
-          'REAL'        : float,
-          'STRING'      : str,
-          'UNIQUE_ID'   : type(self.id_generator.peek())
-        }
-        
-        return lookup_table[name]
         
     def _query(self, kind, many, **kwargs):
         for inst in iter(self.instances[kind]):
@@ -646,7 +622,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
         if from_value == to_value:
             continue
         
-        if from_value not in [None, from_inst.__m__.id_generator.null]:
+        if from_value is not None:
             raise ModelException('instance is already related')
         
         updated = True
@@ -676,7 +652,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     updated = False
     for from_name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
         from_value = getattr(from_inst, from_name)
-        if from_value in [None, from_inst.__m__.id_generator.null]:
+        if from_value is None:
             raise ModelException('instances not related')
         
         updated = True

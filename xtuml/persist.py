@@ -12,48 +12,49 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def serialize_value(value):
+def serialize_value(value, ty):
     '''
     Serialize a value from a xtUML meta model instance.
     '''
-    if   isinstance(value, bool):
-        return '%d' % int(value)
-
-    elif isinstance(value, str):
-        return "'%s'" % value.replace("'", "''")
-
-    elif isinstance(value, int):
-        return '%d' % value
+    ty = ty.upper()
     
-    elif isinstance(value, float):
-        return '%f' % value
-
-    elif isinstance(value, uuid.UUID):
-        return '"%s"' % value
-
-
-def serialize_instance(inst):
-    '''
-    Serialize an xtUML meta model instance.
-    '''
-    attr_count = 0
     null_value = {
         'BOOLEAN'   : False,
         'INTEGER'   : 0,
         'REAL'      : 0.0,
         'STRING'    : '',
-        'UNIQUE_ID' : inst.__m__.id_generator.null
+        'UNIQUE_ID' : uuid.UUID(int=0)
     }
+    
+    transfer_fn = {
+        'BOOLEAN'     : lambda v: '%d' % int(v),
+        'INTEGER'     : lambda v: '%d' % v,
+        'REAL'        : lambda v: '%f' % v,
+        'STRING'      : lambda v: "'%s'" % v.replace("'", "''"),
+        'UNIQUE_ID'   : lambda v: '"%s"' % uuid.UUID(int=v)
+    }
+
+    if value is None:
+        value = null_value[ty]
+    
+    return transfer_fn[ty](value)
+    
+    
+def serialize_instance(inst):
+    '''
+    Serialize an xtUML meta model instance.
+    '''
+    attr_count = 0
+
+    
     
     table = inst.__class__.__name__
     s = 'INSERT INTO %s VALUES (' % table
     for name, ty in inst.__a__:
         value = getattr(inst, name)
-        if value is None:
-            value = null_value[ty.upper()]
             
         s += '\n    '
-        s += serialize_value(value)
+        s += serialize_value(value, ty)
 
         attr_count += 1
         if attr_count < len(inst.__a__):
