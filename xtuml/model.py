@@ -354,13 +354,16 @@ class MetaModel(object):
         '''
         Define and return a new class in the meta model.
         '''
+        ukind = kind.upper()
+        if ukind in self.classes.keys() or ukind in self.instances.keys():
+            raise ModelException('A class with the name %s is already defined' % kind)
+    
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
                                              __i__=set(), __d__=set(),
                                              __a__=attributes, __doc__=doc))
-        kind = kind.upper()
-        self.classes[kind] = Cls
-        self.instances[kind] = list()
+        self.classes[ukind] = Cls
+        self.instances[ukind] = list()
         
         return Cls
 
