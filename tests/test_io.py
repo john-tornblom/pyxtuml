@@ -193,7 +193,7 @@ class TestLoader(unittest.TestCase):
         '''
         val = m.select_any('X')
         self.assertTrue(val is not None)
-        self.assertIsNone(val.Id)
+        self.assertEqual(0L, val.Id)
         
     @load
     def testInsertREAL_Positive(self, m):

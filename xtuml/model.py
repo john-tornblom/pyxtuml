@@ -388,9 +388,8 @@ class MetaModel(object):
         # set all positional arguments
         for attr, value in zip(inst.__a__, args):
             name, ty = attr
-            if ty.upper() == 'UNIQUE_ID' and not value:
-                value = None
             inst.__dict__[name] = value
+            
         # set all named arguments
         inst.__dict__.update(kwargs)
             
