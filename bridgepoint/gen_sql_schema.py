@@ -264,6 +264,11 @@ def main():
         
     source = loader.build_metamodel(ignore_undefined_classes=True)
     c_c = source.select_any('C_C', lambda inst: inst.Name == opts.component)
+    if not c_c and opts.component:
+        logger.error('unable to find a component named %s' % opts.component)
+        logger.info('available components to choose from are: %s' % ', '.join([c_c.Name for c_c in source.select_many('C_C')]))
+        sys.exit(1)
+
     target = mk_metamodel(source, c_c)
         
     xtuml.persist_schema(target, opts.output)
