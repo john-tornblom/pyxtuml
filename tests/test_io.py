@@ -80,7 +80,7 @@ class TestLoader(unittest.TestCase):
         del self.loader
 
     def testFileInput(self):
-        resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
+        resources = os.path.dirname(__file__) + os.sep + 'resources'
         schema = resources + os.sep + 'ooaofooa_schema.sql'
         globs = resources + os.sep + 'Globals.xtuml'
 
