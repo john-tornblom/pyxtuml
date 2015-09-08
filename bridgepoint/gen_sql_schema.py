@@ -101,7 +101,7 @@ def mk_class(m, o_obj):
         
     while o_attr:
         ty = get_attribute_type(o_attr)
-        if ty:
+        if ty and not one(o_attr).O_BATTR[106].O_DBATTR[107]():
             attributes.append((o_attr.Name, ty))
         else:
             logger.warning('Omitting unsupported attribute %s.%s ' % (o_obj.Key_Lett, o_attr.Name))

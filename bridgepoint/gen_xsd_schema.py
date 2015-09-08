@@ -174,7 +174,7 @@ def build_class(o_obj):
             s_dt = nav_one(s_dt).S_UDT[17].S_DT[18]()
         
         type_name = get_type_name(s_dt)
-        if type_name:
+        if type_name and not nav_one(o_attr).O_BATTR[106].O_DBATTR[107]():
             ET.SubElement(attributes, 'xs:attribute', name=o_attr.name, type=type_name)
         else:
             logger.warning('Omitting %s.%s' % (o_obj.key_lett, o_attr.Name))
