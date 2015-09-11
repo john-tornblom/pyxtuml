@@ -324,7 +324,22 @@ class IntegerGenerator(IdGenerator):
     def readfunc(self):
         return self._current + 1
 
-    
+
+def _is_null(inst, name):
+    value = getattr(inst, name)
+    if value:
+        return False
+
+    for attr_name, attr_ty in inst.__a__:
+        if attr_name != name:
+            continue
+        
+        if attr_ty.upper() != 'UNIQUE_ID':
+            return False
+
+        return True
+
+        
 class MetaModel(object):
     '''
     A meta model contains class definitions with associations between them,
@@ -496,7 +511,7 @@ class MetaModel(object):
     def _query(self, kind, many, **kwargs):
         for inst in iter(self.instances[kind]):
             for name, value in kwargs.items():
-                if value is None or getattr(inst, name) != value:
+                if _is_null(inst, name) or getattr(inst, name) != value:
                     break
             else:
                 yield inst
@@ -624,16 +639,16 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
 
     updated = False
     for from_name, to_name in zip(ass.source.ids, ass.target.ids):
-        from_value = getattr(from_inst, from_name)
-        to_value = getattr(to_inst, to_name)
-        
-        if to_value is None:
+        if _is_null(to_inst, to_name):
             raise ModelException('undefined referential attribute %s' % to_name)
         
+        from_value = getattr(from_inst, from_name)
+        to_value = getattr(to_inst, to_name)
+
         if from_value == to_value:
             continue
-        
-        if from_value is not None:
+
+        if not _is_null(from_inst, from_name):
             raise ModelException('instance is already related')
         
         updated = True
@@ -662,8 +677,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
 
     updated = False
     for from_name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
-        from_value = getattr(from_inst, from_name)
-        if from_value is None:
+        if _is_null(from_inst, from_name):
             raise ModelException('instances not related')
         
         updated = True
