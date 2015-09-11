@@ -384,17 +384,19 @@ class MetaModel(object):
         # set all attributes with an initial default value
         for name, ty in inst.__a__:
             if name in inst.__d__:
-                inst.__dict__[name] = None
+                value = None
             else:
-                inst.__dict__[name] = self._default_value(ty)
-
+                value = self._default_value(ty)
+            setattr(inst, name, value)
+            
         # set all positional arguments
         for attr, value in zip(inst.__a__, args):
             name, ty = attr
-            inst.__dict__[name] = value
+            setattr(inst, name, value)
             
         # set all named arguments
-        inst.__dict__.update(kwargs)
+        for name, value in kwargs.items():
+            setattr(inst, name, value)
             
         self.instances[ukind].append(inst)
         
