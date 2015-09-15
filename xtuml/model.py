@@ -329,7 +329,10 @@ def _is_null(inst, name):
     value = getattr(inst, name)
     if value:
         return False
-
+    
+    elif value is None:
+        return True
+    
     for attr_name, attr_ty in inst.__a__:
         if attr_name != name:
             continue
