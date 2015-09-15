@@ -332,17 +332,25 @@ def _is_null(inst, name):
     
     elif value is None:
         return True
-    
+
     name = name.upper()
     for attr_name, attr_ty in inst.__a__:
         attr_name.upper()
         if attr_name != name:
             continue
-        
-        if attr_ty.upper() != 'UNIQUE_ID':
-            return False
 
-        return True
+        attr_ty = attr_ty.upper()
+        if attr_ty == 'UNIQUE_ID':
+            # UUID(int=0) is reserved for null
+            return value == 0
+
+        elif attr_ty == 'STRING':
+            # empty string is reserved for null
+            return len(value) == 0
+
+        else:
+            #null-values for integer, boolean and real are not supported
+            return False
 
         
 class MetaModel(object):
