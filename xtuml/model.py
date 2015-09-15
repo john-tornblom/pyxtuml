@@ -333,7 +333,9 @@ def _is_null(inst, name):
     elif value is None:
         return True
     
+    name = name.upper()
     for attr_name, attr_ty in inst.__a__:
+        attr_name.upper()
         if attr_name != name:
             continue
         
