@@ -507,7 +507,7 @@ class MetaModel(object):
                 raise ModelException("Unknown class %s" % kind)
             return QuerySet()
 
-        return QuerySet(filter(where_cond, self.instances[kind]))
+        return QuerySet(filter(where_cond, self.instances[ukind]))
 
     def _default_value(self, ty_name):
         '''

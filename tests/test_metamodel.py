@@ -278,6 +278,25 @@ class TestDefineModel(unittest.TestCase):
         self.assertTrue(xtuml.relate(a, b, 1))
         
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
+
+    def testCaseSensitivity(self):
+        self.metamodel.define_class('Aa', [])
+        
+        self.metamodel.new('AA')
+
+        self.assertTrue(self.metamodel.select_any('aA'))
+        self.assertTrue(self.metamodel.select_any('AA'))
+        self.assertTrue(self.metamodel.select_any('Aa'))
+        self.assertTrue(self.metamodel.select_any('aa'))
+
+        self.metamodel.new('Aa')
+        self.metamodel.new('aA')
+        self.metamodel.new('aa')
+        
+        self.assertEqual(len(self.metamodel.select_many('aA')), 4)
+        self.assertEqual(len(self.metamodel.select_many('AA')), 4)
+        self.assertEqual(len(self.metamodel.select_many('Aa')), 4)
+        self.assertEqual(len(self.metamodel.select_many('aa')), 4)
         
 
     @expect_exception(xtuml.ModelException)
