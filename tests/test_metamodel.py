@@ -181,6 +181,22 @@ class TestModel(unittest.TestCase):
     def testRedefinedClass1(self):
         self.metamodel.define_class('MY_CLASS', [])
         self.metamodel.define_class('MY_Class', [])
+
+    @expect_exception(xtuml.ModelException)
+    def testSelectAnyUndefined(self):
+        self.metamodel.select_any('MY_CLASS')
+
+    @expect_exception(xtuml.ModelException)
+    def testSelectManyUndefined(self):
+        self.metamodel.select_many('MY_CLASS')
+
+    def testSurpressedSelectAnyUndefined(self):
+        self.metamodel.ignore_undefined_classes = True
+        self.assertIsNone(self.metamodel.select_any('MY_CLASS'))
+
+    def testSurpressedSelectManyUndefined(self):
+        self.metamodel.ignore_undefined_classes = True
+        self.assertEqual(len(self.metamodel.select_many('MY_CLASS')), 0)
         
     def testRelate(self):
         s_edt = self.metamodel.new('S_EDT')
