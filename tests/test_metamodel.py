@@ -14,6 +14,13 @@ def expect_exception(exception):
     return test_decorator
 
 
+class TestNavChain(unittest.TestCase):
+    
+    def testNavigateNone(self):
+        self.assertIsNone(xtuml.navigate_one(None)())
+        self.assertEqual(len(xtuml.navigate_many(None)()), 0)
+
+        
 class TestModel(unittest.TestCase):
     
     @classmethod
