@@ -20,6 +20,10 @@ class TestNavChain(unittest.TestCase):
         self.assertIsNone(xtuml.navigate_one(None)())
         self.assertEqual(len(xtuml.navigate_many(None)()), 0)
 
+    @expect_exception(xtuml.ModelException)
+    def testNavigateInvalidHandle(self):
+        self.assertIsNone(xtuml.navigate_one('test')())
+
         
 class TestModel(unittest.TestCase):
     
