@@ -171,6 +171,16 @@ class TestModel(unittest.TestCase):
     @expect_exception(xtuml.ModelException)
     def testUndefinedClass(self):
         self.metamodel.new('MY_UNDEFINED_CLASS')
+
+    @expect_exception(xtuml.ModelException)
+    def testRedefinedClass1(self):
+        self.metamodel.define_class('MY_CLASS', [])
+        self.metamodel.define_class('MY_CLASS', [])
+
+    @expect_exception(xtuml.ModelException)
+    def testRedefinedClass1(self):
+        self.metamodel.define_class('MY_CLASS', [])
+        self.metamodel.define_class('MY_Class', [])
         
     def testRelate(self):
         s_edt = self.metamodel.new('S_EDT')
