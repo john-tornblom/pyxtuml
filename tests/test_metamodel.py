@@ -14,6 +14,52 @@ def expect_exception(exception):
     return test_decorator
 
 
+
+class TestAssociation(unittest.TestCase):
+
+    def testAssociationConstructor(self):
+        l1 = xtuml.AssociationLink('CLASS1', '1C', [], 'next')
+        l2 = xtuml.AssociationLink('CLASS1', '1C', [], 'prev')
+        ass = xtuml.Association(1, l1, l2)
+        self.assertEqual(ass.id, 'R1')
+        self.assertTrue(ass.is_reflexive)
+
+        l1 = xtuml.AssociationLink('CLASS1', '1C', [], 'next')
+        l2 = xtuml.AssociationLink('CLASS2', '1C', [], 'prev')
+        ass = xtuml.Association('R2', l1, l2)
+        self.assertEqual(ass.id, 'R2')
+        self.assertFalse(ass.is_reflexive)
+        
+    def testAssociationLinkConstructor(self):
+        l = xtuml.AssociationLink('CLASS', '1', [], 'test')
+        self.assertFalse(l.is_many)
+        self.assertFalse(l.is_conditional)
+
+        l = xtuml.AssociationLink('CLASS', '1C', [], 'test')
+        self.assertFalse(l.is_many)
+        self.assertTrue(l.is_conditional)
+
+        l = xtuml.AssociationLink('CLASS', '1c', [], 'test')
+        self.assertFalse(l.is_many)
+        self.assertTrue(l.is_conditional)
+
+        l = xtuml.AssociationLink('CLASS', 'MC', [], 'test')
+        self.assertTrue(l.is_many)
+        self.assertTrue(l.is_conditional)
+
+        l = xtuml.AssociationLink('CLASS', 'mC', [], 'test')
+        self.assertTrue(l.is_many)
+        self.assertTrue(l.is_conditional)
+
+        l = xtuml.AssociationLink('CLASS', 'Mc', [], 'test')
+        self.assertTrue(l.is_many)
+        self.assertTrue(l.is_conditional)
+
+        l = xtuml.AssociationLink('CLASS', 'mc', [], 'test')
+        self.assertTrue(l.is_many)
+        self.assertTrue(l.is_conditional)
+        
+        
 class TestNavChain(unittest.TestCase):
     
     def testNavigateNone(self):

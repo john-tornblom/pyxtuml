@@ -94,7 +94,11 @@ class Association(object):
         self.source = source
         self.target = target    
 
+    @property
+    def is_reflexive(self):
+        return self.source.kind == self.target.kind
 
+    
 class AssociationLink(object):
     '''
     An association link represent an end point in an association.
