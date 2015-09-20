@@ -278,7 +278,7 @@ class TestDefineModel(unittest.TestCase):
         a_endpint = xtuml.SingleAssociationLink('A', ids=['Id'])
         b_endpint = xtuml.ManyAssociationLink('B', ids=['A_Id'])
         
-        self.metamodel.define_relation('R1', a_endpint, b_endpint)
+        self.metamodel.define_relation(1, a_endpint, b_endpint)
         
         a = self.metamodel.new('A')
         b = self.metamodel.new('B')

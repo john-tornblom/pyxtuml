@@ -452,14 +452,14 @@ class MetaModel(object):
         Source.__d__ |= set(ass.source.ids)
         Target.__i__ |= set(ass.target.ids)
         
-        if rel_id not in Source.__r__:
-            Source.__r__[rel_id] = set()
+        if ass.id not in Source.__r__:
+            Source.__r__[ass.id] = set()
             
-        if rel_id not in Target.__r__:
-            Target.__r__[rel_id] = set()
+        if ass.id not in Target.__r__:
+            Target.__r__[ass.id] = set()
             
-        Source.__r__[rel_id].add(ass)
-        Target.__r__[rel_id].add(ass)
+        Source.__r__[ass.id].add(ass)
+        Target.__r__[ass.id].add(ass)
         
         if target_kind not in Source.__q__:
             Source.__q__[target_kind] = dict()
@@ -467,14 +467,14 @@ class MetaModel(object):
         if source_kind not in Target.__q__:
             Target.__q__[source_kind] = dict()
         
-        if rel_id not in Source.__q__[target_kind]:
-            Source.__q__[target_kind][rel_id] = dict()
+        if ass.id not in Source.__q__[target_kind]:
+            Source.__q__[target_kind][ass.id] = dict()
             
-        if rel_id not in Target.__q__[source_kind]:
-            Target.__q__[source_kind][rel_id] = dict()
+        if ass.id not in Target.__q__[source_kind]:
+            Target.__q__[source_kind][ass.id] = dict()
         
-        Source.__q__[target_kind][rel_id][target.phrase] = self._formalized_query(source, target)
-        Target.__q__[source_kind][rel_id][source.phrase] = self._formalized_query(target, source)
+        Source.__q__[target_kind][ass.id][target.phrase] = self._formalized_query(source, target)
+        Target.__q__[source_kind][ass.id][source.phrase] = self._formalized_query(target, source)
     
         return ass
     
