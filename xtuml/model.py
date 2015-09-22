@@ -562,8 +562,8 @@ def _find_association_links(inst1, inst2, rel_id, phrase):
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
     
-    kind1 = inst1.__class__.__name__
-    kind2 = inst2.__class__.__name__
+    kind1 = inst1.__class__.__name__.upper()
+    kind2 = inst2.__class__.__name__.upper()
     
     if (rel_id not in inst1.__r__ or
         rel_id not in inst2.__r__):
