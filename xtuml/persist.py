@@ -23,7 +23,7 @@ def serialize_value(value, ty):
         'INTEGER'   : 0,
         'REAL'      : 0.0,
         'STRING'    : '',
-        'UNIQUE_ID' : uuid.UUID(int=0)
+        'UNIQUE_ID' : 0
     }
     
     transfer_fn = {
