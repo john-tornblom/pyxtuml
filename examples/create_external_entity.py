@@ -2,9 +2,21 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
 import xtuml
+import operator
 
 from bridgepoint import ooaofooa
 from xtuml import relate
+
+
+def where(**kwargs):
+    '''
+    Create a where-clause with equivalence tests for a number of name,value pair
+    '''
+    f = lambda sel: reduce(operator.and_,
+                           [getattr(sel, name) == val
+                            for name, val in kwargs.items()],
+                            True)
+    return f
 
 
 m = ooaofooa.empty_model()
@@ -27,7 +39,7 @@ relate(pe_pe, ep_pkg, 8000)
 #
 # Create a bridge operation (My_Bridge_Operation: boolean)
 #
-s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'boolean')
+s_dt = m.select_one('S_DT', where(Name='boolean'))
 s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
 relate(s_brg, s_ee, 19)
 relate(s_brg, s_dt, 20)
@@ -35,7 +47,7 @@ relate(s_brg, s_dt, 20)
 #
 # Create a bridge parameter (My_Parameter: string)
 #
-s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
+s_dt = m.select_one('S_DT', where(Name='string'))
 s_bparm = m.new('S_BPARM', Name='My_Parameter')
 relate(s_bparm, s_brg, 21)
 relate(s_bparm, s_dt, 22)
