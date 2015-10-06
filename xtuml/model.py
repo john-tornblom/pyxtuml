@@ -536,7 +536,7 @@ class MetaModel(object):
         '''
         res = True
 
-        def _compact_instance_repr(inst):
+        def to_link_repr(inst):
             values = ''
             prefix = ''
  
@@ -550,20 +550,31 @@ class MetaModel(object):
                     prefix=', '
                 
             return '%s(%s)' % (to_link.kind, values)
-    
+        
+        def from_link_repr(inst):
+            values = ''
+            prefix = ''
+ 
+            for name, ty in inst.__a__:
+                if name in inst.__i__:
+                    value = getattr(inst, name)
+                    value = xtuml.serialize_value(value, ty)
+                    values += '%s%s=%s' % (prefix, name, value)
+                    prefix=', '
+                
+            return '%s(%s)' % (from_link.kind, values)
+        
         for inst in self.select_many(from_link.kind):
-            q_set = navigate_many(inst).nav(to_link.kind, rel_id, to_link.phrase)()
+            nav_chain = xtuml.navigate_many(inst)
+            q_set = nav_chain.nav(to_link.kind, rel_id, to_link.phrase)()
 
-            if not to_link.is_conditional and len(q_set) < 1:
+            if(len(q_set) < 1 and not to_link.is_conditional) or (
+              (len(q_set) > 1 and not to_link.is_many)):
                 res = False
-                logger.warning('encountered integrity violation in %s --(%s)--> %s' % (from_link.kind,
-                                                                                       rel_id,
-                                                                                       _compact_instance_repr(inst)))
-            if not to_link.is_many and len(q_set) > 1:
-                res = False
-                logger.warning('encountered integrity violation in %s --(%s)--> %s' % (refrom_link.kind,
-                                                                                       rel_id,
-                                                                                       _compact_instance_repr(inst)))
+                logger.warning('integrity violation in '
+                                '%s --(%s)--> %s' % (from_link_repr(inst), 
+                                                     rel_id, 
+                                                     to_link_repr(inst)))
         return res
     
     def _default_value(self, ty_name):
