@@ -513,6 +513,42 @@ class MetaModel(object):
 
         return QuerySet(filter(where_cond, self.instances[ukind]))
 
+    def is_consistent(self, rel_id=None):
+        '''
+        Check the model for integrity violations on associations.
+        '''
+        if isinstance(rel_id, int):
+            rel_id = 'R%d' % rel_id
+            
+        res = True
+        for ass in self.associations:
+            if rel_id in [ass.id, None]:
+                res &= self._check_link_integrity(ass.source, ass.id, ass.target)
+                res &= self._check_link_integrity(ass.target, ass.id, ass.source)
+
+        return res
+    
+    def _check_link_integrity(self, from_link, rel_id, to_link):
+        '''
+        Check the model for integrity violations on an association in a particular direction.
+        '''
+        res = True
+        for inst in self.select_many(from_link.kind):
+            q_set = navigate_many(inst).nav(to_link.kind, rel_id, to_link.phrase)()
+
+            if not to_link.is_conditional and len(q_set) < 1:
+                res = False
+                logger.warning('%s --(%s)--> %s yield no instances' % (from_link.kind,
+                                                                       rel_id,
+                                                                       to_link.kind))
+            if not to_link.is_many and len(q_set) > 1:
+                res = False
+                logger.warning('%s --(%s)--> %s yield several instances' % (from_link.kind,
+                                                                            rel_id,
+                                                                            to_link.kind))
+        return res
+
+    
     def _default_value(self, ty_name):
         '''
         Obtain the default value for a named meta model type.
