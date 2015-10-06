@@ -13,6 +13,8 @@ try:
 except ImportError:
     pass
 
+import xtuml
+
 
 logger = logging.getLogger(__name__)
 
@@ -533,21 +535,36 @@ class MetaModel(object):
         Check the model for integrity violations on an association in a particular direction.
         '''
         res = True
+
+        def _compact_instance_repr(inst):
+            values = ''
+            prefix = ''
+ 
+            for name, ty in inst.__a__:
+                if name in from_link.ids:
+                    value = getattr(inst, name)
+                    value = xtuml.serialize_value(value, ty)
+                    idx = from_link.ids.index(name)
+                    name = to_link.ids[idx]
+                    values += '%s%s=%s' % (prefix, name, value)
+                    prefix=', '
+                
+            return '%s(%s)' % (to_link.kind, values)
+    
         for inst in self.select_many(from_link.kind):
             q_set = navigate_many(inst).nav(to_link.kind, rel_id, to_link.phrase)()
 
             if not to_link.is_conditional and len(q_set) < 1:
                 res = False
-                logger.warning('%s --(%s)--> %s yield no instances' % (from_link.kind,
-                                                                       rel_id,
-                                                                       to_link.kind))
+                logger.warning('encountered integrity violation in %s --(%s)--> %s' % (from_link.kind,
+                                                                                       rel_id,
+                                                                                       _compact_instance_repr(inst)))
             if not to_link.is_many and len(q_set) > 1:
                 res = False
-                logger.warning('%s --(%s)--> %s yield several instances' % (from_link.kind,
-                                                                            rel_id,
-                                                                            to_link.kind))
+                logger.warning('encountered integrity violation in %s --(%s)--> %s' % (refrom_link.kind,
+                                                                                       rel_id,
+                                                                                       _compact_instance_repr(inst)))
         return res
-
     
     def _default_value(self, ty_name):
         '''

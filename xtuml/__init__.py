@@ -16,6 +16,7 @@ from .persist import serialize_class
 from .persist import serialize_association
 from .persist import serialize_instances
 from .persist import serialize_instance
+from .persist import serialize_value
 
 from .model import Association
 from .model import AssociationLink
