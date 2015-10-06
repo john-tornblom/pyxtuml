@@ -127,6 +127,29 @@ class ModelLoader(object):
         '''
         return self.input(f.read())
 
+    def populate_classes(self, m):
+        '''
+        Populate a metamodel with classes previously encontered from input
+        '''
+        for stmt in self.statements:
+            if isinstance(stmt, CreateClassStmt):
+                m.define_class(stmt.kind, stmt.attributes)
+
+    def populate_associations(self, m):
+        '''
+        Populate a metamodel with associations previously encontered from input
+        '''
+        for stmt in self.statements:
+            if isinstance(stmt, CreateRelatationStmt):
+                m.define_relation(stmt.id, *stmt.end_points)
+                
+    def populate_instances(self, m):
+        '''
+        Populate a metamodel with classes previously encontered from input
+        '''
+        for stmt in self.statements:
+            if isinstance(stmt, CreateInstanceStmt):
+                m.new(stmt.kind, *stmt.values)
 
     def build_metamodel(self, id_generator=None, ignore_undefined_classes=False):
         '''
@@ -135,20 +158,10 @@ class ModelLoader(object):
         m = model.MetaModel(id_generator)
         m.ignore_undefined_classes = ignore_undefined_classes
         
-        schema = [s for s in self.statements if isinstance(s, CreateClassStmt)]
-        relations = [s for s in self.statements if isinstance(s, CreateRelatationStmt)]
-        instances = [s for s in self.statements if isinstance(s, CreateInstanceStmt)]
+        self.populate_classes(m)
+        self.populate_associations(m)
+        self.populate_instances(m)
         
-        for s in schema:
-            m.define_class(s.kind, s.attributes)
-        
-        for s in relations:
-            end1, end2 = s.end_points
-            m.define_relation(s.id, end1, end2)
-            
-        for s in instances:
-            m.new(s.kind, *s.values)
-            
         return m
 
     def t_comment(self, t):
