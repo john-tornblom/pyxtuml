@@ -266,7 +266,7 @@ class ModelLoader(object):
 
     def p_create_table_statement(self, p):
         '''create_table_statement : CREATE TABLE ident LPAREN attr_list RPAREN'''
-        p[0] = CreateClassStmt(p[3].upper(), p[5])
+        p[0] = CreateClassStmt(p[3], p[5])
 
     def p_attr_list_1(self, p):
         '''attr_list : attr'''
@@ -288,7 +288,7 @@ class ModelLoader(object):
         '''
         insert_into_statement : INSERT INTO ident VALUES LPAREN value_list RPAREN
         '''
-        p[0] = CreateInstanceStmt(p[3].upper(), p[6])
+        p[0] = CreateInstanceStmt(p[3], p[6])
 
     def p_value_list_1(self, p):
         '''value_list : value'''
@@ -334,11 +334,11 @@ class ModelLoader(object):
 
     def p_association_end_1(self, p):
         '''association_end : cardinality ident LPAREN id_list RPAREN'''
-        p[0] = model.AssociationLink(p[2].upper(), p[1], p[4])
+        p[0] = model.AssociationLink(p[2], p[1], p[4])
 
     def p_association_end_2(self, p):
         '''association_end : cardinality ident LPAREN id_list RPAREN PHRASE STRING'''
-        p[0] = model.AssociationLink(p[2].upper(), p[1], p[4], p[7][1:-1])
+        p[0] = model.AssociationLink(p[2], p[1], p[4], p[7][1:-1])
 
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''
