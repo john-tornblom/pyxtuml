@@ -178,13 +178,14 @@ class ModelLoader(object):
         for stmt in self.statements:
             if isinstance(stmt, CreateInstanceStmt):
                 Cls = m.classes[stmt.kind]
-                kwargs = dict()
+                args = list()
                 
                 for attr, value in zip(Cls.__a__, stmt.values):
-                    name, ty = attr
-                    kwargs[name] = self.deserialize_value(ty, value) 
+                    _, ty = attr
+                    value = self.deserialize_value(ty, value) 
+                    args.append(value)
             
-                m.new(stmt.kind, **kwargs)
+                m.new(stmt.kind, *args)
 
     def build_metamodel(self, id_generator=None, ignore_undefined_classes=False):
         '''

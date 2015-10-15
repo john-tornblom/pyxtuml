@@ -450,6 +450,30 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.UNIQUE_ID, 1)
 
 
+    def testSerializeAttributeNamedSelf(self):
+        schema = '''
+            CREATE TABLE X (self UNIQUE_ID);
+        '''
+        
+        loader = xtuml.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        
+        m = loader.build_metamodel()
+        m.new('X', 1)
+        
+        s = xtuml.serialize_instances(m)
+        
+        loader = xtuml.load.ModelLoader()
+        loader.build_parser()
+        loader.input(schema)
+        loader.input(s)
+        
+        m = loader.build_metamodel()
+        x = m.select_any('X')
+        self.assertEqual(x.self, 1)
+
+
 class TestSchema(unittest.TestCase):
 
     @schema_compare
