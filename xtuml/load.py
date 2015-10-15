@@ -149,12 +149,27 @@ class ModelLoader(object):
         Obtain the default value for a named meta model type.
         '''
         uty = ty.upper()
-        if   uty == 'BOOLEAN': return bool(int(value))
-        elif uty == 'INTEGER': return int(value)
-        elif uty == 'REAL': return float(value)
-        elif uty == 'STRING': return value.replace("''", "'")[1:-1]
-        elif uty == 'UNIQUE_ID': return uuid.UUID(value[1:-1]).int
-        else: raise ParsingException("Unknown type named '%s'" % ty)
+        
+        if uty == 'BOOLEAN': 
+            return bool(int(value))
+        
+        elif uty == 'INTEGER': 
+            return int(value)
+        
+        elif uty == 'REAL': 
+            return float(value)
+        
+        elif uty == 'STRING': 
+            return value.replace("''", "'")[1:-1]
+        
+        elif uty == 'UNIQUE_ID': 
+            if '"' in value:
+                return uuid.UUID(value[1:-1]).int
+            else:
+                return int(value)
+        
+        else:
+            raise ParsingException("Unknown type named '%s'" % ty)
         
     def populate_instances(self, m):
         '''
