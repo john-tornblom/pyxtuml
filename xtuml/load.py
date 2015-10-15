@@ -143,13 +143,33 @@ class ModelLoader(object):
             if isinstance(stmt, CreateRelatationStmt):
                 m.define_relation(stmt.id, *stmt.end_points)
                 
+    @staticmethod
+    def deserialize_value(ty, value):
+        '''
+        Obtain the default value for a named meta model type.
+        '''
+        uty = ty.upper()
+        if   uty == 'BOOLEAN': return bool(int(value))
+        elif uty == 'INTEGER': return int(value)
+        elif uty == 'REAL': return float(value)
+        elif uty == 'STRING': return value.replace("''", "'")[1:-1]
+        elif uty == 'UNIQUE_ID': return uuid.UUID(value[1:-1]).int
+        else: raise ParsingException("Unknown type named '%s'" % ty)
+        
     def populate_instances(self, m):
         '''
         Populate a metamodel with classes previously encontered from input
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateInstanceStmt):
-                m.new(stmt.kind, *stmt.values)
+                Cls = m.classes[stmt.kind]
+                kwargs = dict()
+                
+                for attr, value in zip(Cls.__a__, stmt.values):
+                    name, ty = attr
+                    kwargs[name] = self.deserialize_value(ty, value) 
+            
+                m.new(stmt.kind, **kwargs)
 
     def build_metamodel(self, id_generator=None, ignore_undefined_classes=False):
         '''
@@ -304,27 +324,27 @@ class ModelLoader(object):
         
     def p_value_1(self, p):
         '''value : FRACTION'''
-        p[0] = float(p[1])
+        p[0] = p[1]
 
     def p_value_2(self, p):
         '''value : MINUS FRACTION'''
-        p[0] = -float(p[2])
+        p[0] = p[1] + p[2]
 
     def p_value_3(self, p):
         '''value : NUMBER'''
-        p[0] = int(p[1])
+        p[0] = p[1]
 
     def p_value_4(self, p):
         '''value : MINUS NUMBER'''
-        p[0] = -int(p[2])
+        p[0] = p[1] + p[2]
 
     def p_value_5(self, p):
         '''value : STRING'''
-        p[0] = str(p[1].replace("''", "'")[1:-1])
+        p[0] = p[1]
 
     def p_value_6(self, p):
         '''value : GUID'''
-        p[0] = uuid.UUID(p[1][1:-1]).int
+        p[0] = p[1]
 
     def p_create_rop_statement(self, p):
         '''

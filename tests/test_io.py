@@ -367,6 +367,15 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, -5.5)
         self.assertEqual(x.UNIQUE_ID, 1)
         
+        self.assertIsInstance(x.BOOLEAN, bool)
+        self.assertIsInstance(x.INTEGER, int)
+        self.assertIsInstance(x.REAL, float)
+        
+        # don't check type of unique_ids. they may differ.
+        # python2 uses long, while python3 uses int.
+        # besides, only equals comparisons operator (==) shall be used on these types.
+        # self.assertIsInstance(x.UNIQUE_ID, int)
+        
     def testSerializeDefaultValues(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
