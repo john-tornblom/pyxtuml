@@ -57,7 +57,9 @@ class ModelLoader(object):
         'REF_ID',
         'FROM',
         'TO',
-        'PHRASE'
+        'PHRASE',
+        'TRUE',
+        'FALSE'
     )
 
     tokens = reserved + (
@@ -150,9 +152,16 @@ class ModelLoader(object):
         '''
         uty = ty.upper()
         
-        if uty == 'BOOLEAN': 
-            return bool(int(value))
-        
+        if uty == 'BOOLEAN':
+            if value.isdigit():
+                return bool(int(value))
+            elif value.upper() == 'FALSE':
+                return False
+            elif value.upper() == 'TRUE':
+                return True
+            else:
+                raise ParsingException("Unable to convert '%s' to a boolean" % value)
+            
         elif uty == 'INTEGER': 
             return int(value)
         
@@ -362,6 +371,14 @@ class ModelLoader(object):
         '''value : GUID'''
         p[0] = p[1]
 
+    def p_value_7(self, p):
+        '''value : TRUE'''
+        p[0] = p[1]
+        
+    def p_value_8(self, p):
+        '''value : FALSE'''
+        p[0] = p[1]
+        
     def p_create_rop_statement(self, p):
         '''
         create_rop_statement : CREATE ROP REF_ID RELID FROM association_end TO association_end
@@ -448,6 +465,14 @@ class ModelLoader(object):
         '''ident : PHRASE'''
         p[0] = p[1]
 
+    def p_idend_12(self, p):
+        '''ident : TRUE'''
+        p[0] = p[1]
+        
+    def p_idend_13(self, p):
+        '''ident : FALSE'''
+        p[0] = p[1]
+        
     def p_error(self, p):
         if p:
             raise ParsingException("invalid token '%s' at (%s, %d)" % (p.value, p.lineno, p.lexpos))
