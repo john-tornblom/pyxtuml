@@ -168,6 +168,22 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('PHRASE') is not None)
         
     @load
+    def testTableNamedTRUE(self, m):
+        '''
+        CREATE TABLE TRUE (Id UNIQUE_ID);
+        INSERT INTO TRUE VALUES ("00000000-0000-0000-0000-000000000000");
+        '''
+        self.assertTrue(m.select_any('TRUE') is not None)
+        
+    @load
+    def testTableNamedFALSE(self, m):
+        '''
+        CREATE TABLE FALSE (Id UNIQUE_ID);
+        INSERT INTO FALSE VALUES ("00000000-0000-0000-0000-000000000000");
+        '''
+        self.assertTrue(m.select_any('FALSE') is not None)
+        
+    @load
     def testEmptyAttributeList(self, m):
         '''
         CREATE TABLE X ();
@@ -224,6 +240,26 @@ class TestLoader(unittest.TestCase):
         val = m.select_any('X')
         self.assertTrue(val is not None)
         self.assertEqual(val.Id, 5)
+        
+    @load
+    def testInsertBOOLEAN_True(self, m):
+        '''
+        CREATE TABLE X (Id BOOLEAN);
+        INSERT INTO X VALUES (true);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, True)
+        
+    @load
+    def testInsertBOOLEAN_False(self, m):
+        '''
+        CREATE TABLE X (Id BOOLEAN);
+        INSERT INTO X VALUES (false);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, False)
         
     @load
     def testInsertINTEGER_Negative(self, m):
