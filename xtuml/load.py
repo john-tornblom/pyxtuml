@@ -233,11 +233,12 @@ class ModelLoader(object):
         r'(1C)'
         t.endlexpos = t.lexpos + len(t.value)
         return t
-
+    
     def t_ID(self, t):
         r'[A-Za-z_][\w_]*'
-        if t.value in self.reserved:
-            t.type = t.value
+        vup = t.value.upper()
+        if vup in self.reserved:
+            t.type = vup
         t.endlexpos = t.lexpos + len(t.value)
         return t
 
