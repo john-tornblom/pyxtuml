@@ -129,6 +129,13 @@ def serialize_schema(metamodel):
     return s
 
 
+def serialize_database(metamodel):
+    '''
+    Serialize schema and instances for a xtUML meta model.
+    '''
+    return serialize_schema(metamodel) + serialize_instances(metamodel)
+
+
 def persist_instances(metamodel, path):
     '''
     Persist instances from a meta model to disk.
@@ -144,5 +151,14 @@ def persist_schema(metamodel, path):
     '''
     with open(path, 'w') as f:
         s = serialize_schema(metamodel)
+        f.write(s)
+
+
+def persist_database(metamodel, path):
+    '''
+    Persist schema and instances from a meta model to disk.
+    '''
+    with open(path, 'w') as f:
+        s = serialize_database(metamodel)
         f.write(s)
 

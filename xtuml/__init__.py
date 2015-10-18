@@ -8,9 +8,11 @@ from .load import load_metamodel
 from .load import ParsingException
 from .load import ModelLoader
 
+from .persist import persist_database
 from .persist import persist_instances
 from .persist import persist_schema
 
+from .persist import serialize_database
 from .persist import serialize_schema
 from .persist import serialize_class
 from .persist import serialize_association
