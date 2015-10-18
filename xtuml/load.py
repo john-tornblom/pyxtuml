@@ -131,7 +131,7 @@ class ModelLoader(object):
 
     def populate_classes(self, m):
         '''
-        Populate a metamodel with classes previously encontered from input
+        Populate a metamodel with classes previously encountered from input
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateClassStmt):
@@ -139,7 +139,7 @@ class ModelLoader(object):
 
     def populate_associations(self, m):
         '''
-        Populate a metamodel with associations previously encontered from input
+        Populate a metamodel with associations previously encountered from input
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateRelatationStmt):
@@ -182,7 +182,7 @@ class ModelLoader(object):
         
     def populate_instances(self, m):
         '''
-        Populate a metamodel with classes previously encontered from input
+        Populate a metamodel with classes previously encountered from input
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateInstanceStmt):
