@@ -196,6 +196,14 @@ class ModelLoader(object):
             
                 m.new(stmt.kind, *args)
 
+    def populate(self, m):
+        '''
+        Populate a metamodel with entities previously encountered from input
+        '''
+        self.populate_classes(m)
+        self.populate_associations(m)
+        self.populate_instances(m)
+        
     def build_metamodel(self, id_generator=None, ignore_undefined_classes=False):
         '''
         Build and return a meta model from previously parsed input.
@@ -203,9 +211,7 @@ class ModelLoader(object):
         m = model.MetaModel(id_generator)
         m.ignore_undefined_classes = ignore_undefined_classes
         
-        self.populate_classes(m)
-        self.populate_associations(m)
-        self.populate_instances(m)
+        self.populate(m)
         
         return m
 
