@@ -309,6 +309,16 @@ class TestLoader(unittest.TestCase):
         y = xtuml.navigate_one(x).Y[1]()
         self.assertTrue(y is not None)
 
+    @load
+    def testEmptyInput(self, m):
+        ''''''
+        pass
+    
+    @load
+    def testEmptyInputWithComment(self, m):
+        '''-- Some comment'''
+        pass
+        
     @expect_exception(ply.lex.LexError)
     @load
     def testIllegalCharacter(self, m):

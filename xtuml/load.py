@@ -111,9 +111,8 @@ class ModelLoader(object):
         '''
         Parse input as raw data.
         '''
-        if data:
-            s = self.parser.parse(lexer=self.lexer, input=data)
-            self.statements.extend(s)
+        s = self.parser.parse(lexer=self.lexer, input=data)
+        self.statements.extend(s)
     
 
     def filename_input(self, filename):
@@ -217,7 +216,7 @@ class ModelLoader(object):
         return m
 
     def t_comment(self, t):
-        r'\-\-([^\n]*\n)'
+        r'\-\-([^\n]*\n?)'
         t.lexer.lineno += (t.value.count("\n"))
         t.endlexpos = t.lexpos + len(t.value)
 
@@ -293,10 +292,14 @@ class ModelLoader(object):
     def t_error(self, t):
         logger.error("line %d: Illegal character '%s'" % (t.lineno, t.value[0]))
 
-    def p_translation_unit(self, p):
+    def p_translation_unit_1(self, p):
         '''translation_unit : statement_list'''
         p[0] = p[1]
 
+    def p_translation_unit_2(self, p):
+        '''translation_unit :'''
+        p[0] = list()
+        
     def p_statement_list_1(self, p):
         '''statement_list : statement'''
         p[0] = [p[1]]
