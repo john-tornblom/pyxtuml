@@ -111,8 +111,9 @@ class ModelLoader(object):
         '''
         Parse input as raw data.
         '''
-        s = self.parser.parse(lexer=self.lexer, input=data)
-        self.statements.extend(s)
+        if data:
+            s = self.parser.parse(lexer=self.lexer, input=data)
+            self.statements.extend(s)
     
 
     def filename_input(self, filename):
