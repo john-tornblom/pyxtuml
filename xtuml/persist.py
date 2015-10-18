@@ -46,8 +46,6 @@ def serialize_instance(inst):
     '''
     attr_count = 0
 
-    
-    
     table = inst.__class__.__name__
     s = 'INSERT INTO %s VALUES (' % table
     for name, ty in inst.__a__:
@@ -133,7 +131,10 @@ def serialize_database(metamodel):
     '''
     Serialize schema and instances for a xtUML meta model.
     '''
-    return serialize_schema(metamodel) + serialize_instances(metamodel)
+    schema = serialize_schema(metamodel)
+    instances = serialize_instances(metamodel)
+    
+    return ''.join([schema, instances])
 
 
 def persist_instances(metamodel, path):
@@ -141,8 +142,10 @@ def persist_instances(metamodel, path):
     Persist instances from a meta model to disk.
     '''
     with open(path, 'w') as f:
-        s = serialize_instances(metamodel)
-        f.write(s)
+        for lst in metamodel.instances.values():
+            for inst in lst:
+                s = serialize_instance(inst)
+                f.write(s)
 
 
 def persist_schema(metamodel, path):
@@ -150,8 +153,13 @@ def persist_schema(metamodel, path):
     Persist a schema of a meta model to disk.
     '''
     with open(path, 'w') as f:
-        s = serialize_schema(metamodel)
-        f.write(s)
+        for kind in sorted(metamodel.classes.keys()):
+            s = serialize_class(metamodel.classes[kind])
+            f.write(s)
+            
+        for ass in sorted(metamodel.associations, key=lambda x: x.id):
+            s = serialize_association(ass)
+            f.write(s)
 
 
 def persist_database(metamodel, path):
@@ -159,6 +167,15 @@ def persist_database(metamodel, path):
     Persist schema and instances from a meta model to disk.
     '''
     with open(path, 'w') as f:
-        s = serialize_database(metamodel)
-        f.write(s)
+        for kind in sorted(metamodel.classes.keys()):
+            s = serialize_class(metamodel.classes[kind])
+            f.write(s)
+            
+        for ass in sorted(metamodel.associations, key=lambda x: x.id):
+            s = serialize_association(ass)
+            f.write(s)
 
+        for lst in metamodel.instances.values():
+            for inst in lst:
+                s = serialize_instance(inst)
+                f.write(s)
