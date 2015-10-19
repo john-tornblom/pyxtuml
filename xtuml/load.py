@@ -292,116 +292,97 @@ class ModelLoader(object):
     def t_error(self, t):
         logger.error("line %d: Illegal character '%s'" % (t.lineno, t.value[0]))
 
-    def p_translation_unit_1(self, p):
-        '''translation_unit : statement_list'''
-        p[0] = p[1]
-
-    def p_translation_unit_2(self, p):
+    def p_empty_translation_unit(self, p):
         '''translation_unit :'''
         p[0] = list()
         
-    def p_statement_list_1(self, p):
-        '''statement_list : statement'''
-        p[0] = [p[1]]
+    def p_translation_unit(self, p):
+        '''translation_unit : statement_sequence'''
+        p[0] = p[1]
 
-    def p_statement_list_2(self, p):
-        '''statement_list : statement_list statement'''
+    def p_statement_sequence(self, p):
+        '''statement_sequence : statement_sequence statement'''
         p[0] = p[1] + [p[2]]
 
-    def p_statement_1(self, p):
-        '''statement : create_table_statement SEMICOLON'''
-        p[0] = p[1]
-
-    def p_statement_2(self, p):
-        '''statement : insert_into_statement SEMICOLON'''
-        p[0] = p[1]
-
-    def p_statement_3(self, p):
-        '''statement : create_rop_statement SEMICOLON'''
+    def p_statement_sequence_endpoint(self, p):
+        '''statement_sequence : statement'''
+        p[0] = [p[1]]
+        
+    def p_statement(self, p):
+        '''
+        statement : create_table_statement SEMICOLON
+                  | insert_into_statement SEMICOLON
+                  | create_rop_statement SEMICOLON
+                  
+        '''
         p[0] = p[1]
 
     def p_create_table_statement(self, p):
-        '''create_table_statement : CREATE TABLE ident LPAREN attr_list RPAREN'''
+        '''create_table_statement : CREATE TABLE identifier LPAREN attribute_sequence RPAREN'''
         p[0] = CreateClassStmt(p[3], p[5])
 
-    def p_attr_list_1(self, p):
-        '''attr_list : attr'''
+    def p_empty_attribute_sequence(self, p):
+        '''attribute_sequence : '''
+        p[0] = []
+        
+    def p_attribute_sequence_endpoint(self, p):
+        '''attribute_sequence : attribute'''
         p[0] = [p[1]]
 
-    def p_attr_list_2(self, p):
-        '''attr_list : attr_list COMMA attr'''
+    def p_attribute_sequence(self, p):
+        '''attribute_sequence : attribute_sequence COMMA attribute'''
         p[0] = p[1] + [p[3]]
 
-    def p_attr_list_3(self, p):
-        '''attr_list : '''
-        p[0] = []
-
-    def p_attr(self, p):
-        '''attr : ident ident'''
+    def p_attribute(self, p):
+        '''attribute : identifier identifier'''
         p[0] = (p[1], p[2])
 
     def p_insert_into_statement(self, p):
         '''
-        insert_into_statement : INSERT INTO ident VALUES LPAREN value_list RPAREN
+        insert_into_statement : INSERT INTO identifier VALUES LPAREN value_sequence RPAREN
         '''
         p[0] = CreateInstanceStmt(p[3], p[6])
 
-    def p_value_list_1(self, p):
-        '''value_list : value'''
-        p[0] = [p[1]]
-
-    def p_value_list_2(self, p):
-        '''value_list : value_list COMMA value'''
-        p[0] = p[1] + [p[3]]
-
-    def p_value_list_3(self, p):
-        '''value_list : '''
+    def p_empty_value_sequence(self, p):
+        '''value_sequence : '''
         p[0] = []
+
+    def p_value_sequence(self, p):
+        '''value_sequence : value_sequence COMMA value'''
+        p[0] = p[1] + [p[3]]
         
-    def p_value_1(self, p):
-        '''value : FRACTION'''
-        p[0] = p[1]
-
-    def p_value_2(self, p):
-        '''value : MINUS FRACTION'''
-        p[0] = p[1] + p[2]
-
-    def p_value_3(self, p):
-        '''value : NUMBER'''
-        p[0] = p[1]
-
-    def p_value_4(self, p):
-        '''value : MINUS NUMBER'''
-        p[0] = p[1] + p[2]
-
-    def p_value_5(self, p):
-        '''value : STRING'''
-        p[0] = p[1]
-
-    def p_value_6(self, p):
-        '''value : GUID'''
-        p[0] = p[1]
-
-    def p_value_7(self, p):
-        '''value : TRUE'''
-        p[0] = p[1]
+    def p_value_sequence_endpoint(self, p):
+        '''value_sequence : value'''
+        p[0] = [p[1]]
         
-    def p_value_8(self, p):
-        '''value : FALSE'''
+    def p_value(self, p):
+        '''
+        value : FRACTION
+              | NUMBER
+              | STRING
+              | GUID
+              | TRUE
+              | FALSE
+        '''
         p[0] = p[1]
+
+    def p_negative_value(self, p):
+        '''
+        value : MINUS FRACTION
+              | MINUS NUMBER
+        '''
+        p[0] = p[1] + p[2]
         
     def p_create_rop_statement(self, p):
-        '''
-        create_rop_statement : CREATE ROP REF_ID RELID FROM association_end TO association_end
-        '''
+        '''create_rop_statement : CREATE ROP REF_ID RELID FROM association_end TO association_end'''
         p[0] = CreateRelatationStmt(p[6], p[8], p[4])
 
-    def p_association_end_1(self, p):
-        '''association_end : cardinality ident LPAREN id_list RPAREN'''
+    def p_association_end(self, p):
+        '''association_end : cardinality identifier LPAREN identifier_sequence RPAREN'''
         p[0] = model.AssociationLink(p[2], p[1], p[4])
 
-    def p_association_end_2(self, p):
-        '''association_end : cardinality ident LPAREN id_list RPAREN PHRASE STRING'''
+    def p_phrased_association_end(self, p):
+        '''association_end : cardinality identifier LPAREN identifier_sequence RPAREN PHRASE STRING'''
         p[0] = model.AssociationLink(p[2], p[1], p[4], p[7][1:-1])
 
     def p_cardinality_1(self, p):
@@ -410,78 +391,44 @@ class ModelLoader(object):
             raise ParsingException("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
         p[0] = p[1]
 
-    def p_cardinality_2(self, p):
+    def p_cardinality_many(self, p):
         '''cardinality : ID'''
         if p[1] not in ['M', 'MC']:
             raise ParsingException("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
         p[0] = p[1]
 
-    def p_cardinality_3(self, p):
+    def p_cardinality_01(self, p):
         '''cardinality : CARDINALITY'''
         p[0] = p[1]
 
-    def p_id_list_1(self, p):
-        '''id_list : ident'''
+    def p_empty_identifier_sequence(self, p):
+        '''identifier_sequence : '''
+        p[0] = []
+        
+    def p_identifier_sequence(self, p):
+        '''identifier_sequence : identifier_sequence COMMA identifier'''
+        p[0] = p[1] + [p[3]]
+        
+    def p_identifier_sequence_endpoint(self, p):
+        '''identifier_sequence : identifier'''
         p[0] = [p[1]]
 
-    def p_id_list_2(self, p):
-        '''id_list : id_list COMMA ident'''
-        p[0] = p[1] + [p[3]]
-
-    def p_id_list_3(self, p):
-        '''id_list : '''
-        p[0] = []
-
-    def p_idend_1(self, p):
-        '''ident : ID'''
-        p[0] = p[1]
-
-    def p_idend_2(self, p):
-        '''ident : CREATE'''
-        p[0] = p[1]
-
-    def p_idend_3(self, p):
-        '''ident : INSERT'''
-        p[0] = p[1]
-
-    def p_idend_4(self, p):
-        '''ident : INTO'''
-        p[0] = p[1]
-
-    def p_idend_5(self, p):
-        '''ident : VALUES'''
-        p[0] = p[1]
-
-    def p_idend_6(self, p):
-        '''ident : TABLE'''
-        p[0] = p[1]
-
-    def p_idend_7(self, p):
-        '''ident : ROP'''
-        p[0] = p[1]
-
-    def p_idend_8(self, p):
-        '''ident : REF_ID'''
-        p[0] = p[1]
-
-    def p_idend_9(self, p):
-        '''ident : FROM'''
-        p[0] = p[1]
-
-    def p_idend_10(self, p):
-        '''ident : TO'''
-        p[0] = p[1]
-
-    def p_idend_11(self, p):
-        '''ident : PHRASE'''
-        p[0] = p[1]
-
-    def p_idend_12(self, p):
-        '''ident : TRUE'''
-        p[0] = p[1]
-        
-    def p_idend_13(self, p):
-        '''ident : FALSE'''
+    def p_identifier(self, p):
+        '''
+        identifier : ID
+                   | CREATE
+                   | INSERT
+                   | INTO
+                   | VALUES
+                   | TABLE
+                   | ROP
+                   | REF_ID
+                   | FROM
+                   | TO
+                   | PHRASE
+                   | TRUE
+                   | FALSE
+        '''
         p[0] = p[1]
         
     def p_error(self, p):
