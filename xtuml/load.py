@@ -302,7 +302,8 @@ class ModelLoader(object):
 
     def p_statement_sequence(self, p):
         '''statement_sequence : statement_sequence statement'''
-        p[0] = p[1] + [p[2]]
+        p[0] = p[1]
+        p[0].append(p[2])
 
     def p_statement_sequence_endpoint(self, p):
         '''statement_sequence : statement'''
@@ -331,7 +332,8 @@ class ModelLoader(object):
 
     def p_attribute_sequence(self, p):
         '''attribute_sequence : attribute_sequence COMMA attribute'''
-        p[0] = p[1] + [p[3]]
+        p[0] = p[1]
+        p[0].append(p[3])
 
     def p_attribute(self, p):
         '''attribute : identifier identifier'''
@@ -349,7 +351,8 @@ class ModelLoader(object):
 
     def p_value_sequence(self, p):
         '''value_sequence : value_sequence COMMA value'''
-        p[0] = p[1] + [p[3]]
+        p[0] = p[1]
+        p[0].append(p[3])
         
     def p_value_sequence_endpoint(self, p):
         '''value_sequence : value'''
@@ -407,8 +410,9 @@ class ModelLoader(object):
         
     def p_identifier_sequence(self, p):
         '''identifier_sequence : identifier_sequence COMMA identifier'''
-        p[0] = p[1] + [p[3]]
-        
+        p[0] = p[1]
+        p[0].append(p[3])
+
     def p_identifier_sequence_endpoint(self, p):
         '''identifier_sequence : identifier'''
         p[0] = [p[1]]
