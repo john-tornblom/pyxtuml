@@ -202,6 +202,16 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, 'TEST')
         
     @load
+    def testInsertEscapedSTRING(self, m):
+        '''
+        CREATE TABLE X (Id STRING);
+        INSERT INTO X VALUES ('TE''ST');
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, "TE'ST")
+        
+    @load
     def testInsertUNIQUE_ID_Null(self, m):
         '''
         CREATE TABLE X (Id UNIQUE_ID);
