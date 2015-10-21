@@ -23,49 +23,7 @@ def load(fn):
     return load_wrapper
 
 
-def compare_metamodel_classes(m1, m2):
-    '''
-    Helper function for comparing two metamodels.
-    '''
-    if len(m1.classes.keys()) != len(m2.classes.keys()):
-        return False
-    
-    for kind in m1.classes.keys():
-        Cls1 = m1.classes[kind]
-        Cls2 = m2.classes[kind]
-        
-        if Cls1.__name__ != Cls2.__name__:
-            return False
-        
-        if Cls1.__a__ != Cls2.__a__:
-            return False
 
-        if Cls1.__i__ != Cls2.__i__:
-            return False
-
-        if Cls1.__d__ != Cls2.__d__:
-            return False
-        
-    return True
-
-            
-def schema_compare(fn):
-
-    def compare_wrapper(self, *args, **kwargs):
-        loader = xtuml.ModelLoader()
-        loader.input(fn.__doc__)
-        m1 = loader.build_metamodel()
-        
-        s = xtuml.serialize_schema(m1)
-
-        loader = xtuml.ModelLoader()
-        loader.input(s)
-        m2 = loader.build_metamodel()
-        
-        self.assertTrue(compare_metamodel_classes(m1, m2))
-        fn(self)
-    
-    return compare_wrapper
 
 
 class TestLoader(unittest.TestCase):
@@ -524,9 +482,62 @@ class TestPersist(unittest.TestCase):
         x = m.select_any('X')
         self.assertEqual(x.self, 1)
 
+    
+def compare_metamodel_classes(m1, m2):
+    '''
+    Helper function for detecting differences in class definitions 
+    in two metamodels.
+    '''
+    if len(m1.classes.keys()) != len(m2.classes.keys()):
+        return False
+    
+    for kind in m1.classes.keys():
+        Cls1 = m1.classes[kind]
+        Cls2 = m2.classes[kind]
+        
+        if Cls1.__name__ != Cls2.__name__:
+            return False
+        
+        if Cls1.__a__ != Cls2.__a__:
+            return False
+
+        if Cls1.__i__ != Cls2.__i__:
+            return False
+
+        if Cls1.__d__ != Cls2.__d__:
+            return False
+        
+    return True
+
+
+def schema_compare(fn):
+    '''
+    Decorator for testing schema serialization capabilities 
+    from stimuli defined as doc-strings on unit tests.
+    '''
+    def compare_wrapper(self, *args, **kwargs):
+        loader = xtuml.ModelLoader()
+        loader.input(fn.__doc__)
+        m1 = loader.build_metamodel()
+        
+        s = xtuml.serialize_schema(m1)
+
+        loader = xtuml.ModelLoader()
+        loader.input(s)
+        m2 = loader.build_metamodel()
+        
+        self.assertTrue(compare_metamodel_classes(m1, m2))
+        fn(self)
+    
+    return compare_wrapper
+
 
 class TestSchema(unittest.TestCase):
-
+    '''
+    Test suite for schema serialization capabilities in 
+    the module xtuml.persist
+    '''
+    
     @schema_compare
     def testClassWithDataTypeNames(self):
         '''
