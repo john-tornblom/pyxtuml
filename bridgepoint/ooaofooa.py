@@ -3969,7 +3969,6 @@ class Loader(xtuml.ModelLoader):
     
     def __init__(self, load_globals=True):
         xtuml.ModelLoader.__init__(self)
-        self.build_parser()
         self.input(schema)
         if load_globals:
             self.input(globals)

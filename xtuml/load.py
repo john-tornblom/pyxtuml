@@ -447,7 +447,6 @@ def load_metamodel(filenames):
     Load and return a meta model from a list of filenames.
     '''
     loader = ModelLoader()
-    loader.build_parser()
     for filename in filenames:
         loader.filename_input(filename)
     

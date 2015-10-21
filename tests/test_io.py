@@ -37,7 +37,7 @@ class TestLoader(unittest.TestCase):
     def tearDown(self):
         del self.loader
 
-    def testFileInput(self):
+    def testFilenameInput(self):
         resources = os.path.dirname(__file__) + os.sep + 'resources'
         schema = resources + os.sep + 'ooaofooa_schema.sql'
         globs = resources + os.sep + 'Globals.xtuml'
@@ -287,7 +287,7 @@ class TestLoader(unittest.TestCase):
         '''-- Some comment'''
         pass
         
-    @expect_exception(ply.lex.LexError)
+    @expect_exception(xtuml.ParsingException)
     @load
     def testIllegalCharacter(self, m):
         '''
