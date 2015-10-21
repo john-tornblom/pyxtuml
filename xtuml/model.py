@@ -770,3 +770,16 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
         
     return updated
 
+
+def where_eq(**kwargs):
+    '''
+    Return a navigation where-clause which filters out instances based on named keywords
+    
+    '''
+    def query_filter(selected):
+        for name, value in kwargs.items():
+            if getattr(selected, name) != value:
+                return False
+            
+        return True
+

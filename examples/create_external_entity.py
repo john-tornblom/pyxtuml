@@ -2,21 +2,10 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
 import xtuml
-import operator
 
 from bridgepoint import ooaofooa
 from xtuml import relate
-
-
-def where(**kwargs):
-    '''
-    Create a where-clause with equivalence tests for a number of name,value pair
-    '''
-    f = lambda sel: reduce(operator.and_,
-                           [getattr(sel, name) == val
-                            for name, val in kwargs.items()],
-                            True)
-    return f
+from xtuml import where_eq as where
 
 
 m = ooaofooa.empty_model()

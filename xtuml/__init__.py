@@ -39,5 +39,6 @@ from .model import navigate_one
 from .model import navigate_many
 from .model import relate
 from .model import unrelate
+from .model import where_eq
 
 from . import version

@@ -5,6 +5,8 @@ import unittest
 
 import xtuml
 from bridgepoint import ooaofooa
+from xtuml import where_eq as where
+
 
 def expect_exception(exception):
     def test_decorator(fn):
@@ -103,12 +105,12 @@ class TestModel(unittest.TestCase):
         
     def testSelectAnyWhere(self):
         m = self.metamodel
-        inst = m.select_any('S_DT', lambda inst: inst.Name == 'void')
+        inst = m.select_any('S_DT', where(Name='void'))
         self.assertEqual(inst.Name, 'void')
         
     def testNavOne(self):
         m = self.metamodel
-        s_dt = m.select_any('S_DT', lambda inst: inst.name == 'void')
+        s_dt = m.select_any('S_DT',  where(Name='void'))
         pe_pe = xtuml.navigate_one(s_dt).PE_PE[8001](lambda inst: True)
         self.assertEqual(s_dt.DT_ID, pe_pe.Element_ID)
         
@@ -277,7 +279,7 @@ class TestModel(unittest.TestCase):
 
     def testRelateTopDown(self):
         m = self.metamodel
-        s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
+        s_dt = m.select_one('S_DT', where(Name='string'))
         s_bparm = m.new('S_BPARM', Name='My_Parameter')
         s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
         pe_pe = m.new('PE_PE', Visibility=True, type=5)
@@ -294,7 +296,7 @@ class TestModel(unittest.TestCase):
         
     def testRelateBottomUp(self):
         m = self.metamodel
-        s_dt = m.select_one('S_DT', lambda selected: selected.Name == 'string')
+        s_dt = m.select_one('S_DT', where(Name='string'))
         s_bparm = m.new('S_BPARM', Name='My_Parameter')
         s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
         pe_pe = m.new('PE_PE', Visibility=True, type=5)
