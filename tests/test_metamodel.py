@@ -180,11 +180,6 @@ class TestModel(unittest.TestCase):
         self.metamodel.define_class('MY_CLASS', [])
 
     @expect_exception(xtuml.ModelException)
-    def testRedefinedClass1(self):
-        self.metamodel.define_class('MY_CLASS', [])
-        self.metamodel.define_class('MY_Class', [])
-
-    @expect_exception(xtuml.ModelException)
     def testSelectAnyUndefined(self):
         self.metamodel.select_any('MY_CLASS')
 
@@ -335,7 +330,7 @@ class TestDefineModel(unittest.TestCase):
         first = self.metamodel.new('A', Name="First")
         second = self.metamodel.new('A', Name="Second")
 
-        self.assertTrue(xtuml.model.relate(first, second, 1, 'prev'))
+        self.assertTrue(xtuml.relate(first, second, 1, 'prev'))
 
         inst = xtuml.navigate_one(first).A[1, 'next']()
         self.assertEqual(inst.Name, second.Name)
@@ -475,7 +470,6 @@ class TestQuerySet(unittest.TestCase):
     def testPopEmpty(self):
         q = xtuml.QuerySet()
         q.pop()
-        
 
     def testPopLast(self):
         q1 = xtuml.QuerySet([1, 2])
@@ -484,7 +478,6 @@ class TestQuerySet(unittest.TestCase):
 
         q1.pop()
         self.assertEqual(q1, q2)
-        
         
     def testPopFirst(self):
         q1 = xtuml.QuerySet([2, 1])
