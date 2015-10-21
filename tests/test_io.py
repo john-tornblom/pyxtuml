@@ -6,10 +6,15 @@ import os
 import ply
 import tempfile
 
-import xtuml.load
+import xtuml
+
+from tests.utils import expect_exception
 
 
 def load(fn):
+    '''
+    Decorator for loading a meta model from a test case doc string
+    '''
     def load_wrapper(self, *args, **kwargs):
         self.loader.input(fn.__doc__)
         metamodel = self.loader.build_metamodel()
@@ -19,6 +24,9 @@ def load(fn):
 
 
 def compare_metamodel_classes(m1, m2):
+    '''
+    Helper function for comparing two metamodels.
+    '''
     if len(m1.classes.keys()) != len(m2.classes.keys()):
         return False
     
@@ -44,15 +52,13 @@ def compare_metamodel_classes(m1, m2):
 def schema_compare(fn):
 
     def compare_wrapper(self, *args, **kwargs):
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(fn.__doc__)
         m1 = loader.build_metamodel()
         
         s = xtuml.serialize_schema(m1)
 
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(s)
         m2 = loader.build_metamodel()
         
@@ -62,19 +68,13 @@ def schema_compare(fn):
     return compare_wrapper
 
 
-def expect_exception(exception):
-    def test_decorator(fn):
-        def test_decorated(self, *args, **kwargs):
-            self.assertRaises(exception, fn, self, *args, **kwargs)
-        return test_decorated
-    return test_decorator
-
-
 class TestLoader(unittest.TestCase):
-
+    '''
+    Test suite for the class  xtuml.ModelLoader
+    '''
+    
     def setUp(self):
-        self.loader = xtuml.load.ModelLoader()
-        self.loader.build_parser()
+        self.loader = xtuml.ModelLoader()
 
     def tearDown(self):
         del self.loader
@@ -85,7 +85,7 @@ class TestLoader(unittest.TestCase):
         globs = resources + os.sep + 'Globals.xtuml'
 
         metamodel = xtuml.load_metamodel([globs, schema])
-        self.assertTrue(metamodel.select_any('S_DT', lambda inst: inst.Name == 'integer') is not None)
+        self.assertTrue(metamodel.select_any('S_DT', xtuml.where_eq(Name='integer')) is not None)
         
     @load
     def testTableNamedCREATE(self, m):
@@ -389,7 +389,9 @@ class TestLoader(unittest.TestCase):
         
 
 class TestPersist(unittest.TestCase):
-
+    '''
+    Test suite for the module xtuml.persist
+    '''
     def testSerialize(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
@@ -399,8 +401,7 @@ class TestPersist(unittest.TestCase):
                             UNIQUE_ID UNIQUE_ID);
         '''
         
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         
         m = loader.build_metamodel()
@@ -411,8 +412,7 @@ class TestPersist(unittest.TestCase):
         
         s = xtuml.serialize_instances(m)
         
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         loader.input(s)
         
@@ -441,7 +441,7 @@ class TestPersist(unittest.TestCase):
                             UNIQUE_ID UNIQUE_ID);
         '''
         
-        loader = xtuml.load.ModelLoader()
+        loader = xtuml.ModelLoader()
         loader.build_parser()
         loader.input(schema)
 
@@ -451,8 +451,7 @@ class TestPersist(unittest.TestCase):
         
         s = xtuml.serialize_instances(m)
   
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         loader.input(s)
 
@@ -474,8 +473,7 @@ class TestPersist(unittest.TestCase):
                             UNIQUE_ID UNIQUE_ID);
         '''
         
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         
         id_generator = xtuml.IntegerGenerator()
@@ -492,8 +490,7 @@ class TestPersist(unittest.TestCase):
         finally:
             os.remove(filename)
         
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         loader.input(s)
 
@@ -511,8 +508,7 @@ class TestPersist(unittest.TestCase):
             CREATE TABLE X (self UNIQUE_ID);
         '''
         
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         
         m = loader.build_metamodel()
@@ -520,8 +516,7 @@ class TestPersist(unittest.TestCase):
         
         s = xtuml.serialize_instances(m)
         
-        loader = xtuml.load.ModelLoader()
-        loader.build_parser()
+        loader = xtuml.ModelLoader()
         loader.input(schema)
         loader.input(s)
         

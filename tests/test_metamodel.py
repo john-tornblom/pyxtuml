@@ -7,17 +7,7 @@ import xtuml
 from bridgepoint import ooaofooa
 from xtuml import where_eq as where
 
-
-def expect_exception(exception):
-    '''
-    Decorator for expecting exceptions to be thrown from a test case
-    '''
-    def test_decorator(fn):
-        def test_decorated(self, *args, **kwargs):
-            self.assertRaises(exception, fn, self, *args, **kwargs)
-        return test_decorated
-    return test_decorator
-
+from tests.utils import expect_exception
 
 
 class TestAssociation(unittest.TestCase):
