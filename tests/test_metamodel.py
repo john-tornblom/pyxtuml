@@ -9,6 +9,9 @@ from xtuml import where_eq as where
 
 
 def expect_exception(exception):
+    '''
+    Decorator for expecting exceptions to be thrown from a test case
+    '''
     def test_decorator(fn):
         def test_decorated(self, *args, **kwargs):
             self.assertRaises(exception, fn, self, *args, **kwargs)
@@ -18,7 +21,10 @@ def expect_exception(exception):
 
 
 class TestAssociation(unittest.TestCase):
-
+    '''
+    Test suite for the class xtuml.AssociationLink
+    '''
+    
     def testAssociationConstructor(self):
         l1 = xtuml.AssociationLink('CLASS1', '1C', [], 'next')
         l2 = xtuml.AssociationLink('CLASS1', '1C', [], 'prev')
@@ -63,6 +69,9 @@ class TestAssociation(unittest.TestCase):
         
         
 class TestNavChain(unittest.TestCase):
+    '''
+    Test suite for the class xtuml.NavChain
+    '''
     
     def testNavigateNone(self):
         self.assertIsNone(xtuml.navigate_one(None)())
@@ -74,6 +83,9 @@ class TestNavChain(unittest.TestCase):
 
         
 class TestModel(unittest.TestCase):
+    '''
+    Test suite for the class xtuml.MetaModel
+    '''
     
     @classmethod
     def setUpClass(cls):
@@ -165,6 +177,30 @@ class TestModel(unittest.TestCase):
             self.assertEqual(index != 0, inst != q.first)
             self.assertEqual(index == length - 1, inst == q.last)
             self.assertEqual(index != length - 1, inst != q.last)
+
+    def testCaseSensitivity(self):
+        self.metamodel.define_class('Aa', [])
+        
+        self.metamodel.new('AA')
+
+        self.assertTrue(self.metamodel.select_any('aA'))
+        self.assertTrue(self.metamodel.select_any('AA'))
+        self.assertTrue(self.metamodel.select_any('Aa'))
+        self.assertTrue(self.metamodel.select_any('aa'))
+
+        self.metamodel.new('Aa')
+        self.metamodel.new('aA')
+        self.metamodel.new('aa')
+        
+        self.assertEqual(len(self.metamodel.select_many('aA')), 4)
+        self.assertEqual(len(self.metamodel.select_many('AA')), 4)
+        self.assertEqual(len(self.metamodel.select_many('Aa')), 4)
+        self.assertEqual(len(self.metamodel.select_many('aa')), 4)
+        
+    @expect_exception(xtuml.ModelException)
+    def testUnknownType(self):
+        self.metamodel.define_class('A', [('Id', '<invalid type>')])
+        self.metamodel.new('A')
 
     def testIgnoreUndefinedClass(self):
         self.metamodel.ignore_undefined_classes = True
@@ -303,14 +339,14 @@ class TestModel(unittest.TestCase):
         self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
         self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
         
-            
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
     
         
-        
-class TestDefineModel(unittest.TestCase):
-    
+class TestDefineAssociations(unittest.TestCase):
+    '''
+    Test suite for the tests the class xtuml.MetaModel ability to define associations.
+    '''
  
     def setUp(self):
         self.metamodel = xtuml.MetaModel()
@@ -344,7 +380,6 @@ class TestDefineModel(unittest.TestCase):
         inst = xtuml.navigate_one(second).A[1, 'next']()
         self.assertIsNone(inst)
 
-
     def testOneToMany(self):
         self.metamodel.define_class('A', [('Id', 'unique_id')])
         self.metamodel.define_class('B', [('Id', 'unique_id'), ('A_Id', 'unique_id')])
@@ -359,34 +394,12 @@ class TestDefineModel(unittest.TestCase):
         
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
 
-    def testCaseSensitivity(self):
-        self.metamodel.define_class('Aa', [])
-        
-        self.metamodel.new('AA')
-
-        self.assertTrue(self.metamodel.select_any('aA'))
-        self.assertTrue(self.metamodel.select_any('AA'))
-        self.assertTrue(self.metamodel.select_any('Aa'))
-        self.assertTrue(self.metamodel.select_any('aa'))
-
-        self.metamodel.new('Aa')
-        self.metamodel.new('aA')
-        self.metamodel.new('aa')
-        
-        self.assertEqual(len(self.metamodel.select_many('aA')), 4)
-        self.assertEqual(len(self.metamodel.select_many('AA')), 4)
-        self.assertEqual(len(self.metamodel.select_many('Aa')), 4)
-        self.assertEqual(len(self.metamodel.select_many('aa')), 4)
-        
-
-    @expect_exception(xtuml.ModelException)
-    def testUnknownType(self):
-        self.metamodel.define_class('A', [('Id', '<invalid type>')])
-        self.metamodel.new('A')
-
 
 class TestBaseObject(unittest.TestCase):
- 
+    '''
+    Test suite for the class xtuml.BaseObject
+    '''
+    
     def testPlusOperator(self):
         inst1 = xtuml.BaseObject()
         inst2 = xtuml.BaseObject()
@@ -433,7 +446,10 @@ class TestBaseObject(unittest.TestCase):
         
         
 class TestQuerySet(unittest.TestCase):
- 
+    '''
+    Test suite for the class xtuml.QuerySet
+    '''
+    
     def testEqualOperator(self):
         q1 = xtuml.QuerySet()
         q2 = xtuml.QuerySet()
@@ -486,7 +502,8 @@ class TestQuerySet(unittest.TestCase):
 
         q1.pop(last=False)
         self.assertEqual(q1, q2)
-        
+
+
 if __name__ == "__main__":
     unittest.main()
 
