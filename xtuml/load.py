@@ -86,14 +86,6 @@ class ModelLoader(object):
     
     def __init__(self):
         self.statements = list()
-        
-        self.lexer = lex.lex(debuglog=logger,
-                             errorlog=logger,
-                             optimize=1,
-                             module=self,
-                             outputdir=os.path.dirname(__file__),
-                             lextab="xtuml.__xtuml_lextab")
-        
         self.parser = yacc.yacc(debuglog=logger,
                                 errorlog=logger,
                                 optimize=1,
@@ -107,13 +99,20 @@ class ModelLoader(object):
         '''
         pass
     
-    def input(self, data):
+    def input(self, data, name='<string>'):
         '''
         Parse input as raw data.
         '''
-        s = self.parser.parse(lexer=self.lexer, input=data)
+        lexer = lex.lex(debuglog=logger,
+                        errorlog=logger,
+                        optimize=1,
+                        module=self,
+                        outputdir=os.path.dirname(__file__),
+                        lextab="xtuml.__xtuml_lextab")
+        lexer.filename = name
+        
+        s = self.parser.parse(lexer=lexer, input=data)
         self.statements.extend(s)
-    
 
     def filename_input(self, filename):
         '''
@@ -122,12 +121,11 @@ class ModelLoader(object):
         with open(filename, 'r') as f:
             return self.file_input(f)
     
-    
     def file_input(self, f):
         '''
         Read and parse data from a file handle.
         '''
-        return self.input(f.read())
+        return self.input(f.read(), name=f.name)
 
     def populate_classes(self, m):
         '''
@@ -290,7 +288,7 @@ class ModelLoader(object):
         t.endlexpos = t.lexpos + len(t.value)
 
     def t_error(self, t):
-        logger.error("line %d: Illegal character '%s'" % (t.lineno, t.value[0]))
+        raise ParsingException("illegal character '%s' at %s:%d" % (t.value[0], t.lexer.filename, t.lineno))
 
     def p_empty_translation_unit(self, p):
         '''translation_unit :'''
@@ -391,13 +389,13 @@ class ModelLoader(object):
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''
         if p[1] != '1':
-            raise ParsingException("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
+            raise ParsingException("illegal cardinality (%s) at %s:%d" % (p[1], p.lexer.filename, p.lineno(1)))
         p[0] = p[1]
 
     def p_cardinality_many(self, p):
         '''cardinality : ID'''
         if p[1] not in ['M', 'MC']:
-            raise ParsingException("invalid cardinality '%s' at (%s, %d)" % (p[1], p.lineno(1), p.lexpos(1)))
+            raise ParsingException("illegal cardinality (%s) at %s:%d" % (p[1], p.lexer.filename, p.lineno(1)))
         p[0] = p[1]
 
     def p_cardinality_01(self, p):
@@ -435,9 +433,12 @@ class ModelLoader(object):
         '''
         p[0] = p[1]
         
-    def p_error(self, p):
-        if p:
-            raise ParsingException("invalid token '%s' at (%s, %d)" % (p.value, p.lineno, p.lexpos))
+    def p_error(self, t):
+        if t:
+            raise ParsingException("illegal token %s (%s) at %s:%d" % (t.type, 
+                                                                       t.value, 
+                                                                       t.lexer.filename, 
+                                                                       t.lineno))
         else:
             raise ParsingException("unknown error")
 
