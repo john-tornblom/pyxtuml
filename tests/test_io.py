@@ -528,6 +528,29 @@ class TestPersist(unittest.TestCase):
                 self.assertEqual(s, f.read())
         finally:
             os.remove(filename)
+
+    def testSerializeSchema(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        
+        s = xtuml.serialize_schema(m)
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+
+        x = m.select_any('X')
+        self.assertFalse(x)
+
+        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
         
     def testSerializeNoneValues(self):
         schema = '''
