@@ -178,6 +178,15 @@ class TestLoader(unittest.TestCase):
         val = m.select_any('X')
         self.assertTrue(val is not None)
         self.assertEqual(0, val.Id)
+
+    @load
+    def testInsertUNIQUE_ID_Zero(self, m):
+        '''
+        CREATE TABLE X (Id UNIQUE_ID);
+        INSERT INTO X VALUES (0);
+        '''
+        val = m.select_any('X')
+        self.assertEqual(0, val.Id)
         
     @load
     def testInsertREAL_Positive(self, m):
