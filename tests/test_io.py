@@ -485,7 +485,50 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, 0.0)
         self.assertEqual(x.UNIQUE_ID, 1)
 
+    def testPersistSchema(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        s = xtuml.serialize_schema(m)
+    
+        (_, filename) = tempfile.mkstemp()
+        try:
+            xtuml.persist_schema(m, filename)
+            with open(filename) as f:
+                self.assertEqual(s, f.read())
+        finally:
+            os.remove(filename)
 
+    def testPersistDatabase(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        
+        s = xtuml.serialize_database(m)
+    
+        (_, filename) = tempfile.mkstemp()
+        try:
+            xtuml.persist_database(m, filename)
+            with open(filename) as f:
+                self.assertEqual(s, f.read())
+        finally:
+            os.remove(filename)
+        
     def testSerializeNoneValues(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
