@@ -486,6 +486,38 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.UNIQUE_ID, 1)
 
 
+    def testSerializeNoneValues(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+
+        id_generator = xtuml.IntegerGenerator()
+        m = loader.build_metamodel(id_generator)
+        x = m.new('X')
+        x.boolean = None
+        x.Integer = None
+        x.ReaL = None
+        x.UNIQUE_ID = None
+        s = xtuml.serialize_instances(m)
+
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        loader.input(s)
+
+        id_generator = xtuml.IntegerGenerator()
+        m = loader.build_metamodel(id_generator)
+        x = m.select_any('X')
+        self.assertEqual(x.BOOLEAN, False)
+        self.assertEqual(x.INTEGER, 0)
+        self.assertEqual(x.REAL, 0.0)
+        self.assertEqual(x.UNIQUE_ID, 0)
+
     def testSerializeAttributeNamedSelf(self):
         schema = '''
             CREATE TABLE X (self UNIQUE_ID);
