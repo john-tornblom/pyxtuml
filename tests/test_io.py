@@ -354,6 +354,22 @@ class TestLoader(unittest.TestCase):
         '''
         self.assertTrue(False) # Should not execute
         
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidBooleanLiteral(self, m):
+        '''
+        CREATE TABLE X (B BOOLEAN);
+        INSERT INTO X ('test');
+        '''
+
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidType(self, m):
+        '''
+        CREATE TABLE X (VAR SOME_TYPE);
+        INSERT INTO X ('test');
+        '''
+
 
 class TestPersist(unittest.TestCase):
     '''
