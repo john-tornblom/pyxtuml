@@ -375,6 +375,7 @@ class TestPersist(unittest.TestCase):
     '''
     Test suite for the module xtuml.persist
     '''
+
     def testSerialize(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
@@ -425,7 +426,6 @@ class TestPersist(unittest.TestCase):
         '''
         
         loader = xtuml.ModelLoader()
-        loader.build_parser()
         loader.input(schema)
 
         id_generator = xtuml.IntegerGenerator()
