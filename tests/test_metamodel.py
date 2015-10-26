@@ -332,6 +332,40 @@ class TestModel(unittest.TestCase):
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
     
+    def testConcistencyOfEmptyModel(self):
+        self.assertTrue(self.metamodel.is_consistent())
+    
+    def testConsistencyOfNonEmptyModel(self):
+        m = self.metamodel
+        s_dt = m.select_one('S_DT', where(Name='string'))
+        s_bparm = m.new('S_BPARM', Name='My_Parameter')
+        s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
+        pe_pe = m.new('PE_PE', Visibility=True, type=5)
+        s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
+        
+        self.assertFalse(m.is_consistent(22))
+        self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
+        self.assertTrue(m.is_consistent(22))
+        
+        self.assertFalse(m.is_consistent(21))
+        self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
+        self.assertTrue(m.is_consistent(21))
+        
+        self.assertFalse(m.is_consistent(20))
+        self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
+        self.assertTrue(m.is_consistent(20))
+        
+        self.assertFalse(m.is_consistent(8001))
+        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
+        self.assertTrue(m.is_consistent(8001))
+        
+        self.assertFalse(m.is_consistent(19))
+        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
+        self.assertTrue(m.is_consistent(19))
+        
+        # the old, unused association R8 is still present in ooaofooa, and thus
+        # consistency check fails on S_EE.
+        #self.assertTrue(m.is_consistent())
         
 class TestDefineAssociations(unittest.TestCase):
     '''
