@@ -491,7 +491,11 @@ class TestPersist(unittest.TestCase):
                             INTEGER INTEGER,
                             REAL REAL,
                             STRING STRING,
-                            UNIQUE_ID UNIQUE_ID);
+                            UNIQUE_ID UNIQUE_ID,
+                            Next UNIQUE_ID);
+                            
+        CREATE ROP REF_ID R1 FROM 1C X ( UNIQUE_ID ) PHRASE 'precedes'
+                             TO   1C X ( Next ) PHRASE 'succeeds';
         '''
         loader = xtuml.ModelLoader()
         loader.input(schema)
@@ -512,7 +516,11 @@ class TestPersist(unittest.TestCase):
                             INTEGER INTEGER,
                             REAL REAL,
                             STRING STRING,
-                            UNIQUE_ID UNIQUE_ID);
+                            UNIQUE_ID UNIQUE_ID,
+                            Next UNIQUE_ID);
+                            
+        CREATE ROP REF_ID R1 FROM 1C X ( Next ) PHRASE 'precedes'
+                             TO   1C X ( UNIQUE_ID ) PHRASE 'succeeds';
         '''
         loader = xtuml.ModelLoader()
         loader.input(schema)
@@ -535,22 +543,31 @@ class TestPersist(unittest.TestCase):
                             INTEGER INTEGER,
                             REAL REAL,
                             STRING STRING,
-                            UNIQUE_ID UNIQUE_ID);
+                            UNIQUE_ID UNIQUE_ID,
+                            Next UNIQUE_ID);
+                            
+        CREATE ROP REF_ID R1 FROM 1C X ( Next ) PHRASE 'precedes'
+                             TO   1C X ( UNIQUE_ID ) PHRASE 'succeeds';
         '''
         loader = xtuml.ModelLoader()
         loader.input(schema)
         m = loader.build_metamodel()
-        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        x1 = m.new('X', Boolean=True, Integer=4, String='str')
+        x2 = m.new('X', Boolean=True, Integer=4, String='str')
+        xtuml.relate(x1, x2, 1, 'precedes')
         
         s = xtuml.serialize_schema(m)
         loader = xtuml.ModelLoader()
-        loader.input(schema)
+        loader.input(s)
         m = loader.build_metamodel()
 
-        x = m.select_any('X')
-        self.assertFalse(x)
+        self.assertFalse(m.select_any('X'))
 
-        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        x1 = m.new('X', Boolean=True, Integer=4, String='str')
+        x2 = m.new('X', Boolean=True, Integer=4, String='str')
+        xtuml.relate(x1, x2, 1, 'succeeds')
+
+        self.assertTrue(xtuml.navigate_one(x1).X[1, 'precedes']())
         
     def testSerializeNoneValues(self):
         schema = '''
