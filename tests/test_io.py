@@ -178,6 +178,15 @@ class TestLoader(unittest.TestCase):
         val = m.select_any('X')
         self.assertTrue(val is not None)
         self.assertEqual(0, val.Id)
+
+    @load
+    def testInsertUNIQUE_ID_Zero(self, m):
+        '''
+        CREATE TABLE X (Id UNIQUE_ID);
+        INSERT INTO X VALUES (0);
+        '''
+        val = m.select_any('X')
+        self.assertEqual(0, val.Id)
         
     @load
     def testInsertREAL_Positive(self, m):
@@ -345,11 +354,28 @@ class TestLoader(unittest.TestCase):
         '''
         self.assertTrue(False) # Should not execute
         
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidBooleanLiteral(self, m):
+        '''
+        CREATE TABLE X (B BOOLEAN);
+        INSERT INTO X ('test');
+        '''
+
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInvalidType(self, m):
+        '''
+        CREATE TABLE X (VAR SOME_TYPE);
+        INSERT INTO X ('test');
+        '''
+
 
 class TestPersist(unittest.TestCase):
     '''
     Test suite for the module xtuml.persist
     '''
+
     def testSerialize(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
@@ -400,7 +426,6 @@ class TestPersist(unittest.TestCase):
         '''
         
         loader = xtuml.ModelLoader()
-        loader.build_parser()
         loader.input(schema)
 
         id_generator = xtuml.IntegerGenerator()
@@ -460,6 +485,104 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, 0.0)
         self.assertEqual(x.UNIQUE_ID, 1)
 
+    def testPersistSchema(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        s = xtuml.serialize_schema(m)
+    
+        (_, filename) = tempfile.mkstemp()
+        try:
+            xtuml.persist_schema(m, filename)
+            with open(filename) as f:
+                self.assertEqual(s, f.read())
+        finally:
+            os.remove(filename)
+
+    def testPersistDatabase(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        
+        s = xtuml.serialize_database(m)
+    
+        (_, filename) = tempfile.mkstemp()
+        try:
+            xtuml.persist_database(m, filename)
+            with open(filename) as f:
+                self.assertEqual(s, f.read())
+        finally:
+            os.remove(filename)
+
+    def testSerializeSchema(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        
+        s = xtuml.serialize_schema(m)
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+
+        x = m.select_any('X')
+        self.assertFalse(x)
+
+        m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
+        
+    def testSerializeNoneValues(self):
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID);
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+
+        id_generator = xtuml.IntegerGenerator()
+        m = loader.build_metamodel(id_generator)
+        x = m.new('X')
+        x.boolean = None
+        x.Integer = None
+        x.ReaL = None
+        x.UNIQUE_ID = None
+        s = xtuml.serialize_instances(m)
+
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        loader.input(s)
+
+        id_generator = xtuml.IntegerGenerator()
+        m = loader.build_metamodel(id_generator)
+        x = m.select_any('X')
+        self.assertEqual(x.BOOLEAN, False)
+        self.assertEqual(x.INTEGER, 0)
+        self.assertEqual(x.REAL, 0.0)
+        self.assertEqual(x.UNIQUE_ID, 0)
 
     def testSerializeAttributeNamedSelf(self):
         schema = '''
