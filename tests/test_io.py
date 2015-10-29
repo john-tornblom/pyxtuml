@@ -384,6 +384,15 @@ class TestLoader(unittest.TestCase):
         INSERT INTO X VALUES ();
         '''
         
+    def testSurpressingUndefinedTable(self):
+        self.loader.input('INSERT INTO X VALUES ();')
+        self.loader.build_metamodel(ignore_undefined_classes=True)
+        
+    def testSurpressingUndefinedTableWithArgument(self):
+        self.loader.input('INSERT INTO X VALUES (1);')
+        self.loader.build_metamodel(ignore_undefined_classes=True)
+    
+
 class TestPersist(unittest.TestCase):
     '''
     Test suite for the module xtuml.persist
