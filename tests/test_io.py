@@ -370,7 +370,20 @@ class TestLoader(unittest.TestCase):
         INSERT INTO X ('test');
         '''
 
-
+    @expect_exception(xtuml.ParsingException)
+    @load
+    def testInsertWithUndefinedTableAndArgument(self, m):
+        '''
+        INSERT INTO X VALUES ('test');
+        '''
+    
+    @expect_exception(xtuml.ParsingException)    
+    @load
+    def testInsertWithUndefinedTable(self, m):
+        '''
+        INSERT INTO X VALUES ();
+        '''
+        
 class TestPersist(unittest.TestCase):
     '''
     Test suite for the module xtuml.persist

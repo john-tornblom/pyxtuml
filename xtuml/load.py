@@ -18,6 +18,41 @@ from xtuml import model
 logger = logging.getLogger(__name__)
 
 
+def deserialize_value(ty, value):
+    '''
+    Deserialize a value of some type
+    '''
+    uty = ty.upper()
+    
+    if uty == 'BOOLEAN':
+        if value.isdigit():
+            return bool(int(value))
+        elif value.upper() == 'FALSE':
+            return False
+        elif value.upper() == 'TRUE':
+            return True
+        else:
+            raise ParsingException("Unable to convert '%s' to a boolean" % value)
+    
+    elif uty == 'INTEGER': 
+        return int(value)
+    
+    elif uty == 'REAL': 
+        return float(value)
+    
+    elif uty == 'STRING': 
+        return value.replace("''", "'")[1:-1]
+    
+    elif uty == 'UNIQUE_ID': 
+        if '"' in value:
+            return uuid.UUID(value[1:-1]).int
+        else:
+            return int(value)
+    
+    else:
+        raise ParsingException("Unknown type named '%s'" % ty)
+
+
 class ParsingException(Exception):
     pass
 
@@ -177,22 +212,34 @@ class ModelLoader(object):
         
         else:
             raise ParsingException("Unknown type named '%s'" % ty)
-        
+
+
     def populate_instances(self, m):
         '''
-        Populate a metamodel with classes previously encountered from input
+        Populate a metamodel with instances previously encountered from input
         '''
         for stmt in self.statements:
-            if isinstance(stmt, CreateInstanceStmt):
-                Cls = m.classes[stmt.kind]
-                args = list()
-                
-                for attr, value in zip(Cls.__a__, stmt.values):
-                    _, ty = attr
-                    value = self.deserialize_value(ty, value) 
-                    args.append(value)
+            if not isinstance(stmt, CreateInstanceStmt):
+                continue
             
-                m.new(stmt.kind, *args)
+            ukind = stmt.kind.upper()
+                
+            if ukind not in m.classes:
+                if not m.ignore_undefined_classes:
+                    raise ParsingException("Unknown table %s" % stmt.kind)
+                else:
+                    continue
+            
+            Cls = m.classes[stmt.kind]
+            args = list()
+                
+            for attr, value in zip(Cls.__a__, stmt.values):
+                _, ty = attr
+                value = deserialize_value(ty, value) 
+                args.append(value)
+            
+            m.new(stmt.kind, *args)
+
 
     def populate(self, m):
         '''
