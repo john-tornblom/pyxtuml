@@ -177,42 +177,6 @@ class ModelLoader(object):
         for stmt in self.statements:
             if isinstance(stmt, CreateRelatationStmt):
                 m.define_relation(stmt.id, *stmt.end_points)
-                
-    @staticmethod
-    def deserialize_value(ty, value):
-        '''
-        Obtain the default value for a named meta model type.
-        '''
-        uty = ty.upper()
-        
-        if uty == 'BOOLEAN':
-            if value.isdigit():
-                return bool(int(value))
-            elif value.upper() == 'FALSE':
-                return False
-            elif value.upper() == 'TRUE':
-                return True
-            else:
-                raise ParsingException("Unable to convert '%s' to a boolean" % value)
-            
-        elif uty == 'INTEGER': 
-            return int(value)
-        
-        elif uty == 'REAL': 
-            return float(value)
-        
-        elif uty == 'STRING': 
-            return value.replace("''", "'")[1:-1]
-        
-        elif uty == 'UNIQUE_ID': 
-            if '"' in value:
-                return uuid.UUID(value[1:-1]).int
-            else:
-                return int(value)
-        
-        else:
-            raise ParsingException("Unknown type named '%s'" % ty)
-
 
     def populate_instances(self, m):
         '''
