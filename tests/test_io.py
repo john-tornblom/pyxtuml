@@ -3,7 +3,6 @@
 
 import unittest
 import os
-import ply
 import tempfile
 
 import xtuml
@@ -21,8 +20,6 @@ def load(fn):
         fn(self, metamodel)
     
     return load_wrapper
-
-
 
 
 
