@@ -519,63 +519,8 @@ class MetaModel(object):
         '''
         Check the model for integrity violations on associations.
         '''
-        if isinstance(rel_id, int):
-            rel_id = 'R%d' % rel_id
-            
-        res = True
-        for ass in self.associations:
-            if rel_id in [ass.id, None]:
-                res &= self._check_link_integrity(ass.source, ass.id, ass.target)
-                res &= self._check_link_integrity(ass.target, ass.id, ass.source)
 
-        return res
-    
-    def _check_link_integrity(self, from_link, rel_id, to_link):
-        '''
-        Check the model for integrity violations on an association in a particular direction.
-        '''
-        res = True
-
-        def to_link_repr(inst):
-            values = ''
-            prefix = ''
- 
-            for name, ty in inst.__a__:
-                if name in from_link.ids:
-                    value = getattr(inst, name)
-                    value = xtuml.serialize_value(value, ty)
-                    idx = from_link.ids.index(name)
-                    name = to_link.ids[idx]
-                    values += '%s%s=%s' % (prefix, name, value)
-                    prefix=', '
-                
-            return '%s(%s)' % (to_link.kind, values)
-        
-        def from_link_repr(inst):
-            values = ''
-            prefix = ''
- 
-            for name, ty in inst.__a__:
-                if name in inst.__i__:
-                    value = getattr(inst, name)
-                    value = xtuml.serialize_value(value, ty)
-                    values += '%s%s=%s' % (prefix, name, value)
-                    prefix=', '
-                
-            return '%s(%s)' % (from_link.kind, values)
-        
-        for inst in self.select_many(from_link.kind):
-            nav_chain = xtuml.navigate_many(inst)
-            q_set = nav_chain.nav(to_link.kind, rel_id, to_link.phrase)()
-
-            if(len(q_set) < 1 and not to_link.is_conditional) or (
-              (len(q_set) > 1 and not to_link.is_many)):
-                res = False
-                logger.warning('integrity violation in '
-                                '%s --(%s)--> %s' % (from_link_repr(inst), 
-                                                     rel_id, 
-                                                     to_link_repr(inst)))
-        return res
+        return xtuml.check_association_integrity(self, rel_id)
     
     def _default_value(self, ty_name):
         '''

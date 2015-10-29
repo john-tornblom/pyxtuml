@@ -41,4 +41,6 @@ from .model import relate
 from .model import unrelate
 from .model import where_eq
 
+from .consistency_check import check_association_integrity
+
 from . import version
