@@ -534,7 +534,7 @@ class MetaModel(object):
         elif uname == 'UNIQUE_ID': return next(self.id_generator)
         else: raise ModelException("Unknown type named '%s'" % ty_name)
         
-    def _query(self, kind, many, **kwargs):
+    def _query(self, kind, many, kwargs):
         for inst in iter(self.instances[kind]):
             for name, value in kwargs.items():
                 if _is_null(inst, name) or getattr(inst, name) != value:
@@ -556,7 +556,7 @@ class MetaModel(object):
         cache = self.classes[target.kind].__c__
         
         if cache_key not in cache:
-            cache[cache_key] = QuerySet(self._query(target.kind, target.is_many, **kwargs))
+            cache[cache_key] = QuerySet(self._query(target.kind, target.is_many, kwargs))
             
         return cache[cache_key]
     
