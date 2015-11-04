@@ -98,7 +98,7 @@ class Association(object):
 
     @property
     def is_reflexive(self):
-        return self.source.kind == self.target.kind
+        return self.source.kind.upper() == self.target.kind.upper()
 
     
 class AssociationLink(object):
@@ -545,7 +545,8 @@ class MetaModel(object):
                     return
                     
     def _select_endpoint(self, inst, source, target, kwargs):
-        if not target.kind in self.instances:
+        target_kind = target.kind.upper()
+        if not target_kind in self.instances:
             return QuerySet()
         
         keys = chain(target.ids, kwargs.keys())
@@ -553,10 +554,10 @@ class MetaModel(object):
         kwargs = dict(zip(keys, values))
                             
         cache_key = frozenset(list(kwargs.items()))
-        cache = self.classes[target.kind].__c__
+        cache = self.classes[target_kind].__c__
         
         if cache_key not in cache:
-            cache[cache_key] = QuerySet(self._query(target.kind, target.is_many, kwargs))
+            cache[cache_key] = QuerySet(self._query(target_kind, target.is_many, kwargs))
             
         return cache[cache_key]
     
@@ -580,20 +581,23 @@ def _find_association_links(inst1, inst2, rel_id, phrase):
                                                                      rel_id,
                                                                      kind2))
     for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
-        if  (kind1 == ass.source.kind and 
-             kind2 == ass.target.kind and 
+        source_kind = ass.source.kind.upper()
+        target_kind = ass.target.kind.upper()
+        
+        if  (kind1 == source_kind and 
+             kind2 == target_kind and 
              ass.source.phrase == phrase):
             return inst1, inst2, ass
         
-        elif (kind1 == ass.target.kind and 
-              kind2 == ass.source.kind and 
+        elif (kind1 == target_kind and 
+              kind2 == source_kind and 
               ass.target.phrase == phrase):
             return inst2, inst1, ass
 
-    raise ModelException("Unknown association %s---(%s.'%s')---%s" % (kind1,
+    raise ModelException("Unknown association %s---(%s.'%s')---%s" % (inst1.__class__.__name__,
                                                                       rel_id,
                                                                       phrase,
-                                                                      kind2))
+                                                                      inst2.__class__.__name__))
 
 
 def _deferred_association_operation(inst, end, op):
@@ -601,10 +605,10 @@ def _deferred_association_operation(inst, end, op):
     Generate list of deferred operations which needs to be invoked after an 
     update to identifying attributes on the association end point is made.
     '''
-    kind = inst.__class__.__name__
+    kind = inst.__class__.__name__.upper()
     l = list()
     for ass in chain(*inst.__r__.values()):
-        if kind != ass.target.kind:
+        if kind != ass.target.kind.upper():
             continue
         if not set(end.ids) & inst.__d__ - inst.__i__ & set(ass.target.ids):
             # TODO: what about attributes which are both identifying, and referential?
