@@ -367,27 +367,19 @@ class TestLoader(unittest.TestCase):
         INSERT INTO X ('test');
         '''
 
-    @expect_exception(xtuml.ParsingException)
     @load
     def testInsertWithUndefinedTableAndArgument(self, m):
         '''
         INSERT INTO X VALUES ('test');
         '''
-    
-    @expect_exception(xtuml.ParsingException)    
+        self.assertTrue(m.select_any('X'))
+        
     @load
     def testInsertWithUndefinedTable(self, m):
         '''
         INSERT INTO X VALUES ();
         '''
-        
-    def testSurpressingUndefinedTable(self):
-        self.loader.input('INSERT INTO X VALUES ();')
-        self.loader.build_metamodel(ignore_undefined_classes=True)
-        
-    def testSurpressingUndefinedTableWithArgument(self):
-        self.loader.input('INSERT INTO X VALUES (1);')
-        self.loader.build_metamodel(ignore_undefined_classes=True)
+        self.assertTrue(m.select_any('X'))
     
 
 class TestPersist(unittest.TestCase):
@@ -641,7 +633,53 @@ class TestPersist(unittest.TestCase):
         x = m.select_any('X')
         self.assertEqual(x.self, 1)
 
-    
+    def testSerializeUndefinedTable(self):
+        schema = '''
+        CREATE TABLE X (
+          _0 UNIQUE_ID,
+          _1 STRING,
+          _2 STRING,
+          _3 INTEGER,
+          _4 INTEGER,
+          _5 BOOLEAN,
+          _6 BOOLEAN,
+          _7 INTEGER,
+          _8 REAL,
+          _9 REAL
+        );
+        '''
+        
+        instances = '''
+            INSERT INTO X VALUES (
+              "00000000-0000-0000-0000-000000000000",
+              'TE''ST',
+              'test',
+              1,
+              0,
+              false,
+              true,
+              -5,
+              1.543,
+              -0.543
+            );
+        '''
+
+        loader = xtuml.ModelLoader()
+        loader.input(instances)
+        m = loader.build_metamodel()
+        
+        s1 = xtuml.serialize_database(m)
+        
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        loader.input(instances)
+        m = loader.build_metamodel()
+
+        s2 = xtuml.serialize_database(m)
+        
+        self.assertEqual(s1, s2)
+
+        
 def compare_metamodel_classes(m1, m2):
     '''
     Helper function for detecting differences in class definitions 

@@ -369,7 +369,6 @@ class MetaModel(object):
     instances = None
     associations = None
     id_generator = None
-    ignore_undefined_classes = False
     
     def __init__(self, id_generator=None):
         '''
@@ -407,10 +406,7 @@ class MetaModel(object):
         '''
         ukind = kind.upper()
         if ukind not in self.classes:
-            if not self.ignore_undefined_classes:
-                raise ModelException("Unknown class %s" % kind)
-            else:
-                return
+            raise ModelException("Unknown class %s" % kind)
             
         Cls = self.classes[ukind]
         inst = Cls()
@@ -496,9 +492,7 @@ class MetaModel(object):
         '''
         ukind = kind.upper()
         if ukind not in self.instances:
-            if not self.ignore_undefined_classes:
-                raise ModelException("Unknown class %s" % kind)
-            return None
+            raise ModelException("Unknown class %s" % kind)
 
         s = filter(where_cond, self.instances[ukind])
         return next(s, None)
@@ -509,9 +503,7 @@ class MetaModel(object):
         '''
         ukind = kind.upper()
         if ukind not in self.instances:
-            if not self.ignore_undefined_classes:
-                raise ModelException("Unknown class %s" % kind)
-            return QuerySet()
+            raise ModelException("Unknown class %s" % kind)
 
         return QuerySet(filter(where_cond, self.instances[ukind]))
 

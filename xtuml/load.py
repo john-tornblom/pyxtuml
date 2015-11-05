@@ -8,6 +8,7 @@ Loading support for xtUML models (based on sql).
 import uuid
 import logging
 import os
+import re
 
 from ply import lex
 from ply import yacc
@@ -16,6 +17,28 @@ from xtuml import model
 
 
 logger = logging.getLogger(__name__)
+
+
+def guess_type_name(value):
+    '''
+    Guess the type name of a serialized value.
+    '''
+    value = str(value)
+    
+    if value.upper() in ['TRUE', 'FALSE']:
+        return 'BOOLEAN'
+    
+    elif re.match(r'(-)?(\d+)(\.\d+)', value):
+        return 'REAL'
+    
+    elif re.match(r'(-)?(\d+)', value):
+        return 'INTEGER'
+    
+    elif re.match(r'\'((\'\')|[^\'])*\'', value):
+        return 'STRING'
+    
+    elif re.match(r'\"([^\\\n]|(\\.))*?\"', value):
+        return 'UNIQUE_ID'
 
 
 def deserialize_value(ty, value):
@@ -189,12 +212,15 @@ class ModelLoader(object):
             ukind = stmt.kind.upper()
                 
             if ukind not in m.classes:
-                if not m.ignore_undefined_classes:
-                    raise ParsingException("Unknown table %s" % stmt.kind)
-                else:
-                    continue
+                attributes = list()
+                for idx, value in enumerate(stmt.values):
+                    name = '_%s' % idx
+                    ty = guess_type_name(value)
+                    attributes.append((name, ty))
+                
+                m.define_class(stmt.kind, attributes)
             
-            Cls = m.classes[stmt.kind]
+            Cls = m.classes[ukind]
             args = list()
                 
             for attr, value in zip(Cls.__a__, stmt.values):
@@ -213,12 +239,11 @@ class ModelLoader(object):
         self.populate_associations(m)
         self.populate_instances(m)
         
-    def build_metamodel(self, id_generator=None, ignore_undefined_classes=False):
+    def build_metamodel(self, id_generator=None):
         '''
         Build and return a meta model from previously parsed input.
         '''
         m = model.MetaModel(id_generator)
-        m.ignore_undefined_classes = ignore_undefined_classes
         
         self.populate(m)
         

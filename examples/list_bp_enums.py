@@ -5,7 +5,6 @@
 import sys
 
 from xtuml import navigate_one as one
-from xtuml import navigate_many as many
 from bridgepoint import ooaofooa
 
 
@@ -18,7 +17,7 @@ if len(sys.argv) < 2:
     
 loader = ooaofooa.Loader()
 loader.filename_input(sys.argv[1])
-m = loader.build_metamodel(ignore_undefined_classes=True)
+m = loader.build_metamodel()
 
 
 get_name = lambda inst: one(inst).S_DT[17]().Name

@@ -262,7 +262,7 @@ def main():
     for filename in args:
         loader.filename_input(filename)
         
-    source = loader.build_metamodel(ignore_undefined_classes=True)
+    source = loader.build_metamodel()
     c_c = source.select_any('C_C', lambda inst: inst.Name == opts.component)
     if not c_c and opts.component:
         logger.error('unable to find a component named %s' % opts.component)

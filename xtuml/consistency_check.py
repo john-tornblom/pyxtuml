@@ -90,9 +90,6 @@ def main():
                       help="limit consistency check to one or more associations", 
                       action="append", default=[])
 
-    parser.add_option("-i", dest='ignore_unknown', action="store_true", 
-                      help="ignore instances of unknown classes", default=False)
-
     (opts, args) = parser.parse_args()
     if len(args) == 0:
         parser.print_help()
@@ -104,7 +101,7 @@ def main():
     for filename in args:
         loader.filename_input(filename)
 
-    m = loader.build_metamodel(ignore_undefined_classes=opts.ignore_unknown)
+    m = loader.build_metamodel()
     
     error = False
     for rel_id in opts.r:

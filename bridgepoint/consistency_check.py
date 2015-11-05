@@ -30,7 +30,7 @@ def main():
     for filename in args:
         loader.filename_input(filename)
 
-    m = loader.build_metamodel(ignore_undefined_classes=True)
+    m = loader.build_metamodel()
     
     error = False
     for rel_id in opts.r:

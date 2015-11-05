@@ -251,7 +251,7 @@ def gen_schema():
     for filename in args:
         loader.filename_input(filename)
     
-    m = loader.build_metamodel(ignore_undefined_classes=True)
+    m = loader.build_metamodel()
     c_c = m.select_any('C_C', lambda inst: inst.Name == opts.component)
     if c_c:
         schema = build_schema(m, c_c)
