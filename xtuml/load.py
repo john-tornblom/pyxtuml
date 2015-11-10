@@ -469,12 +469,12 @@ class ModelLoader(object):
         '''
         p[0] = p[1]
         
-    def p_error(self, t):
-        if t:
-            raise ParsingException("illegal token %s (%s) at %s:%d" % (t.type, 
-                                                                       t.value, 
-                                                                       t.lexer.filename, 
-                                                                       t.lineno))
+    def p_error(self, p):
+        if p:
+            raise ParsingException("illegal token %s (%s) at %s:%d" % (p.type, 
+                                                                       p.value, 
+                                                                       p.lexer.filename, 
+                                                                       p.lineno))
         else:
             raise ParsingException("unknown error")
 
