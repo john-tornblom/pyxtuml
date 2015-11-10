@@ -715,7 +715,6 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
 def where_eq(**kwargs):
     '''
     Return a navigation where-clause which filters out instances based on named keywords
-    
     '''
     def query_filter(selected):
         for name, value in kwargs.items():
@@ -723,4 +722,6 @@ def where_eq(**kwargs):
                 return False
             
         return True
+
+    return query_filter
 
