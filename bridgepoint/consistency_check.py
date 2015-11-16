@@ -18,13 +18,22 @@ def main():
     parser.add_option("-r", dest="r", type='int', metavar="<number>", 
                       help="limit consistency check to one or more associations", 
                       action="append", default=[])
-
+    
+    parser.add_option("-v", "--verbosity", dest='verbosity', action="count", 
+                      help="increase debug logging level", default=1)
+    
     (opts, args) = parser.parse_args()
     if len(args) == 0:
         parser.print_help()
         sys.exit(1)
         
-    logging.basicConfig(level=logging.WARNING)
+    levels = {
+              0: logging.ERROR,
+              1: logging.WARNING,
+              2: logging.INFO,
+              3: logging.DEBUG,
+    }
+    logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
     loader = ooaofooa.Loader()
     for filename in args:
