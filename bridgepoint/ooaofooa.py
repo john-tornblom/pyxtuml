@@ -3969,9 +3969,9 @@ class Loader(xtuml.ModelLoader):
     
     def __init__(self, load_globals=True):
         xtuml.ModelLoader.__init__(self)
-        self.input(schema)
+        self.input(schema, 'ooaofooa schema (v%02.1f)' % __version__)
         if load_globals:
-            self.input(globals)
+            self.input(globals, 'predefined globals (v%02.1f)' % __version__)
         
     def filename_input(self, filename):
         '''
