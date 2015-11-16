@@ -84,8 +84,8 @@ def get_related_attributes(r_rgo, r_rto):
     for o_ref in many(r_rto).O_RTIDA[110].O_REF[111](ref_filter):
         o_attr = one(o_ref).O_RATTR[108].O_ATTR[106]()
         l1.append(o_attr.Name)
-            
-    for o_attr in many(r_rto).O_ID[109].O_OIDA[105].O_ATTR[105]():
+        
+        o_attr = one(o_ref).O_RTIDA[111].O_OIDA[110].O_ATTR[105]()
         l2.append(o_attr.Name)
         
     return l1, l2
