@@ -4,7 +4,8 @@
 '''
 Generate an sql schema file for an xtUML model. 
 The arguments are either xtuml files, or folders containing *.xtuml files.
-Note that some type of attributes are not supported, e.g. instance handles or timers.
+Note that some type of attributes are not supported, e.g. instance handles or
+timers.
 '''
 
 import sys
@@ -23,7 +24,8 @@ logger = logging.getLogger('gen_sql_schema')
 
 def subtype(inst, relid, *kinds):
     '''
-    Navigate a list of BridgePoint sub types and return the first non-empty hit.
+    Navigate a list of BridgePoint sub types and return the first non-empty
+    hit.
     '''
     for kind in kinds:
         child = one(inst).nav(kind, relid)()
@@ -63,7 +65,8 @@ def get_data_type_name(s_dt):
 
 def get_attribute_type(o_attr):
     '''
-    Get the pyxtuml meta model type associated with a Bridg3ePoint class attribute.
+    Get the pyxtuml meta model type associated with a BridgePoint class
+    attribute.
     '''
     ref_o_attr = one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
     if ref_o_attr:
@@ -104,7 +107,8 @@ def mk_class(m, o_obj):
         if ty and not one(o_attr).O_BATTR[106].O_DBATTR[107]():
             attributes.append((o_attr.Name, ty))
         else:
-            logger.warning('Omitting unsupported attribute %s.%s ' % (o_obj.Key_Lett, o_attr.Name))
+            logger.warning('Omitting unsupported attribute %s.%s ' %
+                           (o_obj.Key_Lett, o_attr.Name))
             
         o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
             
@@ -162,8 +166,10 @@ def mk_linked_association(m, inst):
         cardinality = mult_cond(side2.Mult, side2.Cond)
         source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
     
-        source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality, source_ids, side1.Txt_Phrs)
-        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids, side2.Txt_Phrs)
+        source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality,
+                                       source_ids, side1.Txt_Phrs)
+        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids,
+                                       side2.Txt_Phrs)
 
         if side1.Obj_ID != side2.Obj_ID:
             target.phrase = source.phrase = ''
@@ -227,7 +233,8 @@ def mk_association(m, r_rel):
 def mk_metamodel(bp_model, c_c=None):
     '''
     Create a pyxtuml meta model from a BridgePoint model. 
-    Optionally, restrict to classes and associations contained in the component c_c.
+    Optionally, restrict to classes and associations contained in the
+    component c_c.
     '''
     target = xtuml.MetaModel()
 
@@ -246,10 +253,17 @@ def main():
     '''
     Parse argv for options and arguments, and start schema generation.
     '''
-    parser = optparse.OptionParser(usage="%prog [options] arg ...", formatter=optparse.TitledHelpFormatter())
+    parser = optparse.OptionParser(usage="%prog [options] arg ...",
+                                   formatter=optparse.TitledHelpFormatter())
     parser.set_description(__doc__)
-    parser.add_option("-c", "--component", dest="component", metavar="NAME", help="export sql schema for the component named NAME", action="store", default=None)
-    parser.add_option("-o", "--output", dest='output', metavar="PATH", action="store", help="save sql schema to PATH (required)", default=None)
+    
+    parser.add_option("-c", "--component", dest="component", metavar="NAME",
+                      help="export sql schema for the component named NAME",
+                      action="store", default=None)
+    
+    parser.add_option("-o", "--output", dest='output', metavar="PATH",
+                      help="save sql schema to PATH (required)",
+                      action="store", default=None)
     
     (opts, args) = parser.parse_args()
     if len(args) == 0 or opts.output is None:
@@ -266,7 +280,8 @@ def main():
     c_c = source.select_any('C_C', lambda inst: inst.Name == opts.component)
     if not c_c and opts.component:
         logger.error('unable to find a component named %s' % opts.component)
-        logger.info('available components to choose from are: %s' % ', '.join([c_c.Name for c_c in source.select_many('C_C')]))
+        logger.info('available components to choose from are: %s' %
+                    ', '.join([c_c.Name for c_c in source.select_many('C_C')]))
         sys.exit(1)
 
     target = mk_metamodel(source, c_c)
