@@ -234,10 +234,18 @@ def prettify(xml_string):
 
 def gen_schema():
     
-    parser = optparse.OptionParser(usage="%prog [options] arg ...", formatter=optparse.TitledHelpFormatter())
+    parser = optparse.OptionParser(usage="%prog [options] arg ...",
+                                   formatter=optparse.TitledHelpFormatter())
+    
     parser.set_description(__doc__)
-    parser.add_option("-c", "--component", dest="component", metavar="NAME", help="export xsd schema for the component named NAME", action="store", default=None)
-    parser.add_option("-o", "--output", dest='output', metavar="PATH", action="store", help="save xsd schema to PATH (required)", default=None)
+    
+    parser.add_option("-c", "--component", dest="component", metavar="NAME",
+                      help="export xsd schema for the component named NAME",
+                      action="store", default=None)
+    
+    parser.add_option("-o", "--output", dest='output', metavar="PATH",
+                      action="store", help="save xsd schema to PATH (required)",
+                      default=None)
     
     (opts, args) = parser.parse_args()
     if len(args) == 0 or None in [opts.component, opts.output]:
@@ -261,7 +269,8 @@ def gen_schema():
             f.write(s)
     else:
         logger.error('unable to find a component named %s' % opts.component)
-        logger.info('available components to choose from are: %s' % ', '.join([c_c.Name for c_c in m.select_many('C_C')]))
+        logger.info('available components to choose from are: %s' %
+                    ', '.join([c_c.Name for c_c in m.select_many('C_C')]))
         sys.exit(1)
 
 
