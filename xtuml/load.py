@@ -168,7 +168,7 @@ class ModelLoader(object):
                         outputdir=os.path.dirname(__file__),
                         lextab="xtuml.__xtuml_lextab")
         lexer.filename = name
-        
+        logger.debug('parsing %s' % name)
         s = self.parser.parse(lexer=lexer, input=data)
         self.statements.extend(s)
 
