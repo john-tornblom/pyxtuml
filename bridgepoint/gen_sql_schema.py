@@ -265,12 +265,22 @@ def main():
                       help="save sql schema to PATH (required)",
                       action="store", default=None)
     
+    parser.add_option("-v", "--verbosity", dest='verbosity', action="count", 
+                      help="increase debug logging level", default=2)
+
+    
     (opts, args) = parser.parse_args()
     if len(args) == 0 or opts.output is None:
         parser.print_help()
         sys.exit(1)
-        
-    logging.basicConfig(level=logging.INFO)
+
+    levels = {
+              0: logging.ERROR,
+              1: logging.WARNING,
+              2: logging.INFO,
+              3: logging.DEBUG,
+    }
+    logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
 
     loader = ooaofooa.Loader()
     for filename in args:
