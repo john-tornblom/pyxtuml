@@ -210,7 +210,7 @@ def mk_derived_association(m, inst):
 
 def mk_association(m, r_rel):
     '''
-    Create a pyxtuml assocation from a R_REL in ooaofooa.
+    Create a pyxtuml association from a R_REL in ooaofooa.
     '''
     handler = {
         'R_SIMP': mk_simple_association,
