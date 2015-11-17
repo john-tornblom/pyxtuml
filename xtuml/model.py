@@ -432,6 +432,20 @@ class MetaModel(object):
         
         return inst
 
+    def delete(self, inst):
+        '''
+        Delete an instance from the model.
+        '''
+        kind = inst.__class__.__name__.upper()
+        if kind not in self.classes:
+            raise ModelException("Unknown class %s" % inst.__class__.__name__)
+        
+        if inst in self.instances[kind]:
+            self.instances[kind].remove(inst)
+            inst.__class__.__c__.clear()
+        else:
+            raise ModelException("Instance not found")
+        
     def define_relation(self, rel_id, source, target):
         '''
         Define and return an association between source to target.

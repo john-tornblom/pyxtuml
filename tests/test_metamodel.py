@@ -217,6 +217,23 @@ class TestModel(unittest.TestCase):
         self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
 
+    def testDelete(self):
+        inst = self.metamodel.select_any('S_DT', where(Name='void'))
+        self.metamodel.delete(inst)
+        
+        inst = self.metamodel.select_any('S_DT', where(Name='void'))
+        self.assertFalse(inst)
+    
+    @expect_exception(xtuml.ModelException)
+    def testDeleteRwise(self):
+        inst = self.metamodel.select_any('S_DT', where(Name='void'))
+        self.metamodel.delete(inst)
+        self.metamodel.delete(inst)
+
+    @expect_exception(xtuml.ModelException)
+    def testDeleteUnknownInstance(self):
+        self.metamodel.delete(self)
+        
     def testRelateReflexive1(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')
