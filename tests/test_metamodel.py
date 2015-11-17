@@ -122,6 +122,24 @@ class TestModel(unittest.TestCase):
         pe_pe = xtuml.navigate_many(s_dt).PE_PE[8001](lambda inst: True)
         self.assertEqual(len(s_dt), len(pe_pe))
    
+    def testNavSubtype(self):
+        m = self.metamodel
+        s_dt = m.select_any('S_DT',  where(Name='void'))
+        s_cdt = xtuml.navigate_subtype(s_dt, 17)
+        self.assertTrue(s_cdt)
+        self.assertEqual(s_cdt.__class__.__name__, 'S_CDT')
+        
+    def testNavLimitedSubtype(self):
+        m = self.metamodel
+        s_dt = m.select_any('S_DT',  where(Name='void'))
+        
+        s_cdt = xtuml.navigate_subtype(s_dt, 17, 'S_EDT', 'S_SDT')
+        self.assertFalse(s_cdt)
+        
+        s_cdt = xtuml.navigate_subtype(s_dt, 17, 'S_EDT',  'S_CDT', 'S_SDT')
+        self.assertTrue(s_cdt)
+        self.assertEqual(s_cdt.__class__.__name__, 'S_CDT')
+        
     def testEmpty(self):
         m = self.metamodel
         self.assertTrue(len(m.select_many('S_DT', lambda inst: False)) == 0)

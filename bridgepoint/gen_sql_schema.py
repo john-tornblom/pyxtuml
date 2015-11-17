@@ -15,22 +15,12 @@ import logging
 import xtuml
 from xtuml import navigate_one as one
 from xtuml import navigate_many as many
+from xtuml import navigate_subtype as subtype
 
 from . import ooaofooa
 
 
 logger = logging.getLogger('gen_sql_schema')
-
-
-def subtype(inst, relid, *kinds):
-    '''
-    Navigate a list of BridgePoint sub types and return the first non-empty
-    hit.
-    '''
-    for kind in kinds:
-        child = one(inst).nav(kind, relid)()
-        if child: 
-            return child
 
 
 def mult_cond(mult, cond):
