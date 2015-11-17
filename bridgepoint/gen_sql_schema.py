@@ -209,14 +209,17 @@ def mk_derived_association(m, inst):
 
 
 def mk_association(m, r_rel):
+    '''
+    Create a pyxtuml assocation from a R_REL in ooaofooa.
+    '''
     handler = {
-               'R_SIMP': mk_simple_association,
-               'R_ASSOC': mk_linked_association,
-               'R_SUBSUP': mk_subsuper_association,
-               'R_COMP': mk_derived_association,
+        'R_SIMP': mk_simple_association,
+        'R_ASSOC': mk_linked_association,
+        'R_SUBSUP': mk_subsuper_association,
+        'R_COMP': mk_derived_association,
     }
-    inst = subtype(r_rel, 206, *handler.keys())
-    fn = handler[inst.__class__.__name__]
+    inst = subtype(r_rel, 206)
+    fn = handler.get(inst.__class__.__name__)
     return fn(m, inst)
 
 
