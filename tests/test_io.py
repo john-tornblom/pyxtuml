@@ -356,7 +356,7 @@ class TestLoader(unittest.TestCase):
     def testInvalidBooleanLiteral(self, m):
         '''
         CREATE TABLE X (B BOOLEAN);
-        INSERT INTO X ('test');
+        INSERT INTO X VALUES ('test');
         '''
 
     @expect_exception(xtuml.ParsingException)
@@ -364,7 +364,7 @@ class TestLoader(unittest.TestCase):
     def testInvalidType(self, m):
         '''
         CREATE TABLE X (VAR SOME_TYPE);
-        INSERT INTO X ('test');
+        INSERT INTO X VALUES ('test');
         '''
 
     @load
