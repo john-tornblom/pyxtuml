@@ -1,15 +1,6 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
 
-class Node(object):
-    '''
-    Tree node which may be walked a walker, and visited by a visitor.
-    '''
-    
-    def __str__(self):
-        return self.__class__.__name__
-
-
 class Visitor(object):
     '''
     A visitor may be used to visit tree nodes walked by a walker.
