@@ -7,11 +7,21 @@ class Visitor(object):
     '''
     
     def enter(self, node):
+        '''
+        Tries to invoke a method on self matching the pattern 
+        enter_<type name>, where <type name> is the name of the
+        type of the node.
+        '''
         name = 'enter_' + node.__class__.__name__
         fn = getattr(self, name, self.default_enter)
         fn(node)
 
     def leave(self, node):
+        '''
+        Tries to invoke a method on self matching the pattern 
+        leave_<type name>, where <type name> is the name of the
+        type of the node.
+        '''
         name = 'leave_' + node.__class__.__name__
         fn = getattr(self, name, self.default_leave)
         fn(node)
@@ -32,16 +42,24 @@ class Walker(object):
         self.visitors = list()
         
     def accept(self, node, **kwargs):
+        '''
+        Invoke the visitors before and after decending down the tree. 
+        The walker will also try to invoke methods matching the pattern
+        accept_<type name>, where <type name> is the name of the
+        accepted node.
+        '''
         if node is None:
             return
         
-        for v in self.visitors: v.enter(node)
+        for v in self.visitors:
+            v.enter(node)
         
         name = 'accept_' + node.__class__.__name__
         fn = getattr(self, name, self.default_accept)
         r = fn(node, **kwargs)
         
-        for v in self.visitors: v.leave(node)
+        for v in self.visitors:
+            v.leave(node)
         
         return r
     
@@ -59,7 +77,7 @@ class NodePrintVisitor(Visitor):
         self.__lvl = 0
         
     def default_enter(self, node):
-        print('%s%s' % ("  " * self.__lvl, node))
+        print('%s%s' % ("  " * self.__lvl, node.__class__.__name__))
         self.__lvl += 1
 
     def default_leave(self, node):
