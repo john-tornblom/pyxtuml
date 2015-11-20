@@ -479,12 +479,16 @@ class ModelLoader(object):
             raise ParsingException("unknown error")
 
 
-def load_metamodel(filenames):
+def load_metamodel(resource):
     '''
-    Load and return a meta model from a list of filenames.
+    Load and return a meta model from a resource.
+    The resource may be either a filename, or a list of filenames.
     '''
+    if isinstance(resource, str):
+        resource = [resource]
+        
     loader = ModelLoader()
-    for filename in filenames:
+    for filename in resource:
         loader.filename_input(filename)
     
     return loader.build_metamodel()
