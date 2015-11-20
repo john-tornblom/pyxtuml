@@ -64,7 +64,14 @@ class Walker(object):
         return r
     
     def default_accept(self, node, **kwargs):
-        for child in filter(None, node.children):
+        '''
+        The default accept behaviour is to decend into the iterable member
+        node.children (if available).
+        '''
+        if not hasattr(node, 'children'):
+            return
+        
+        for child in node.children:
             self.accept(child, **kwargs)
 
 
