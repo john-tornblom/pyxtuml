@@ -1,9 +1,9 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
 '''
-Serialize xtuml models and its schema to an sql-based file format and persist to disk.
+Serialize xtuml models and its schema to an sql-based file format and persist
+to disk.
 '''
-
 
 import uuid
 import logging
