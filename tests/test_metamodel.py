@@ -550,6 +550,28 @@ class TestQuerySet(unittest.TestCase):
         q1.pop(last=False)
         self.assertEqual(q1, q2)
 
+class TestIdGenerator(unittest.TestCase):
+    '''
+    Test suite for the IdGenerator classes
+    '''
+
+    def testIntegerGeneratorBasic(self):
+        i = xtuml.IntegerGenerator()
+        self.assertEqual(i.peek(), 1)
+        self.assertEqual(i.next(), 1)
+        self.assertEqual(i.next(), 2)
+        self.assertEqual(i.peek(), 3)
+        self.assertEqual(i.peek(), 3)
+
+    def testIntegerGeneratorIterator(self):
+        i = xtuml.IntegerGenerator()
+        count = 1
+        for v in i:
+            self.assertEqual(v, count)
+            count += 1
+            if count == 10:
+                break;
+
 
 if __name__ == "__main__":
     unittest.main()
