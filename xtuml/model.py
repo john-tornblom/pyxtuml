@@ -643,15 +643,13 @@ def navigate_many(inst_or_set):
     return NavChain(inst_or_set, is_many=True)
 
 
-def navigate_subtype(supertype, rel_id, *kinds):
+def navigate_subtype(supertype, rel_id):
     '''
     Perform a navigation which is modeled as a subtype-supertype association.
-    Optionally, filter the navigation to specific kinds of instances, e.g.
-        subtype = navigate_one(supertype, 102)
-    or
-        subtype = navigate_one(supertype, 102, 'Kind_A', 'Kind_B')
     '''
-    kinds = [kind.upper() for kind in kinds]
+    if not supertype:
+        return
+    
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
 
@@ -660,10 +658,7 @@ def navigate_subtype(supertype, rel_id, *kinds):
             continue
         
         subtype = navigate_one(supertype).nav(kind, rel_id)()
-        if not subtype:
-            continue
-        
-        if not kinds or kind in kinds: 
+        if subtype:
             return subtype
 
         
