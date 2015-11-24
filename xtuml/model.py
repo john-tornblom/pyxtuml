@@ -431,20 +431,6 @@ class MetaModel(object):
         self.instances[ukind].append(inst)
         
         return inst
-
-    def delete(self, inst):
-        '''
-        Delete an instance from the model.
-        '''
-        kind = inst.__class__.__name__.upper()
-        if kind not in self.classes:
-            raise ModelException("Unknown class %s" % inst.__class__.__name__)
-        
-        if inst in self.instances[kind]:
-            self.instances[kind].remove(inst)
-            inst.__class__.__c__.clear()
-        else:
-            raise ModelException("Instance not found")
         
     def define_relation(self, rel_id, source, target):
         '''
@@ -748,6 +734,24 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
             deferred_unrelate()
         
     return updated
+
+
+def delete(inst):
+    '''
+    Delete an instance from its model.
+    '''
+    if not isinstance(inst, BaseObject):
+        raise ModelException("not an xtuml instance")
+            
+    kind = inst.__class__.__name__.upper()
+    if kind not in inst.__m__.classes:
+        raise ModelException("Unknown class %s" % inst.__class__.__name__)
+        
+    if inst in inst.__m__.instances[kind]:
+        inst.__m__.instances[kind].remove(inst)
+        inst.__class__.__c__.clear()
+    else:
+        raise ModelException("Instance not found in its model")
 
 
 def where_eq(**kwargs):

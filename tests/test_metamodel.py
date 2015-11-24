@@ -237,7 +237,7 @@ class TestModel(unittest.TestCase):
 
     def testDelete(self):
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
-        self.metamodel.delete(inst)
+        xtuml.delete(inst)
         
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
         self.assertFalse(inst)
@@ -245,12 +245,12 @@ class TestModel(unittest.TestCase):
     @expect_exception(xtuml.ModelException)
     def testDeleteRwise(self):
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
-        self.metamodel.delete(inst)
-        self.metamodel.delete(inst)
+        xtuml.delete(inst)
+        xtuml.delete(inst)
 
     @expect_exception(xtuml.ModelException)
     def testDeleteUnknownInstance(self):
-        self.metamodel.delete(self)
+        xtuml.delete(self)
         
     def testRelateReflexive1(self):
         inst1 = self.metamodel.new('ACT_SMT')

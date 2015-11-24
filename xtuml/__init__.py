@@ -40,6 +40,7 @@ from .model import navigate_many
 from .model import navigate_subtype
 from .model import relate
 from .model import unrelate
+from .model import delete
 from .model import where_eq
 
 from .consistency_check import check_association_integrity
