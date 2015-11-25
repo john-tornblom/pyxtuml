@@ -3996,3 +3996,20 @@ def empty_model():
     loader = Loader()
     return loader.build_metamodel()
 
+
+def load_model(resource):
+    '''
+    Load and return a model from a resource.
+    The resource may be either a filename, a path, or a list of filenames
+    and/or paths.
+    '''
+    if isinstance(resource, str):
+        resource = [resource]
+        
+    loader = Loader()
+    for filename in resource:
+        loader.filename_input(filename)
+    
+    return loader.build_metamodel()
+
+

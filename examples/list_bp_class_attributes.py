@@ -16,9 +16,8 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
     
-loader = ooaofooa.Loader()
-loader.filename_input(sys.argv[1])
-m = loader.build_metamodel()
+m = ooaofooa.load_model(sys.argv[1])
+
 
 by_name = lambda inst: inst.Name
 for o_obj in sorted(m.select_many('O_OBJ'), key=by_name):

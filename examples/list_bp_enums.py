@@ -15,9 +15,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
     
-loader = ooaofooa.Loader()
-loader.filename_input(sys.argv[1])
-m = loader.build_metamodel()
+m = ooaofooa.load_model(sys.argv[1])
 
 
 get_name = lambda inst: one(inst).S_DT[17]().Name
