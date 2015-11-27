@@ -1,2 +1,2 @@
-import loader
-loader.install()
+from bridgepoint import imp
+imp.install()
