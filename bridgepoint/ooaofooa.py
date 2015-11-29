@@ -4212,13 +4212,15 @@ class Loader(xtuml.ModelLoader):
         else:
             xtuml.ModelLoader.filename_input(self, filename)
 
-    def build_component(self, name):
+    def build_component(self, name=None):
         mm = self.build_metamodel()
         c_c = mm.select_any('C_C', where(Name=name))
         if c_c:
             return mk_component(mm, c_c)
-        else:
+        elif name:
             raise Exception('Unable to find the component %s' % name)
+        else:
+            return mk_component(mm, c_c)
 
 
 def empty_model():
