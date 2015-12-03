@@ -23,7 +23,9 @@ logging.basicConfig(level=logging.DEBUG)
 class BuildCommand(build_py):
     
     def run(self):
-        xtuml.load_metamodel([])
+        l = xtuml.ModelLoader()
+        l.input('', name='<empty string>')
+        l.build_metamodel()
         build_py.run(self)
 
 
