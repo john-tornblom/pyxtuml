@@ -2,7 +2,7 @@
 # Copyright (C) 2015 John Törnblom
 
 name = 'pyxtuml'
-date = '2015-11-25'
-release = '0.7.10'
+date = '2015-12-13'
+release = '0.7.11'
 
 complete_string = '%s v%s (%s)' % (name, release, date)
