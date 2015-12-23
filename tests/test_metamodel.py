@@ -237,6 +237,32 @@ class TestModel(unittest.TestCase):
         xtuml.delete(inst)
         xtuml.delete(inst)
 
+    def testClone(self):
+        s_ee = self.metamodel.new('S_EE', Name='Test', Descrip='test', Key_Lett='TEST')
+        pe_pe = self.metamodel.new('PE_PE')
+        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
+        
+        m = ooaofooa.empty_model()
+        self.assertNotEqual(pe_pe, m.clone(pe_pe))
+        self.assertNotEqual(s_ee, m.clone(s_ee))
+        
+        s_ee_clone = m.select_any('S_EE', where(Name='Test'))
+        self.assertNotEqual(s_ee, s_ee_clone)
+        self.assertEqual(s_ee_clone.EE_ID, s_ee.EE_ID)
+        self.assertEqual(s_ee_clone.Name, s_ee.Name)
+        self.assertEqual(s_ee_clone.Descrip, s_ee.Descrip)
+        self.assertEqual(s_ee_clone.Key_Lett, s_ee.Key_Lett)
+        
+
+        pe_pe_clone = xtuml.navigate_one(s_ee_clone).PE_PE[8001]()
+        self.assertTrue(pe_pe_clone)
+        self.assertNotEqual(pe_pe, pe_pe_clone)
+        self.assertEqual(pe_pe_clone.Element_ID, pe_pe.Element_ID)
+        self.assertEqual(pe_pe_clone.Visibility, pe_pe.Visibility)
+        self.assertEqual(pe_pe_clone.Package_ID, pe_pe.Package_ID)
+        self.assertEqual(pe_pe_clone.Component_ID, pe_pe.Component_ID)
+        self.assertEqual(pe_pe_clone.type, pe_pe.type)
+        
     @expect_exception(xtuml.ModelException)
     def testDeleteUnknownInstance(self):
         xtuml.delete(self)

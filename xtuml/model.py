@@ -431,6 +431,20 @@ class MetaModel(object):
         self.instances[ukind].append(inst)
         
         return inst
+    
+    def clone(self, inst):
+        '''
+        Create a shallow clone of inst.
+        
+        **Note**: the clone and the original instance does NOT have to be part
+        of the same meta model. 
+        '''
+        clone = self.new(inst.__class__.__name__)
+        for name, _ in inst.__a__:
+            value = getattr(inst, name)
+            setattr(clone, name, value)
+            
+        return clone
         
     def define_relation(self, rel_id, source, target):
         '''
