@@ -538,7 +538,7 @@ class TestPersist(unittest.TestCase):
         m = loader.build_metamodel()
         m.new('X', Boolean=True, Integer=4, String='str', Uniquie_Id=5)
         
-        s = xtuml.serialize_database(m)
+        s = xtuml.serialize(m)
     
         (_, filename) = tempfile.mkstemp()
         try:

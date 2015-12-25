@@ -8,6 +8,8 @@ to disk.
 import uuid
 import logging
 
+import xtuml
+
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +137,26 @@ def serialize_database(metamodel):
     instances = serialize_instances(metamodel)
     
     return ''.join([schema, instances])
+
+
+def serialize(resource):
+    '''
+    Serialize some xtuml resource, e.g. an instance or a complete meta model.
+    '''
+    if isinstance(resource, xtuml.MetaModel):
+        return serialize_database(resource)
+
+    elif issubclass(resource, xtuml.BaseObject):
+        return serialize_class(resource)
+    
+    elif isinstance(resource, xtuml.Association):
+        return serialize_association(resource)
+
+    elif isinstance(resource, xtuml.AssociationLink):
+        return serialize_association_link(resource)
+    
+    elif isinstance(resource, xtuml.BaseObject):
+        return serialize_instance(resource)
 
 
 def persist_instances(metamodel, path):
