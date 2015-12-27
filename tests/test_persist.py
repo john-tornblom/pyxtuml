@@ -305,9 +305,49 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(s1, s2)
 
     def test_implicit_serialize(self):
-        pass
-
-    
+        schema = '''
+            CREATE TABLE X (BOOLEAN BOOLEAN,
+                            INTEGER INTEGER,
+                            REAL REAL,
+                            STRING STRING,
+                            UNIQUE_ID UNIQUE_ID,
+                            Next UNIQUE_ID);
+                            
+        CREATE ROP REF_ID R1 FROM 1C X ( Next ) PHRASE 'precedes'
+                             TO   1C X ( UNIQUE_ID ) PHRASE 'succeeds';
+        '''
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        
+        X = m.classes['X']
+        s1 = xtuml.serialize(X)
+        s2 = xtuml.serialize_class(X)
+        self.assertTrue(s1)
+        self.assertEqual(s1, s2)
+        
+        R1 = m.associations[0]
+        s1 = xtuml.serialize(R1)
+        s2 = xtuml.serialize_association(R1)
+        self.assertTrue(s1)
+        self.assertEqual(s1, s2)
+        
+        s1 = xtuml.serialize(R1.source)
+        s2 = xtuml.persist.serialize_association_link(R1.source)
+        self.assertTrue(s1)
+        self.assertEqual(s1, s2)
+        
+        x = m.new('X', Boolean=True, Integer=4, String='str')
+        
+        s1 = xtuml.serialize(x)
+        s2 = xtuml.serialize_instance(x)
+        self.assertTrue(s1)
+        self.assertEqual(s1, s2)
+        
+        s1 = xtuml.serialize(m)
+        s2 = xtuml.serialize_database(m)
+        self.assertTrue(s1)
+        self.assertEqual(s1, s2)
         
         
 def compare_metamodel_classes(m1, m2):
