@@ -379,6 +379,22 @@ class TestLoader(unittest.TestCase):
         '''
         self.assertTrue(m.select_any('X'))
     
+    @load
+    def test_insert_with_undefined_argument(self, m):
+        '''
+        CREATE TABLE X (VAR STRING);
+        INSERT INTO X VALUES ('test', 1);
+        '''
+        self.assertTrue(m.select_any('X'))
+        
+    @load
+    def test_insert_with_missing_argument(self, m):
+        '''
+        CREATE TABLE X (VAR STRING);
+        INSERT INTO X VALUES ();
+        '''
+        self.assertTrue(m.select_any('X'))
+
 
 if __name__ == "__main__":
     unittest.main()
