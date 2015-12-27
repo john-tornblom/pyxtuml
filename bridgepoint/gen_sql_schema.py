@@ -20,8 +20,6 @@ from . import ooaofooa
 logger = logging.getLogger('gen_sql_schema')
 
 
-
-
 def main():
     '''
     Parse argv for options and arguments, and start schema generation.
