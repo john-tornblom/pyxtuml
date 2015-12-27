@@ -32,7 +32,7 @@ class TestLoader(unittest.TestCase):
     def tearDown(self):
         del self.loader
 
-    def testFilenameInput(self):
+    def test_filename_input(self):
         resources = os.path.dirname(__file__) + os.sep + 'resources'
         schema = resources + os.sep + 'ooaofooa_schema.sql'
         globs = resources + os.sep + 'Globals.xtuml'
@@ -41,7 +41,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(metamodel.select_any('S_DT', xtuml.where_eq(Name='integer')) is not None)
         
     @load
-    def testTableNamedCREATE(self, m):
+    def test_table_named_create(self, m):
         '''
         CREATE TABLE CREATE (Id UNIQUE_ID);
         INSERT INTO CREATE VALUES ("00000000-0000-0000-0000-000000000000");
@@ -49,7 +49,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('CREATE') is not None)
         
     @load
-    def testTableNamedTABLE(self, m):
+    def test_table_named_table(self, m):
         '''
         CREATE TABLE TABLE (Id UNIQUE_ID);
         INSERT INTO TABLE VALUES ("00000000-0000-0000-0000-000000000000");
@@ -57,7 +57,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('TABLE') is not None)
         
     @load
-    def testTableNamedINSERT(self, m):
+    def test_table_named_insert(self, m):
         '''
         CREATE TABLE INSERT (Id UNIQUE_ID);
         INSERT INTO INSERT VALUES ("00000000-0000-0000-0000-000000000000");
@@ -65,7 +65,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('INSERT') is not None)
         
     @load
-    def testTableNamedINTO(self, m):
+    def test_table_named_into(self, m):
         '''
         CREATE TABLE INTO (Id UNIQUE_ID);
         INSERT INTO INTO VALUES ("00000000-0000-0000-0000-000000000000");
@@ -73,7 +73,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('INTO') is not None)
         
     @load
-    def testTableNamedVALUES(self, m):
+    def test_table_named_values(self, m):
         '''
         CREATE TABLE VALUES (Id UNIQUE_ID);
         INSERT INTO VALUES VALUES ("00000000-0000-0000-0000-000000000000");
@@ -81,7 +81,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('VALUES') is not None)
         
     @load
-    def testTableNamedROP(self, m):
+    def test_table_named_rop(self, m):
         '''
         CREATE TABLE ROP (Id UNIQUE_ID);
         INSERT INTO ROP VALUES ("00000000-0000-0000-0000-000000000000");
@@ -89,7 +89,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('ROP') is not None)
         
     @load
-    def testTableNamedREF_ID(self, m):
+    def test_table_named_ref_id(self, m):
         '''
         CREATE TABLE REF_ID (Id UNIQUE_ID);
         INSERT INTO REF_ID VALUES ("00000000-0000-0000-0000-000000000000");
@@ -97,7 +97,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('REF_ID') is not None)
         
     @load
-    def testTableNamedFROM(self, m):
+    def test_table_named_from(self, m):
         '''
         CREATE TABLE FROM (Id UNIQUE_ID);
         INSERT INTO FROM VALUES ("00000000-0000-0000-0000-000000000000");
@@ -105,7 +105,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('FROM') is not None)
         
     @load
-    def testTableNamedTO(self, m):
+    def test_table_named_to(self, m):
         '''
         CREATE TABLE TO (Id UNIQUE_ID);
         INSERT INTO TO VALUES ("00000000-0000-0000-0000-000000000000");
@@ -113,7 +113,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('TO') is not None)
         
     @load
-    def testTableNamedPHRASE(self, m):
+    def test_table_named_phrase(self, m):
         '''
         CREATE TABLE PHRASE (Id UNIQUE_ID);
         INSERT INTO PHRASE VALUES ("00000000-0000-0000-0000-000000000000");
@@ -121,7 +121,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('PHRASE') is not None)
         
     @load
-    def testTableNamedTRUE(self, m):
+    def test_table_named_true(self, m):
         '''
         CREATE TABLE TRUE (Id UNIQUE_ID);
         INSERT INTO TRUE VALUES ("00000000-0000-0000-0000-000000000000");
@@ -129,7 +129,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('TRUE') is not None)
         
     @load
-    def testTableNamedFALSE(self, m):
+    def test_table_named_false(self, m):
         '''
         CREATE TABLE FALSE (Id UNIQUE_ID);
         INSERT INTO FALSE VALUES ("00000000-0000-0000-0000-000000000000");
@@ -137,7 +137,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('FALSE') is not None)
         
     @load
-    def testEmptyAttributeList(self, m):
+    def test_empty_attribute_sequence(self, m):
         '''
         CREATE TABLE X ();
         INSERT INTO X VALUES ();
@@ -145,7 +145,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(m.select_any('X') is not None)
 
     @load
-    def testInsertSTRING(self, m):
+    def test_insert_string(self, m):
         '''
         CREATE TABLE X (Id STRING);
         INSERT INTO X VALUES ('TEST');
@@ -155,7 +155,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, 'TEST')
         
     @load
-    def testInsertEscapedSTRING(self, m):
+    def test_insert_escaped_string(self, m):
         '''
         CREATE TABLE X (Id STRING);
         INSERT INTO X VALUES ('TE''ST');
@@ -165,7 +165,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, "TE'ST")
         
     @load
-    def testInsertUNIQUE_ID_Null(self, m):
+    def test_insert_null_uuid(self, m):
         '''
         CREATE TABLE X (Id UNIQUE_ID);
         INSERT INTO X VALUES ("00000000-0000-0000-0000-000000000000");
@@ -175,7 +175,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(0, val.Id)
 
     @load
-    def testInsertUNIQUE_ID_Zero(self, m):
+    def test_insert_zero_uuid(self, m):
         '''
         CREATE TABLE X (Id UNIQUE_ID);
         INSERT INTO X VALUES (0);
@@ -184,7 +184,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(0, val.Id)
         
     @load
-    def testInsertREAL_Positive(self, m):
+    def test_insert_positive_real(self, m):
         '''
         CREATE TABLE X (Id REAL);
         INSERT INTO X VALUES (1.1);
@@ -194,7 +194,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, 1.1)
         
     @load
-    def testInsertREAL_Negative(self, m):
+    def test_insert_negative_real(self, m):
         '''
         CREATE TABLE X (Id REAL);
         INSERT INTO X VALUES (-5.2);
@@ -204,7 +204,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, -5.2)
 
     @load
-    def testInsertINTEGER_Positive(self, m):
+    def test_insert_positive_integer(self, m):
         '''
         CREATE TABLE X (Id INTEGER);
         INSERT INTO X VALUES (5);
@@ -212,29 +212,9 @@ class TestLoader(unittest.TestCase):
         val = m.select_any('X')
         self.assertTrue(val is not None)
         self.assertEqual(val.Id, 5)
-        
+
     @load
-    def testInsertBOOLEAN_True(self, m):
-        '''
-        CREATE TABLE X (Id BOOLEAN);
-        INSERT INTO X VALUES (true);
-        '''
-        val = m.select_any('X')
-        self.assertTrue(val is not None)
-        self.assertEqual(val.Id, True)
-        
-    @load
-    def testInsertBOOLEAN_False(self, m):
-        '''
-        CREATE TABLE X (Id BOOLEAN);
-        INSERT INTO X VALUES (false);
-        '''
-        val = m.select_any('X')
-        self.assertTrue(val is not None)
-        self.assertEqual(val.Id, False)
-        
-    @load
-    def testInsertINTEGER_Negative(self, m):
+    def test_insert_negative_integer(self, m):
         '''
         CREATE TABLE X (Id INTEGER);
         INSERT INTO X VALUES (-1000);
@@ -244,7 +224,27 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, -1000) 
 
     @load
-    def testROPNamedAsCardinality(self, m):
+    def test_insert_true(self, m):
+        '''
+        CREATE TABLE X (Id BOOLEAN);
+        INSERT INTO X VALUES (true);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, True)
+        
+    @load
+    def test_insert_false(self, m):
+        '''
+        CREATE TABLE X (Id BOOLEAN);
+        INSERT INTO X VALUES (false);
+        '''
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, False)
+        
+    @load
+    def test_rop_named_as_cardinality(self, m):
         '''
         CREATE TABLE M  (Id INTEGER, MC_Id INTEGER);
         CREATE TABLE MC (Id INTEGER);
@@ -264,7 +264,7 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, 2) 
 
     @load
-    def testROPWithoutIdentifiers(self, m):
+    def test_rop_without_identifier_sequence(self, m):
         '''
         CREATE TABLE X  ();
         CREATE TABLE Y ();
@@ -282,32 +282,32 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(y is not None)
 
     @load
-    def testEmptyInput(self, m):
+    def test_empty_input(self, m):
         ''''''
         pass
     
     @load
-    def testEmptyInputWithComment(self, m):
+    def test_empty_input_with_comment(self, m):
         '''-- Some comment'''
         pass
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testIllegalCharacter(self, m):
+    def test_illegal_character(self, m):
         '''
         CREATE TABLE & (Id INTEGER);
         '''
 
     @expect_exception(xtuml.ParsingException)
     @load
-    def testMissingSemiColon(self, m):
+    def test_missing_semicolon(self, m):
         '''
         CREATE TABLE X (Id INTEGER)
         '''
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidTokenSequence(self, m):
+    def test_invalid_token_sequence(self, m):
         '''
         TABLE CREATE X (Id INTEGER);
         '''
@@ -315,7 +315,7 @@ class TestLoader(unittest.TestCase):
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidFirstCardinalityNumber(self, m):
+    def test_invalid_first_cardinality_number(self, m):
         '''
         CREATE ROP REF_ID R1 FROM 2 X ( Id )
                              TO   1 Y ( Id );
@@ -324,7 +324,7 @@ class TestLoader(unittest.TestCase):
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidSecondCardinalityNumber(self, m):
+    def test_invalid_second_cardinality_number(self, m):
         '''
         CREATE ROP REF_ID R1 FROM 1 X ( Id )
                              TO   2 Y ( Id );
@@ -333,7 +333,7 @@ class TestLoader(unittest.TestCase):
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidFirstCardinalityLetter(self, m):
+    def test_invalid_first_cardinality_letter(self, m):
         '''
         CREATE ROP REF_ID R1 FROM 1 X ( Id )
                              TO   X Y ( Id );
@@ -342,7 +342,7 @@ class TestLoader(unittest.TestCase):
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidSecondCardinalityLetter(self, m):
+    def test_invalid_second_cardinality_letter(self, m):
         '''
         CREATE ROP REF_ID R1 FROM Y X ( Id )
                              TO   1 Y ( Id );
@@ -351,7 +351,7 @@ class TestLoader(unittest.TestCase):
         
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidBooleanLiteral(self, m):
+    def test_invalid_boolean_literal(self, m):
         '''
         CREATE TABLE X (B BOOLEAN);
         INSERT INTO X VALUES ('test');
@@ -359,21 +359,21 @@ class TestLoader(unittest.TestCase):
 
     @expect_exception(xtuml.ParsingException)
     @load
-    def testInvalidType(self, m):
+    def test_invalid_type(self, m):
         '''
         CREATE TABLE X (VAR SOME_TYPE);
         INSERT INTO X VALUES ('test');
         '''
 
     @load
-    def testInsertWithUndefinedTableAndArgument(self, m):
+    def test_insert_with_undefined_table_and_argument(self, m):
         '''
         INSERT INTO X VALUES ('test');
         '''
         self.assertTrue(m.select_any('X'))
         
     @load
-    def testInsertWithUndefinedTable(self, m):
+    def test_insert_with_undefined_table(self, m):
         '''
         INSERT INTO X VALUES ();
         '''
