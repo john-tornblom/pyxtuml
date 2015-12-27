@@ -13,7 +13,7 @@ class TestPersist(unittest.TestCase):
     Test suite for the module xtuml.persist
     '''
 
-    def testSerialize(self):
+    def test_serialize(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -53,7 +53,7 @@ class TestPersist(unittest.TestCase):
         # besides, only equals comparisons operator (==) shall be used on these types.
         # self.assertIsInstance(x.UNIQUE_ID, int)
         
-    def testSerializeDefaultValues(self):
+    def test_serialize_default_values(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -84,7 +84,7 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.UNIQUE_ID, 1)
 
 
-    def testPersistDefaultValues(self):
+    def test_persist_default_values(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -122,7 +122,7 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, 0.0)
         self.assertEqual(x.UNIQUE_ID, 1)
 
-    def testPersistSchema(self):
+    def test_persist_schema(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -147,7 +147,7 @@ class TestPersist(unittest.TestCase):
         finally:
             os.remove(filename)
 
-    def testPersistDatabase(self):
+    def test_persist_database(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -174,7 +174,7 @@ class TestPersist(unittest.TestCase):
         finally:
             os.remove(filename)
 
-    def testSerializeSchema(self):
+    def test_serialize_schema(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -206,7 +206,7 @@ class TestPersist(unittest.TestCase):
 
         self.assertTrue(xtuml.navigate_one(x1).X[1, 'precedes']())
         
-    def testSerializeNoneValues(self):
+    def test_serialize_none_values(self):
         schema = '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -238,7 +238,7 @@ class TestPersist(unittest.TestCase):
         self.assertEqual(x.REAL, 0.0)
         self.assertEqual(x.UNIQUE_ID, 0)
 
-    def testSerializeAttributeNamedSelf(self):
+    def test_serialize_attribute_named_self(self):
         schema = '''
             CREATE TABLE X (self UNIQUE_ID);
         '''
@@ -259,7 +259,7 @@ class TestPersist(unittest.TestCase):
         x = m.select_any('X')
         self.assertEqual(x.self, 1)
 
-    def testSerializeUndefinedTable(self):
+    def test_serialize_undefined_table(self):
         schema = '''
         CREATE TABLE X (
           _0 UNIQUE_ID,
@@ -406,7 +406,7 @@ class TestSchema(unittest.TestCase):
     '''
     
     @schema_compare
-    def testClassWithDataTypeNames(self):
+    def test_class_with_data_type_names(self):
         '''
             CREATE TABLE X (BOOLEAN BOOLEAN,
                             INTEGER INTEGER,
@@ -416,7 +416,7 @@ class TestSchema(unittest.TestCase):
         '''
         
     @schema_compare
-    def testROPNamedAsCardinality(self):
+    def test_rop_named_as_cardinality(self):
         '''
         CREATE TABLE M  (Id INTEGER, MC_Id INTEGER);
         CREATE TABLE MC (Id INTEGER);
@@ -426,7 +426,7 @@ class TestSchema(unittest.TestCase):
         '''
 
     @schema_compare
-    def testROPWithoutIdentifiers(self):
+    def test_rop_without_identifiers(self):
         '''
         CREATE TABLE X ();
         CREATE TABLE Y ();
