@@ -45,6 +45,16 @@ class TestNodePrinter(unittest.TestCase):
         
         self.assertEqual(s, 'TestNodePrinter\n')
 
+    def test_none(self):
+        w = xtuml.tools.Walker()
+        w.visitors.append(xtuml.tools.NodePrintVisitor())
+        
+        w.accept(None)
+        
+        s = sys.stdout.getvalue()
+        
+        self.assertEqual(s, '')
+
 
 if __name__ == "__main__":
     unittest.main()
