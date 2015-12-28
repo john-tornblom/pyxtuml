@@ -2581,7 +2581,7 @@ CREATE ROP REF_ID R3 FROM MC     O_IOBJ     ( SS_ID )
 CREATE ROP REF_ID R27 FROM MC     S_ENUM     ( EDT_DT_ID )
                  TO 1      S_EDT     ( DT_ID );
 CREATE ROP REF_ID R23 FROM MC     S_SYNC     ( Dom_ID )
-                 TO 1      S_DOM     ( Dom_ID );
+                 TO 1C      S_DOM     ( Dom_ID );
 CREATE ROP REF_ID R25 FROM MC     S_SYNC     ( DT_ID )
                  TO 1      S_DT     ( DT_ID );
 CREATE ROP REF_ID R24 FROM MC     S_SPARM     ( Sync_ID )
@@ -2594,7 +2594,7 @@ CREATE ROP REF_ID R29 FROM MC     S_FPK     ( Dom_ID )
                  TO 1C  S_DOM     ( Dom_ID );
 CREATE ROP REF_ID R31 FROM MC     S_FIP     ( FunPack_ID )
                  TO 1      S_FPK     ( FunPack_ID );
-CREATE ROP REF_ID R31 FROM 1      S_FIP     ( Sync_ID )
+CREATE ROP REF_ID R31 FROM 1C      S_FIP     ( Sync_ID )
                  TO 1      S_SYNC     ( Sync_ID );
 CREATE ROP REF_ID R30 FROM 1C     S_FPIP     ( FunPack_ID )
                  TO 1      S_FPK     ( FunPack_ID );
