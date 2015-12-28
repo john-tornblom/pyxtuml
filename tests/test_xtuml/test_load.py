@@ -6,7 +6,7 @@ import os
 
 import xtuml
 
-from tests.utils import expect_exception
+from tests.test_xtuml.utils import expect_exception
 
 
 def load(fn):

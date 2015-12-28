@@ -7,7 +7,7 @@ import xtuml
 from bridgepoint import ooaofooa
 from xtuml import where_eq as where
 
-from tests.utils import expect_exception
+from tests.test_xtuml.utils import expect_exception
 
 
 class TestAssociation(unittest.TestCase):
