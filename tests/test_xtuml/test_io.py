@@ -7,7 +7,7 @@ import tempfile
 
 import xtuml
 
-from tests.utils import expect_exception
+from .utils import expect_exception
 
 
 def load(fn):
@@ -35,7 +35,7 @@ class TestLoader(unittest.TestCase):
         del self.loader
 
     def testFilenameInput(self):
-        resources = os.path.dirname(__file__) + os.sep + 'resources'
+        resources = os.path.dirname(__file__) + os.sep + '..' + os.sep + 'resources'
         schema = resources + os.sep + 'ooaofooa_schema.sql'
         globs = resources + os.sep + 'Globals.xtuml'
 
