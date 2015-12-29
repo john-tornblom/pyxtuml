@@ -1754,7 +1754,10 @@ class ProvidedSignalWalker(PrebuildWalker):
         return v_val
 
 
-def populate_model(m):
+def prebuild_action(inst):
+    '''
+    Populate an action, e.g. an instance of S_SYNC or O_TFR.
+    '''
     walker_map = {
         'S_SYNC': PrebuildFunctionWalker,
         'S_BRG': PrebuildBridgeWalker,
@@ -1766,14 +1769,22 @@ def populate_model(m):
         'SPR_PO': ProvidedOperationWalker,
         'SPR_PS': ProvidedSignalWalker
     }
+    kind = inst.__class__.__name__
+    walker = walker_map[kind](inst.__m__, inst)
+    # walker.visitors.append(xtuml.tools.NodePrintVisitor())
+    root = oal.parse(inst.Action_Semantics_internal)
+    return walker.accept(root)
     
-    for kind, cls in walker_map.items():
+                
+def prebuild_model(m):
+    '''
+    Populate all actions in a model.
+    '''
+    for kind in ['S_SYNC','S_BRG','O_TFR', 'O_DBATTR', 'SM_ACT', 'SPR_RO',
+                 'SPR_RS', 'SPR_PO', 'SPR_PS']:
         for inst in m.select_many(kind):
             if inst.Suc_Pars:
-                walker = cls(m, inst)
-                # walker.visitors.append(xtuml.tools.NodePrintVisitor())
-                root = oal.parse(inst.Action_Semantics_internal)
-                walker.accept(root)
+                prebuild_action(inst)
 
 
 def main():
@@ -1807,7 +1818,7 @@ def main():
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
     m = ooaofooa.load_model(args)        
-    populate_model(m)
+    prebuild_model(m)
     if m.is_consistent():
         xtuml.persist_instances(m, opts.output)
     else:
