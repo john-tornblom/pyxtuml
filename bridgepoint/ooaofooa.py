@@ -1942,7 +1942,7 @@ CREATE ROP REF_ID R104 FROM MC     O_ID     ( Obj_ID )
                  TO 1      O_OBJ     ( Obj_ID );
 CREATE ROP REF_ID R101 FROM MC     O_IOBJ     ( Obj_ID )
                  TO 1C  O_OBJ     ( Obj_ID );
-CREATE ROP REF_ID R110 FROM M     O_RTIDA     ( Oid_ID , OIR_ID , Obj_ID , Rel_ID )
+CREATE ROP REF_ID R110 FROM MC    O_RTIDA     ( Oid_ID , OIR_ID , Obj_ID , Rel_ID )
                  TO 1      R_RTO     ( Oid_ID , OIR_ID , Obj_ID , Rel_ID );
 CREATE ROP REF_ID R110 FROM MC     O_RTIDA     ( Attr_ID , Oid_ID , Obj_ID )
                  TO 1      O_OIDA     ( Attr_ID , Oid_ID , Obj_ID );
@@ -2545,7 +2545,7 @@ CREATE ROP REF_ID R14 FROM MC     S_DT     ( Dom_ID )
 CREATE ROP REF_ID R16 FROM MC     S_EEEDI     ( DT_ID )
                  TO 1      S_DT     ( DT_ID );
 CREATE ROP REF_ID R8 FROM MC     S_EE     ( Dom_ID )
-                 TO 1      S_DOM     ( Dom_ID );
+                 TO 1C     S_DOM     ( Dom_ID );
 CREATE ROP REF_ID R17 FROM 1C     S_CDT     ( DT_ID )
              TO 1      S_DT     ( DT_ID );
 CREATE ROP REF_ID R17 FROM 1C     S_UDT     ( DT_ID )
@@ -2606,7 +2606,7 @@ CREATE ROP REF_ID R32 FROM MC     S_FPK     ( Parent_FunPack_ID )
                  TO 1C  S_FPIP     ( FunPack_ID );
 CREATE ROP REF_ID R33 FROM MC     S_EEIP     ( EEPack_ID )
                  TO 1      S_EEPK     ( EEPack_ID );
-CREATE ROP REF_ID R33 FROM 1      S_EEIP     ( EE_ID )
+CREATE ROP REF_ID R33 FROM 1C      S_EEIP     ( EE_ID )
                  TO 1      S_EE     ( EE_ID );
 CREATE ROP REF_ID R34 FROM 1C     S_EEPIP     ( EEPack_ID )
                  TO 1      S_EEPK     ( EEPack_ID );
@@ -2678,7 +2678,7 @@ CREATE ROP REF_ID R1504 FROM MC     CNST_SYC     ( Constant_Spec_ID )
                  TO 1      CNST_CSP     ( Constant_Spec_ID );
 CREATE ROP REF_ID R1505 FROM 1C     CNST_SYC     ( Previous_Const_ID , Previous_DT_DT_ID )  PHRASE 'succeeds'
                  TO 1C  CNST_SYC     ( Const_ID , DT_ID )  PHRASE 'precedes';
-CREATE ROP REF_ID R1506 FROM 1      CNST_CIP     ( Constant_Spec_ID )
+CREATE ROP REF_ID R1506 FROM 1C     CNST_CIP     ( Constant_Spec_ID )
                  TO 1      CNST_CSP     ( Constant_Spec_ID );
 CREATE ROP REF_ID R1506 FROM MC     CNST_CIP     ( Package_ID )
                  TO 1      S_DPK     ( Package_ID );
@@ -3069,7 +3069,7 @@ CREATE ROP REF_ID R1110 FROM MC     A_A     ( Parent_Package_ID )
 CREATE ROP REF_ID R1111 FROM MC     A_AP     ( Package_ID )
                  TO 1      A_A     ( Package_ID );
 CREATE ROP REF_ID R1102 FROM MC     A_E     ( Package_ID )
-                 TO 1      A_A     ( Package_ID );
+                 TO 1C     A_A     ( Package_ID );
 CREATE ROP REF_ID R1101 FROM MC     A_N     ( Package_ID )
                  TO 1C  A_A     ( Package_ID );
 CREATE ROP REF_ID R1103 FROM MC     A_E     ( TargetId )
