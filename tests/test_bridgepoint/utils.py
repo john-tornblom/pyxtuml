@@ -367,7 +367,7 @@ class PrebuildFunctionTestCase(CompareAST):
         s_sync.Action_Semantics_internal = s
         s_sync.Suc_Pars = 1
         
-        prebuild.populate_model(self.metamodel)
+        prebuild.prebuild_model(self.metamodel)
         self.assertTrue(self.metamodel.is_consistent())
         
         generated_code = sourcegen.gen_text_action(s_sync)
