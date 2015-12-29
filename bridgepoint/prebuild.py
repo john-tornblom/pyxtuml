@@ -1463,13 +1463,17 @@ class PrebuildFunctionWalker(PrebuildWalker):
         c_c = get_defining_component(s_sync)
         PrebuildWalker.__init__(self, metamodel, c_c)      
     
+    @property
+    def label(self):
+        return self._s_sync.Name
+    
     def accept_BodyNode(self, node):
         act_fnb = self.new('ACT_FNB')
         relate(act_fnb, self._s_sync, 695)
         
         self.act_act = self.new('ACT_ACT',
                                 Type='function',
-                                Label=self._s_sync.Name)
+                                Label=self.label)
         
         relate(act_fnb, self.act_act, 698)
         
