@@ -1702,6 +1702,7 @@ class OALParser(object):
                               | BY
                               | CLASS
                               | CONTINUE
+                              | CONTROL
                               | CREATE
                               | CREATOR
                               | DELETE
@@ -1726,7 +1727,7 @@ class OALParser(object):
                               | USING
         '''
         # FIXME: Parser does not currently support the following keywords as
-        # identifiers: ASSIGNER, END, CONTROL, OF.
+        # identifiers: END, OF.
         p[0] = p[1]
     
     @track_production
