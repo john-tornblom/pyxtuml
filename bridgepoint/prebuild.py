@@ -21,7 +21,7 @@ from bridgepoint import ooaofooa
 from bridgepoint import oal
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('bridgepoint.prebuild')
 
 
 def relate(*args, **kwargs):
