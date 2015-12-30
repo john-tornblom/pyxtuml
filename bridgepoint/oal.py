@@ -814,7 +814,6 @@ class OALParser(object):
                 'FOR',
                 'EACH',
                 'IN',
-                'END',
                 'GENERATE',
                 'IF',
                 'ELIF',
@@ -866,6 +865,10 @@ class OALParser(object):
                          'LSQBR',
                          'RSQBR',
                          'ID',
+                         'NAMESPACE',
+                         'END_FOR',
+                         'END_IF',
+                         'END_WHILE',
                          'TICKED_PHRASE',
                          'QMARK',
                          'FRACTION',
@@ -889,7 +892,6 @@ class OALParser(object):
     t_ignore = ' \t\r'
     
     precedence = (
-        ('nonassoc', 'DOUBLECOLON'),
         ('left', 'OR'),
         ('left', 'AND'),
         ('nonassoc', 'LESSTHAN', 'LE', 'DOUBLEEQUAL', 'GT', 'GE', 'NOTEQUAL'),
@@ -936,6 +938,26 @@ class OALParser(object):
     
     def t_STRING(self, t):
         r'"[^"\n]*"'
+        t.endlexpos = t.lexpos + len(t.value)
+        return t
+    
+    def t_END_FOR(self, t):
+        r"(?i)end[\s]+for"
+        t.endlexpos = t.lexpos + len(t.value)
+        return t
+    
+    def t_END_IF(self, t):
+        r"(?i)end[\s]+if"
+        t.endlexpos = t.lexpos + len(t.value)
+        return t
+    
+    def t_END_WHILE(self, t):
+        r"(?i)end[\s]+while"
+        t.endlexpos = t.lexpos + len(t.value)
+        return t
+    
+    def t_NAMESPACE(self, t):
+        r"([a-zA-Z_][0-9a-zA-Z_]*|[a-zA-Z][0-9a-zA-Z_]*[0-9a-zA-Z_])+(?=::)"
         t.endlexpos = t.lexpos + len(t.value)
         return t
     
@@ -1216,7 +1238,7 @@ class OALParser(object):
     
     @track_production
     def p_port_event_generation(self, p):
-        '''statement : SEND limited_identifier DOUBLECOLON identifier LPAREN parameter_list RPAREN TO expression'''
+        '''statement : SEND namespace DOUBLECOLON identifier LPAREN parameter_list RPAREN TO expression'''
         p[0] = GeneratePortEventNode(port_name=p[2],
                                      action_name=p[4],
                                      parameter_list=p[6],
@@ -1370,20 +1392,20 @@ class OALParser(object):
     
     @track_production
     def p_for_statement(self, p):
-        '''statement : FOR EACH variable_name IN variable_name block END FOR'''
+        '''statement : FOR EACH variable_name IN variable_name block END_FOR'''
         p[0] = ForEachNode(instance_variable_name=p[3],
                            set_variable_name=p[5],
                            block=p[6])
     
     @track_production
     def p_while_statement(self, p):
-        '''statement : WHILE expression block END WHILE'''
+        '''statement : WHILE expression block END_WHILE'''
         p[0] = WhileNode(expression=p[2],
                          block=p[3])
     
     @track_production
     def p_if_statement(self, p):
-        '''statement : IF expression block elif_list else_clause END IF'''
+        '''statement : IF expression block elif_list else_clause END_IF'''
         p[0] = IfNode(expression=p[2],
                       block=p[3],
                       elif_list=p[4],
@@ -1578,7 +1600,7 @@ class OALParser(object):
         
     @track_production
     def p_implicit_invocation(self, p):
-        '''implicit_invocation : limited_identifier DOUBLECOLON identifier LPAREN parameter_list RPAREN'''
+        '''implicit_invocation : namespace DOUBLECOLON identifier LPAREN parameter_list RPAREN'''
         p[0] = ImplicitInvocationNode(namespace=p[1],
                                       action_name=p[3],
                                       parameter_list=p[5])
@@ -1693,6 +1715,13 @@ class OALParser(object):
         p[0] = p[1]
         
     @track_production
+    def p_namespace(self, p):
+        '''
+        namespace : NAMESPACE
+        '''
+        p[0] = p[1]
+    
+    @track_production
     def p_kw_as_identifier_1(self, p):
         '''kw_as_identifier_1 : ACROSS
                               | ANY
@@ -1726,9 +1755,8 @@ class OALParser(object):
                               | UNRELATE
                               | USING
         '''
-        # FIXME: Parser does not currently support the following keywords as
-        # identifiers: END, OF.
         p[0] = p[1]
+        #FIXME: the oal parser currently does not allow variables named 'of'
     
     @track_production
     def p_kw_as_identifier_2(self, p):
@@ -1742,7 +1770,6 @@ class OALParser(object):
                            | SEND
                            | TRANSFORM
                            | TRUE
-                           | END
                            | OF
         '''
         p[0] = p[1]
@@ -1899,7 +1926,7 @@ class OALParser(object):
     
     @track_production
     def p_constant_enum(self, p):
-        '''constant : limited_identifier DOUBLECOLON identifier'''
+        '''constant : namespace DOUBLECOLON identifier'''
         p[0] = EnumNode(namespace=p[1],
                         name=p[3])
 
