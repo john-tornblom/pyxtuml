@@ -1965,27 +1965,25 @@ if __name__ == '__main__':
     import xtuml.tools
     logging.basicConfig(level=logging.WARN)
     
-    while True:
-        sys.stdout.write('oal> ')
-        s = sys.stdin.readline()
-        if not s:
-            break
-        
-        parser = OALParser()
-        parser.lexer.input(s)
-        
-        while True:
-            tok = parser.lexer.token()
-            if not tok:
-                break
-            print(tok)
-        
-        root = parse(s)
-        
-        w = xtuml.tools.Walker()
-        w.visitors.append(xtuml.tools.NodePrintVisitor())
-        w.accept(root)
-        
+    print ('Enter the character stream below. Press Ctrl-D to begin parsing.')
+    print ('')
+    s = sys.stdin.read()
     
-    sys.stdout.write('\n')
+    print ('--------- Token Stream ----------')
+    parser = OALParser()
+    lexer = lex.lex(module=parser)
+    lexer.input(s)
+    while True:
+        tok = lexer.token()
+        if not tok:
+            break
+        print(tok)
 
+    print ('--------- Syntax Tree ----------')
+    root = parse(s)
+    w = xtuml.tools.Walker()
+    w.visitors.append(xtuml.tools.NodePrintVisitor())
+    w.accept(root)
+
+
+    
