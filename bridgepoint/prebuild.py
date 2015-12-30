@@ -1671,6 +1671,10 @@ class RequiredSignalWalker(PrebuildWalker):
         c_c = one(spr_rs).SPR_REP[4502].C_R[4500].C_IR[4009].C_PO[4016].C_C[4010]()
         PrebuildWalker.__init__(self, metamodel, c_c)  
 
+    @property
+    def label(self):
+        return ''
+    
     def accept_BodyNode(self, node):
         act_rsb = self.new('ACT_RSB')
         relate(act_rsb, self._spr_rs, 684)
@@ -1736,6 +1740,10 @@ class ProvidedSignalWalker(PrebuildWalker):
         c_c = one(spr_ps).SPR_PEP[4503].C_P[4501].C_IR[4009].C_PO[4016].C_C[4010]()
         PrebuildWalker.__init__(self, metamodel, c_c)  
 
+    @property
+    def label(self):
+        return ''
+    
     def accept_BodyNode(self, node):
         act_psb = self.new('ACT_PSB')
         relate(act_psb, self._spr_ps, 686)
@@ -1775,6 +1783,7 @@ def prebuild_action(inst):
     }
     kind = inst.__class__.__name__
     walker = walker_map[kind](inst.__m__, inst)
+    logger.info('processing action %s' % walker.label)
     # walker.visitors.append(xtuml.tools.NodePrintVisitor())
     root = oal.parse(inst.Action_Semantics_internal)
     return walker.accept(root)
