@@ -543,7 +543,7 @@ class MetaModel(object):
     def _query(self, kind, many, kwargs):
         for inst in iter(self.instances[kind]):
             for name, value in kwargs.items():
-                if _is_null(inst, name) or getattr(inst, name) != value:
+                if getattr(inst, name) != value or _is_null(inst, name):
                     break
             else:
                 yield inst
