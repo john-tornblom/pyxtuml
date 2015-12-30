@@ -957,7 +957,7 @@ class OALParser(object):
         return t
     
     def t_NAMESPACE(self, t):
-        r"([a-zA-Z_][0-9a-zA-Z_]*|[a-zA-Z][0-9a-zA-Z_]*[0-9a-zA-Z_])+(?=::)"
+        r"([0-9a-zA-Z_])+(?=::)"
         t.endlexpos = t.lexpos + len(t.value)
         return t
     
