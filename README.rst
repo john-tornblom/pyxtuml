@@ -63,6 +63,97 @@ output directly to your clipboard without bouncing via disk:
 
     $ python examples/create_external_entity.py | xclip -selection clipboard
 
+Command Line Tools
+~~~~~~~~~~~~~~~~~~
+pyxtuml contain a few command line tools which are described below.
+
+**Check model for integrity violations**
+
+A model may be checked for association constraint violations. By default, all 
+associations are checked. Optionally, the check may be limited to one or more 
+associations by appending the -r argument for each association to check.
+
+``$ python -m xtuml.consistency_check [options] file.sql file2.sql ...``
+
+Available options
+
+--version    show program's version number and exit
+--help, -h   show this help message and exit
+-r <number>  limit consistency check to one or more associations
+
+Using the above command, both the model and schema needs to be provided by the user. 
+If the model is expressed in the bridgepoint meta model (ooaofooa), the following
+command may be used instead:
+
+``$ python -m bridgepoint.consistency_check [options] file_or_path file_or_path ...``
+
+Available options
+
+--version    show program's version number and exit
+--help, -h   show this help message and exit
+-r <number>  limit consistency check to one or more associations
+-v           increase debug logging level
+
+With this command, the user only have to provide the model (or a folder 
+containing the .xtuml files).
+
+**Generate a meta model schema**
+
+To create a schema from a bridgepoint model, the following command may be used:
+
+``$ python -m bridgepoint.gen_sql_schema [options] arg ...``
+
+gen_sql_schema.py [options] arg ...
+
+Generate an sql schema file for an xtUML model.  The arguments are either xtuml
+files, or folders containing .xtuml files. Note that some type of attributes
+are not supported, e.g. instance handles or timers.
+
+--help, -h  show this help message and exit
+-c NAME     export sql schema for the component named NAME
+-o PATH     save sql schema to PATH (required)
+-v          increase debug logging level
+
+
+**Generate an xsd schema**
+
+To generate an xsd schema for xml files, the following command may be used:
+
+``$ python -m bridgepoint.gen_xsd_schema [options] arg ...``
+
+The arguments are either xtuml files, or folders containing .xtuml files. 
+Note that some type of attributes are not supported, e.g. instance handles or
+timers.
+
+Available options
+
+--help, -h  show this help message and exit
+-c NAME     export sql schema for the component named NAME
+-o PATH     save sql schema to PATH (required)
+-v          increase debug logging level
+
+The schema is compatible with Microsoft Excel. Consequently, it may be used
+together with Excel to define instances in a model that can be easily 
+exported to xml files compatible with the schema.
+
+**Object Action Language Prebuilder**
+
+Generally, all model compilers takes as input an sql where all OAL actions
+has been translated from its textual representation into instances in the 
+ooaofooa meta model. This translation is usually conducted by the Eclipse-
+based prebuilder included with the BridgePoint IDE. pyxtuml contains an 
+independent prebuilder, implemented in python (and thus may be somewhat 
+slower). The pyxtuml prebuilder may be invoked using the folling command:
+
+``$ python -m bridgepoint.prebuild [options] <file_or_path> [another_file_or_path] ...``
+
+Available options
+
+--help, -h  show this help message and exit
+-o PATH   set output to PATH
+-v        increase debug logging level
+
+
 Reporting bugs
 ~~~~~~~~~~~~~~
 If you encounter problems with pyxtuml, please `file a github
