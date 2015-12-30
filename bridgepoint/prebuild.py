@@ -1823,10 +1823,8 @@ def main():
     
     m = ooaofooa.load_model(args)        
     prebuild_model(m)
-    if m.is_consistent():
-        xtuml.persist_instances(m, opts.output)
-    else:
-        sys.exit(1)
+    
+    xtuml.persist_instances(m, opts.output)
 
 
 if __name__ == '__main__':
