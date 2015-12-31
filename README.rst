@@ -73,7 +73,9 @@ A model may be checked for association constraint violations. By default, all
 associations are checked. Optionally, the check may be limited to one or more 
 associations by appending the -r argument for each association to check.
 
-``$ python -m xtuml.consistency_check [options] file.sql file2.sql ...``
+::
+
+   $ python -m xtuml.consistency_check [options] file.sql file2.sql ...
 
 Available options
 
@@ -85,7 +87,9 @@ Using the above command, both the model and schema needs to be provided by the u
 If the model is expressed in the bridgepoint meta model (ooaofooa), the following
 command may be used instead:
 
-``$ python -m bridgepoint.consistency_check [options] file_or_path file_or_path ...``
+::
+
+   $ python -m bridgepoint.consistency_check [options] file_or_path file_or_path ...
 
 Available options
 
@@ -101,7 +105,9 @@ containing the .xtuml files).
 
 To create an sql schema from a bridgepoint model, the following command may be used:
 
-``$ python -m bridgepoint.gen_sql_schema [options] arg ...``
+::
+
+   $ python -m bridgepoint.gen_sql_schema [options] arg ...
 
 gen_sql_schema.py [options] arg ...
 
@@ -115,7 +121,9 @@ gen_sql_schema.py [options] arg ...
 
 To create an xsd schema for xml files, the following command may be used:
 
-``$ python -m bridgepoint.gen_xsd_schema [options] arg ...``
+::
+
+   $ python -m bridgepoint.gen_xsd_schema [options] arg ...
 
 Available options
 
@@ -137,7 +145,9 @@ based prebuilder included with the BridgePoint IDE. pyxtuml contains an
 independent prebuilder, implemented in python (and thus may be somewhat 
 slower). The pyxtuml prebuilder may be invoked using the folling command:
 
-``$ python -m bridgepoint.prebuild [options] <file_or_path> [another_file_or_path] ...``
+::
+
+   $ python -m bridgepoint.prebuild [options] <file_or_path> [another_file_or_path] ...
 
 Available options
 
