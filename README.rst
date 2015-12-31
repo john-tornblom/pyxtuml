@@ -43,6 +43,7 @@ Optionally, you can also execute a test suite:
 =============
 Usage example
 =============
+
 The `examples
 folder <https://github.com/john-tornblom/pyxtuml/tree/master/examples>`__
 contains a few scripts which demonstrate how pyxtuml may be used.
@@ -68,7 +69,8 @@ output directly to your clipboard without bouncing via disk:
 ==================
 Command Line Tools
 ==================
-pyxtuml contain a few command line tools which are described below.
+
+pyxtuml contain a few useful command line tools which are described below.
 
 Check model for integrity violations
 ------------------------------------
@@ -97,7 +99,6 @@ containing the .xtuml files).
 --help, -h   show this help message and exit
 -r <number>  limit consistency check to one or more associations
 
-
 Generate a meta model schema
 ----------------------------
 To create an sql schema from a bridgepoint model, the following command may be used:
@@ -112,7 +113,6 @@ To create an sql schema from a bridgepoint model, the following command may be u
 -c NAME     export sql schema for the component named NAME
 -o PATH     save sql schema to PATH (required)
 -v          increase debug logging level
-
 
 Generate an xsd schema
 ----------------------
@@ -155,6 +155,7 @@ slower). The pyxtuml prebuilder may be invoked using the folling command:
 ==============
 Reporting bugs
 ==============
+
 If you encounter problems with pyxtuml, please `file a github
 issue <https://github.com/john-tornblom/pyxtuml/issues/new>`__. If you
 plan on sending pull request which affect more than a few lines of code,
@@ -165,6 +166,7 @@ effort.
 =======
 License
 =======
+
 pyxtuml is licensed under the GPLv3, see LICENSE for more information.
 
 .. |Build Status| image:: https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master
