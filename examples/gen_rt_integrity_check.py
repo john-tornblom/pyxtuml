@@ -65,7 +65,7 @@ end for;
 supertype_body_tmpl = Template('''
     select one one_${To}_Instance related by ${From}_Instance->${To}[R${Numb}];
     if not_empty one_${To}_Instance
-        break;
+        continue;
     end if;
 ''')
 
