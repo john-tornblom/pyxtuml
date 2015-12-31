@@ -99,15 +99,11 @@ containing the .xtuml files).
 
 **Generate a meta model schema**
 
-To create a schema from a bridgepoint model, the following command may be used:
+To create an sql schema from a bridgepoint model, the following command may be used:
 
 ``$ python -m bridgepoint.gen_sql_schema [options] arg ...``
 
 gen_sql_schema.py [options] arg ...
-
-Generate an sql schema file for an xtUML model.  The arguments are either xtuml
-files, or folders containing .xtuml files. Note that some type of attributes
-are not supported, e.g. instance handles or timers.
 
 --help, -h  show this help message and exit
 -c NAME     export sql schema for the component named NAME
@@ -117,24 +113,20 @@ are not supported, e.g. instance handles or timers.
 
 **Generate an xsd schema**
 
-To generate an xsd schema for xml files, the following command may be used:
+To create an xsd schema for xml files, the following command may be used:
 
 ``$ python -m bridgepoint.gen_xsd_schema [options] arg ...``
-
-The arguments are either xtuml files, or folders containing .xtuml files. 
-Note that some type of attributes are not supported, e.g. instance handles or
-timers.
 
 Available options
 
 --help, -h  show this help message and exit
--c NAME     export sql schema for the component named NAME
--o PATH     save sql schema to PATH (required)
+-c NAME     export xsd schema for the component named NAME
+-o PATH     save xsd schema to PATH (required)
 -v          increase debug logging level
 
-The schema is compatible with Microsoft Excel. Consequently, it may be used
-together with Excel to define instances in a model that can be easily 
-exported to xml files compatible with the schema.
+Note that the schema is compatible with Microsoft Excel. Consequently, Excel 
+may be used to define instances in a model that can be easily exported to xml
+files. 
 
 **Object Action Language Prebuilder**
 
