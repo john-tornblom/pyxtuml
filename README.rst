@@ -4,19 +4,21 @@ pyxtuml |Build Status| |Coverage Status|
 pyxtuml is a python library for parsing, manipulating, and generating
 `BridgePoint <https://www.xtuml.org>`__ xtUML models.
 
+.. sectnum::
+
+============
 Dependencies
-~~~~~~~~~~~~
+============
 
 For people running Ubuntu, all dependencies are available via apt-get:
 
 ::
 
    $ sudo apt-get install python2.7 python-ply
-   
 
-   
+============
 Installation
-~~~~~~~~~~~~
+============
 
 Install from pypi:
 
@@ -38,9 +40,9 @@ Optionally, you can also execute a test suite:
 
     $ python setup.py test
 
-
+=============
 Usage example
-~~~~~~~~~~~~~
+=============
 The `examples
 folder <https://github.com/john-tornblom/pyxtuml/tree/master/examples>`__
 contains a few scripts which demonstrate how pyxtuml may be used.
@@ -63,12 +65,13 @@ output directly to your clipboard without bouncing via disk:
 
     $ python examples/create_external_entity.py | xclip -selection clipboard
 
+==================
 Command Line Tools
-~~~~~~~~~~~~~~~~~~
+==================
 pyxtuml contain a few command line tools which are described below.
 
-**Check model for integrity violations**
-
+Check model for integrity violations
+------------------------------------
 A model may be checked for association constraint violations. By default, all 
 associations are checked. Optionally, the check may be limited to one or more 
 associations by appending the -r argument for each association to check.
@@ -76,12 +79,6 @@ associations by appending the -r argument for each association to check.
 ::
 
    $ python -m xtuml.consistency_check [options] <sql_file> [another_sql_file] ...
-
-Available options
-
---version    show program's version number and exit
---help, -h   show this help message and exit
--r <number>  limit consistency check to one or more associations
 
 Using the above command, both the model and schema needs to be provided by the user. 
 If the model is expressed in the bridgepoint meta model (ooaofooa), the following
@@ -91,25 +88,25 @@ command may be used instead:
 
    $ python -m bridgepoint.consistency_check [options] <xtuml_file_or_path> [another_xtuml_file_or_path] ...
 
-Available options
+With this command, the user only have to provide the model (or a folder 
+containing the .xtuml files).
+
+**Available options**
 
 --version    show program's version number and exit
 --help, -h   show this help message and exit
 -r <number>  limit consistency check to one or more associations
--v           increase debug logging level
 
-With this command, the user only have to provide the model (or a folder 
-containing the .xtuml files).
 
-**Generate a meta model schema**
-
+Generate a meta model schema
+----------------------------
 To create an sql schema from a bridgepoint model, the following command may be used:
 
 ::
 
    $ python -m bridgepoint.gen_sql_schema [options] <sql_file> [another_sql_file] ...
 
-gen_sql_schema.py [options] arg ...
+**Available options**
 
 --help, -h  show this help message and exit
 -c NAME     export sql schema for the component named NAME
@@ -117,15 +114,15 @@ gen_sql_schema.py [options] arg ...
 -v          increase debug logging level
 
 
-**Generate an xsd schema**
-
+Generate an xsd schema
+----------------------
 To create an xsd schema for xml files, the following command may be used:
 
 ::
 
    $ python -m bridgepoint.gen_xsd_schema [options] <sql_file> [another_sql_file] ...
 
-Available options
+**Available options**
 
 --help, -h  show this help message and exit
 -c NAME     export xsd schema for the component named NAME
@@ -136,8 +133,8 @@ Note that the schema is compatible with Microsoft Excel. Consequently, Excel
 may be used to define instances in a model that can be easily exported to xml
 files. 
 
-**Object Action Language Prebuilder**
-
+Object Action Language Prebuilder
+---------------------------------
 Generally, all model compilers takes as input an sql where all OAL actions
 has been translated from its textual representation into instances in the 
 ooaofooa meta model. This translation is usually conducted by the Eclipse-
@@ -149,15 +146,15 @@ slower). The pyxtuml prebuilder may be invoked using the folling command:
 
    $ python -m bridgepoint.prebuild [options] <xtuml_file_or_path> [another_xtuml_file_or_path] ...
 
-Available options
+**Available options**
 
 --help, -h  show this help message and exit
 -o PATH   set output to PATH
 -v        increase debug logging level
 
-
+==============
 Reporting bugs
-~~~~~~~~~~~~~~
+==============
 If you encounter problems with pyxtuml, please `file a github
 issue <https://github.com/john-tornblom/pyxtuml/issues/new>`__. If you
 plan on sending pull request which affect more than a few lines of code,
@@ -165,8 +162,9 @@ please file an issue before you start to work on you changes. This will
 allow us to discuss the solution properly before you commit time and
 effort.
 
+=======
 License
-~~~~~~~
+=======
 pyxtuml is licensed under the GPLv3, see LICENSE for more information.
 
 .. |Build Status| image:: https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master
