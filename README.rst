@@ -16,6 +16,8 @@ For people running Ubuntu, all dependencies are available via apt-get:
 
    $ sudo apt-get install python2.7 python-ply
 
+pyxtuml also works with python3 and pypy.
+
 ============
 Installation
 ============
