@@ -75,7 +75,7 @@ associations by appending the -r argument for each association to check.
 
 ::
 
-   $ python -m xtuml.consistency_check [options] file.sql file2.sql ...
+   $ python -m xtuml.consistency_check [options] <sql_file> [another_sql_file] ...
 
 Available options
 
@@ -89,7 +89,7 @@ command may be used instead:
 
 ::
 
-   $ python -m bridgepoint.consistency_check [options] file_or_path file_or_path ...
+   $ python -m bridgepoint.consistency_check [options] <xtuml_file_or_path> [another_xtuml_file_or_path] ...
 
 Available options
 
@@ -107,7 +107,7 @@ To create an sql schema from a bridgepoint model, the following command may be u
 
 ::
 
-   $ python -m bridgepoint.gen_sql_schema [options] arg ...
+   $ python -m bridgepoint.gen_sql_schema [options] <sql_file> [another_sql_file] ...
 
 gen_sql_schema.py [options] arg ...
 
@@ -123,7 +123,7 @@ To create an xsd schema for xml files, the following command may be used:
 
 ::
 
-   $ python -m bridgepoint.gen_xsd_schema [options] arg ...
+   $ python -m bridgepoint.gen_xsd_schema [options] <sql_file> [another_sql_file] ...
 
 Available options
 
@@ -147,7 +147,7 @@ slower). The pyxtuml prebuilder may be invoked using the folling command:
 
 ::
 
-   $ python -m bridgepoint.prebuild [options] <file_or_path> [another_file_or_path] ...
+   $ python -m bridgepoint.prebuild [options] <xtuml_file_or_path> [another_xtuml_file_or_path] ...
 
 Available options
 
