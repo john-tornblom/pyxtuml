@@ -146,7 +146,7 @@ def eval_constant_expression(v_val):
     return w.accept(v_val)
 
 
-class PrebuildWalker(xtuml.tools.Walker):
+class ActionPrebuilder(xtuml.tools.Walker):
     # TODO: Consider adding TerminalNode to better keep track of all posinfo
     m = None
     c_c = None
@@ -1423,12 +1423,12 @@ class PrebuildWalker(xtuml.tools.Walker):
         
         return act_smt
     
-class PrebuildBridgeWalker(PrebuildWalker):
+class BridgePrebuilder(ActionPrebuilder):
     def __init__(self, metamodel, s_brg):
         self._s_brg = s_brg
         s_ee = one(s_brg).S_EE[19]()
         c_c = get_defining_component(s_ee)
-        PrebuildWalker.__init__(self, metamodel, c_c)      
+        ActionPrebuilder.__init__(self, metamodel, c_c)      
 
     @property
     def label(self):
@@ -1442,7 +1442,7 @@ class PrebuildBridgeWalker(PrebuildWalker):
         self.act_act = self.new('ACT_ACT', Type='bridge')
         relate(act_brb, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
 
     def accept_ParamAccessNode(self, node):
         s_bparm = one(self._s_brg).S_BPARM[21](where(Name=node.variable_name))
@@ -1457,11 +1457,11 @@ class PrebuildBridgeWalker(PrebuildWalker):
         return v_val
 
 
-class PrebuildFunctionWalker(PrebuildWalker):
+class FunctionPrebuilder(ActionPrebuilder):
     def __init__(self, metamodel, s_sync):
         self._s_sync = s_sync
         c_c = get_defining_component(s_sync)
-        PrebuildWalker.__init__(self, metamodel, c_c)      
+        ActionPrebuilder.__init__(self, metamodel, c_c)      
     
     @property
     def label(self):
@@ -1477,7 +1477,7 @@ class PrebuildFunctionWalker(PrebuildWalker):
         
         relate(act_fnb, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
 
     def accept_ParamAccessNode(self, node):
         s_sparm = one(self._s_sync).S_SPARM[24](where(Name=node.variable_name))
@@ -1492,16 +1492,16 @@ class PrebuildFunctionWalker(PrebuildWalker):
         return v_val
 
 
-class PrebuildOperationWalker(PrebuildWalker):
+class OperationPrebuilder(ActionPrebuilder):
     
     def __init__(self, metamodel, o_tfr):
         self._o_tfr = o_tfr
         self._o_obj = one(o_tfr).O_OBJ[115]()
         c_c = get_defining_component(self._o_obj)
-        PrebuildWalker.__init__(self, metamodel, c_c)      
+        ActionPrebuilder.__init__(self, metamodel, c_c)      
 
     def find_symbol(self, node, name):
-        v_var = PrebuildWalker.find_symbol(self, node, name)
+        v_var = ActionPrebuilder.find_symbol(self, node, name)
         if not v_var and name.lower() == 'self':
             v_int = self.v_int(node, 'self', self._o_obj)
             v_var = one(v_int).V_VAR[814]()
@@ -1522,7 +1522,7 @@ class PrebuildOperationWalker(PrebuildWalker):
         
         relate(act_opb, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
 
     def accept_ParamAccessNode(self, node):
         o_tparm = one(self._o_tfr).O_TPARM[117](where(Name=node.variable_name))
@@ -1537,17 +1537,17 @@ class PrebuildOperationWalker(PrebuildWalker):
         return v_val
 
 
-class StateMachineActionWalker(PrebuildWalker):
+class TransitionPrebuilder(ActionPrebuilder):
     
     def __init__(self, metamodel, sm_act):
         self._sm_act = sm_act
         self._o_obj = (one(sm_act).SM_SM[515].SM_ISM[517].O_OBJ[518]() or
                        one(sm_act).SM_SM[515].SM_ASM[517].O_OBJ[519]())
         c_c = get_defining_component(self._o_obj)
-        PrebuildWalker.__init__(self, metamodel, c_c)      
+        ActionPrebuilder.__init__(self, metamodel, c_c)
 
     def find_symbol(self, node, name):
-        v_var = PrebuildWalker.find_symbol(self, node, name)
+        v_var = ActionPrebuilder.find_symbol(self, node, name)
         if not v_var and name.lower() == 'self':
             v_int = self.v_int(node, 'self', self._o_obj)
             v_var = one(v_int).V_VAR[814]()
@@ -1562,7 +1562,7 @@ class StateMachineActionWalker(PrebuildWalker):
         
         relate(act_sab, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
 
     def accept_ParamAccessNode(self, node):
         filt = where(Name=node.variable_name)
@@ -1594,16 +1594,16 @@ class StateMachineActionWalker(PrebuildWalker):
         return v_val
 
     
-class PrebuildDerivedAttributeWalker(PrebuildWalker):
+class DerivedAttributePrebuilder(ActionPrebuilder):
     
     def __init__(self, metamodel, o_dbattr):
         self._o_dbattr = o_dbattr
         self._o_obj = one(o_dbattr).O_BATTR[107].O_ATTR[106].O_OBJ[102]()
         c_c = get_defining_component(self._o_obj)
-        PrebuildWalker.__init__(self, metamodel, c_c)      
+        ActionPrebuilder.__init__(self, metamodel, c_c)      
 
     def find_symbol(self, node, name):
-        v_var = PrebuildWalker.find_symbol(self, node, name)
+        v_var = ActionPrebuilder.find_symbol(self, node, name)
         if not v_var and name.lower() == 'self':
             v_int = self.v_int(node, 'self', self._o_obj)
             v_var = one(v_int).V_VAR[814]()
@@ -1625,15 +1625,15 @@ class PrebuildDerivedAttributeWalker(PrebuildWalker):
         
         relate(act_dab, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
     
     
-class RequiredOperationWalker(PrebuildWalker):
+class RequiredOperationPrebuilder(ActionPrebuilder):
     
     def __init__(self, metamodel, spr_ro):
         self._spr_ro = spr_ro
         c_c = one(spr_ro).SPR_REP[4502].C_R[4500].C_IR[4009].C_PO[4016].C_C[4010]()
-        PrebuildWalker.__init__(self, metamodel, c_c)      
+        ActionPrebuilder.__init__(self, metamodel, c_c)      
 
     @property
     def label(self):
@@ -1649,7 +1649,7 @@ class RequiredOperationWalker(PrebuildWalker):
         self.act_act = self.new('ACT_ACT', Type='interface operation', Label=self.label)
         relate(act_rob, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
     
     def accept_ParamAccessNode(self, node):
         c_pp = one(self._spr_ro).SPR_REP[4502].C_EP[4500].C_PP[4006](where(Name=node.variable_name))
@@ -1664,12 +1664,12 @@ class RequiredOperationWalker(PrebuildWalker):
         return v_val
 
 
-class RequiredSignalWalker(PrebuildWalker):
+class RequiredSignalPrebuilder(ActionPrebuilder):
     
     def __init__(self, metamodel, spr_rs):
         self._spr_rs = spr_rs
         c_c = one(spr_rs).SPR_REP[4502].C_R[4500].C_IR[4009].C_PO[4016].C_C[4010]()
-        PrebuildWalker.__init__(self, metamodel, c_c)  
+        ActionPrebuilder.__init__(self, metamodel, c_c)  
 
     @property
     def label(self):
@@ -1682,7 +1682,7 @@ class RequiredSignalWalker(PrebuildWalker):
         self.act_act = self.new('ACT_ACT', Type='interface signal')
         relate(act_rsb, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
     
     def accept_ParamAccessNode(self, node):
         c_pp = one(self._spr_rs).SPR_REP[4502].C_EP[4500].C_PP[4006](where(Name=node.variable_name))
@@ -1697,12 +1697,12 @@ class RequiredSignalWalker(PrebuildWalker):
         return v_val
 
 
-class ProvidedOperationWalker(PrebuildWalker):
+class ProvidedOperationPrebuilder(ActionPrebuilder):
 
     def __init__(self, metamodel, spr_po):
         self._spr_po = spr_po
         c_c = one(spr_po).SPR_PEP[4503].C_P[4501].C_IR[4009].C_PO[4016].C_C[4010]()
-        PrebuildWalker.__init__(self, metamodel, c_c)  
+        ActionPrebuilder.__init__(self, metamodel, c_c)  
         
     @property
     def label(self):
@@ -1718,7 +1718,7 @@ class ProvidedOperationWalker(PrebuildWalker):
         self.act_act = self.new('ACT_ACT', Type='interface operation', Label=self.label)
         relate(act_pob, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
 
     def accept_ParamAccessNode(self, node):
         c_pp = one(self._spr_po).SPR_PEP[4503].C_EP[4501].C_PP[4006](where(Name=node.variable_name))
@@ -1733,12 +1733,12 @@ class ProvidedOperationWalker(PrebuildWalker):
         return v_val
 
 
-class ProvidedSignalWalker(PrebuildWalker):
+class ProvidedSignalPrebuilder(ActionPrebuilder):
 
     def __init__(self, metamodel, spr_ps):
         self._spr_ps = spr_ps
         c_c = one(spr_ps).SPR_PEP[4503].C_P[4501].C_IR[4009].C_PO[4016].C_C[4010]()
-        PrebuildWalker.__init__(self, metamodel, c_c)  
+        ActionPrebuilder.__init__(self, metamodel, c_c)  
 
     @property
     def label(self):
@@ -1751,7 +1751,7 @@ class ProvidedSignalWalker(PrebuildWalker):
         self.act_act = self.new('ACT_ACT', Type='interface signal')
         relate(act_psb, self.act_act, 698)
         
-        return PrebuildWalker.accept_BodyNode(self, node)
+        return ActionPrebuilder.accept_BodyNode(self, node)
 
     def accept_ParamAccessNode(self, node):
         c_pp = one(self._spr_ps).SPR_PEP[4503].C_EP[4501].C_PP[4006](where(Name=node.variable_name))
@@ -1771,15 +1771,15 @@ def prebuild_action(inst):
     Populate an action, e.g. an instance of S_SYNC or O_TFR.
     '''
     walker_map = {
-        'S_SYNC': PrebuildFunctionWalker,
-        'S_BRG': PrebuildBridgeWalker,
-        'O_TFR': PrebuildOperationWalker,
-        'O_DBATTR': PrebuildDerivedAttributeWalker,
-        'SM_ACT': StateMachineActionWalker,
-        'SPR_RO': RequiredOperationWalker,
-        'SPR_RS': RequiredSignalWalker,
-        'SPR_PO': ProvidedOperationWalker,
-        'SPR_PS': ProvidedSignalWalker
+        'S_SYNC': FunctionPrebuilder,
+        'S_BRG': BridgePrebuilder,
+        'O_TFR': OperationPrebuilder,
+        'O_DBATTR': DerivedAttributePrebuilder,
+        'SM_ACT': TransitionPrebuilder,
+        'SPR_RO': RequiredOperationPrebuilder,
+        'SPR_RS': RequiredSignalPrebuilder,
+        'SPR_PO': ProvidedOperationPrebuilder,
+        'SPR_PS': ProvidedSignalPrebuilder
     }
     kind = inst.__class__.__name__
     walker = walker_map[kind](inst.__m__, inst)
