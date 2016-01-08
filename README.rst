@@ -97,9 +97,10 @@ containing the .xtuml files).
 
 **Available options**
 
---version    show program's version number and exit
 --help, -h   show this help message and exit
+--version    show program's version number and exit
 -r <number>  limit consistency check to one or more associations
+-v           increase debug logging level
 
 Generate a meta model schema
 ----------------------------
