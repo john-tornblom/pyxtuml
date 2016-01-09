@@ -16,10 +16,12 @@ import xtuml
 
 from bridgepoint import ooaofooa
 from string import Template
+
 from xtuml import where_eq as where
 from xtuml import navigate_many as many
 from xtuml import navigate_one as one
 from xtuml import navigate_subtype as subtype
+from xtuml import relate
 
 
 logger = logging.getLogger('gen_rt_integrity_check')
@@ -277,8 +279,8 @@ def main():
             pe_pe = m.new('PE_PE')
             s_dt = m.select_any('S_DT', where(Name='boolean'))
             
-            xtuml.relate(pe_pe, s_sync, 8001)
-            xtuml.relate(s_dt, s_sync, 25)
+            relate(pe_pe, s_sync, 8001)
+            relate(s_dt, s_sync, 25)
 
         generate_actions(m, c_c, s_sync)
     
