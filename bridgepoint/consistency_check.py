@@ -1,5 +1,10 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
+'''
+Check a bridgepoint model for association constraint violations in its 
+metamodel (ooaofooa).
+'''
+
 import logging
 import optparse
 import sys
@@ -11,9 +16,11 @@ logger = logging.getLogger('consistency_check')
 
 
 def main():
-    parser = optparse.OptionParser(usage="bridgepoint.consistency_check [options] file_or_path file_or_path ...", 
+    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]", 
                                    version=xtuml.version.complete_string, 
                                    formatter=optparse.TitledHelpFormatter())
+    
+    parser.set_description(__doc__.strip())
     
     parser.add_option("-r", dest="r", type='int', metavar="<number>", 
                       help="limit consistency check to one or more associations", 

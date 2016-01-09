@@ -9,13 +9,13 @@ meta model.
 import logging
 import optparse
 import sys
+import xtuml
+import xtuml.tools
 
 from xtuml import navigate_one as one
 from xtuml import navigate_subtype as subtype
 from xtuml import where_eq as where
 from xtuml import unrelate
-
-import xtuml.tools
 
 from bridgepoint import ooaofooa
 from bridgepoint import oal
@@ -1804,7 +1804,8 @@ def main():
     '''
     Parse command line options and launch the prebuilder.
     '''
-    parser = optparse.OptionParser(usage="%prog [options] <file_or_path> [another_file_or_path] ...",
+    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path..]",
+                                   version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
 
     parser.add_option("-v", "--verbosity", dest='verbosity',

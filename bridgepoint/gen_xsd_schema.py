@@ -4,12 +4,14 @@
 '''
 Generate an xsd schema file for an xtUML model. 
 The arguments are either xtuml files, or folders containing *.xtuml files.
-Note that some type of attributes are not supported, e.g. instance handles or timers.
+Note that some type of attributes are not supported, e.g. instance handles or 
+timers.
 '''
 
 import sys
 import optparse
 import logging
+import xtuml
 
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
@@ -232,12 +234,13 @@ def prettify(xml_string):
     return reparsed.toprettyxml(indent="    ")
 
 
-def gen_schema():
+def main():
     
-    parser = optparse.OptionParser(usage="%prog [options] arg ...",
+    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]",
+                                   version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
     
-    parser.set_description(__doc__)
+    parser.set_description(__doc__.strip())
     
     parser.add_option("-c", "--component", dest="component", metavar="NAME",
                       help="export xsd schema for the component named NAME",
@@ -263,12 +266,7 @@ def gen_schema():
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
-    loader = ooaofooa.Loader()
-    
-    for filename in args:
-        loader.filename_input(filename)
-    
-    m = loader.build_metamodel()
+    m = ooaofooa.load_model(args)
     c_c = m.select_any('C_C', lambda inst: inst.Name == opts.component)
     if c_c:
         schema = build_schema(m, c_c)
@@ -284,5 +282,5 @@ def gen_schema():
 
 
 if __name__ == '__main__':
-    gen_schema()
+    main()
     

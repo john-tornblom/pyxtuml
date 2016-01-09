@@ -1,5 +1,9 @@
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
+'''
+Check an xtuml model for association constraint violations in its metamodel.
+'''
+
 import logging
 import optparse
 import sys
@@ -82,9 +86,11 @@ def check_association_integrity(m, rel_id=None):
 
 
 def main():
-    parser = optparse.OptionParser(usage="xtuml.consistency_check [options] file.sql file2.sql ...", 
+    parser = optparse.OptionParser(usage="%prog [options] <sql_file> [another_sql_file...].", 
                                    version=xtuml.version.complete_string, 
                                    formatter=optparse.TitledHelpFormatter())
+    
+    parser.set_description(__doc__.strip())
     
     parser.add_option("-r", dest="r", type='int', metavar="<number>", 
                       help="limit consistency check to one or more associations", 

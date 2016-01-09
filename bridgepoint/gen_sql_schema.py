@@ -24,9 +24,11 @@ def main():
     '''
     Parse argv for options and arguments, and start schema generation.
     '''
-    parser = optparse.OptionParser(usage="%prog [options] arg ...",
+    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]",
+                                   version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
-    parser.set_description(__doc__)
+                                   
+    parser.set_description(__doc__.strip())
     
     parser.add_option("-c", "--component", dest="component", metavar="NAME",
                       help="export sql schema for the component named NAME",

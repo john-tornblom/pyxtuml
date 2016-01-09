@@ -82,7 +82,7 @@ associations by appending the -r argument for each association to check.
 
 ::
 
-   $ python -m xtuml.consistency_check [options] <sql_file> [another_sql_file] ...
+   $ python -m xtuml.consistency_check [options] <sql_file> [another_sql_file...]
 
 Using the above command, both the model and schema needs to be provided by the user. 
 If the model is expressed in the bridgepoint meta model (ooaofooa), the following
@@ -90,10 +90,10 @@ command may be used instead:
 
 ::
 
-   $ python -m bridgepoint.consistency_check [options] <xtuml_file_or_path> [another_xtuml_file_or_path] ...
+   $ python -m bridgepoint.consistency_check [options] <model_path> [another_model_path...]
 
-With this command, the user only have to provide the model (or a folder 
-containing the .xtuml files).
+With this command, the user only have to provide the model (the models folder 
+containing all .xtuml files).
 
 **Available options**
 
@@ -108,11 +108,12 @@ To create an sql schema from a bridgepoint model, the following command may be u
 
 ::
 
-   $ python -m bridgepoint.gen_sql_schema [options] <sql_file> [another_sql_file] ...
+   $ python -m bridgepoint.gen_sql_schema [options] <model_path> [another_model_path...]
 
 **Available options**
 
 --help, -h  show this help message and exit
+--version   show program's version number and exit
 -c NAME     export sql schema for the component named NAME
 -o PATH     save sql schema to PATH (required)
 -v          increase debug logging level
@@ -123,11 +124,12 @@ To create an xsd schema for xml files, the following command may be used:
 
 ::
 
-   $ python -m bridgepoint.gen_xsd_schema [options] <sql_file> [another_sql_file] ...
+   $ python -m bridgepoint.gen_xsd_schema [options] <model_path> [another_model_path...]
 
 **Available options**
 
 --help, -h  show this help message and exit
+--version   show program's version number and exit
 -c NAME     export xsd schema for the component named NAME
 -o PATH     save xsd schema to PATH (required)
 -v          increase debug logging level
@@ -147,13 +149,14 @@ slower). The pyxtuml prebuilder may be invoked using the folling command:
 
 ::
 
-   $ python -m bridgepoint.prebuild [options] <xtuml_file_or_path> [another_xtuml_file_or_path] ...
+   $ python -m bridgepoint.prebuild [options] <model_path> [another_model_path..]
 
 **Available options**
 
 --help, -h  show this help message and exit
--o PATH   set output to PATH
--v        increase debug logging level
+--version   show program's version number and exit¨
+-o PATH     set output to PATH
+-v          increase debug logging level
 
 ==============
 Reporting bugs
