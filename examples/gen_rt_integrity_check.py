@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
 # Copyright (C) 2015 John Törnblom
+'''
+Generate OAL actions that checks for model integrity violations at runtime.
+
+The following checks are performed: cardinality constraints on associations,
+sub types are associated with a super type, and that uniqueness constiants are 
+not violated.
+'''
 
 import logging
 import optparse
@@ -70,21 +77,21 @@ supertype_body_tmpl = Template('''
 ''')
 
 
-def mk_simple_association_check(m, inst):
+def mk_simple_association_check(m, r_simp):
     text = ''
     
-    r_rel = one(inst).R_REL[206]()
+    r_rel = one(r_simp).R_REL[206]()
     
-    r_part = one(inst).R_PART[207]()
+    r_part = one(r_simp).R_PART[207]()
     r_rto = one(r_part).R_RTO[204]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
     
-    r_form = one(inst).R_FORM[208]()
+    r_form = one(r_simp).R_FORM[208]()
     if r_form:
         r_rgo = one(r_form).R_RGO[205]()
         source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     else:  # the association is not formalized
-        r_form = one(inst).R_PART[207](lambda sel: sel != r_part)
+        r_form = one(r_simp).R_PART[207](lambda sel: sel != r_part)
         r_rto = one(r_form).R_RTO[204]()
         source_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
     
@@ -113,9 +120,9 @@ def mk_simple_association_check(m, inst):
     return text
 
 
-def mk_linked_association_check(m, inst):
-    r_rel = one(inst).R_REL[206]()
-    r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
+def mk_linked_association_check(m, r_assoc):
+    r_rel = one(r_assoc).R_REL[206]()
+    r_rgo = one(r_assoc).R_ASSR[211].R_RGO[205]()
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     
     def check_link(side):
@@ -145,20 +152,20 @@ def mk_linked_association_check(m, inst):
                                                 Phrase=side.Txt_Phrs)
         return text
     
-    r_aone = one(inst).R_AONE[209]()
-    r_aoth = one(inst).R_AOTH[210]()
+    r_aone = one(r_assoc).R_AONE[209]()
+    r_aoth = one(r_assoc).R_AOTH[210]()
     
     return check_link(r_aone) + check_link(r_aoth)
 
     
-def mk_subsuper_association_check(m, inst):
-    r_rel = one(inst).R_REL[206]()
-    r_rto = one(inst).R_SUPER[212].R_RTO[204]()
+def mk_subsuper_association_check(m, r_subsup):
+    r_rel = one(r_subsup).R_REL[206]()
+    r_rto = one(r_subsup).R_SUPER[212].R_RTO[204]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
     
     text = ''
     loop_body = ''
-    for r_sub in many(inst).R_SUB[213]():
+    for r_sub in many(r_subsup).R_SUB[213]():
         r_rgo = one(r_sub).R_RGO[205]()
         source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
         
@@ -178,15 +185,14 @@ def mk_subsuper_association_check(m, inst):
     return text
 
 
-def mk_derived_association_check(m, inst):
+def mk_derived_association_check(m, r_comp):
     return ''
 
 
-def mk_unique_constraint_check(m, inst):
-    
-    o_obj = one(inst).O_OBJ[104]()
+def mk_unique_constraint_check(m, o_id):
+    o_obj = one(o_id).O_OBJ[104]()
     where_clause = prefix = ''
-    for o_oida in many(inst).O_OIDA[105]():
+    for o_oida in many(o_id).O_OIDA[105]():
         clause = '(%s.%s == %s_Instance.%s)' % ('selected',
                                                 o_oida.localAttributeName,
                                                 o_obj.Key_Lett,
@@ -199,7 +205,7 @@ def mk_unique_constraint_check(m, inst):
     
     return constraint_tmpl.substitute(Kind=o_obj.Key_Lett,
                                       Where_Clause=where_clause,
-                                      Numb=inst.Oid_ID + 1)
+                                      Numb=o_id.Oid_ID + 1)
 
 
 def generate_actions(m, c_c, s_sync):
@@ -231,9 +237,10 @@ def main():
     '''
     Parse argv for options and arguments, and start schema generation.
     '''
-    parser = optparse.OptionParser(usage="%prog [options] arg ...",
+    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]",
                                    formatter=optparse.TitledHelpFormatter())
-    parser.set_description(__doc__)
+                                   
+    parser.set_description(__doc__.strip())
     
     parser.add_option("-f", "--function", dest="function", metavar="NAME",
                       help="append integrity checking actions to functions named NAME (required)",
