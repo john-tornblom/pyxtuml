@@ -1511,7 +1511,7 @@ class OALParser(object):
                                  using_variable_name=p[10])
     
     @track_production
-    def p_select_from_statement(self, p):
+    def p_select_from_statement_1(self, p):
         '''
         statement : SELECT ANY variable_name FROM INSTANCES OF identifier
                   | SELECT MANY variable_name FROM INSTANCES OF identifier
@@ -1519,9 +1519,19 @@ class OALParser(object):
         p[0] = SelectFromNode(cardinality=p[2],
                               variable_name=p[3],
                               key_letter=p[7])
+                              
+    @track_production
+    def p_select_from_statement_2(self, p):
+        '''
+        statement : SELECT ANY variable_name FROM identifier
+                  | SELECT MANY variable_name FROM identifier
+        '''
+        p[0] = SelectFromNode(cardinality=p[2],
+                              variable_name=p[3],
+                              key_letter=p[5])
     
     @track_production
-    def p_select_from_where_statement(self, p):
+    def p_select_from_where_statement_1(self, p):
         '''
         statement : SELECT ANY variable_name FROM INSTANCES OF identifier WHERE expression
                   | SELECT MANY variable_name FROM INSTANCES OF identifier WHERE expression
@@ -1531,6 +1541,17 @@ class OALParser(object):
                                    key_letter=p[7],
                                    where_clause=p[9])
     
+    @track_production
+    def p_select_from_where_statement_2(self, p):
+        '''
+        statement : SELECT ANY variable_name FROM identifier WHERE expression
+                  | SELECT MANY variable_name FROM identifier WHERE expression
+        '''
+        p[0] = SelectFromWhereNode(cardinality=p[2],
+                                   variable_name=p[3],
+                                   key_letter=p[5],
+                                   where_clause=p[7])
+                                   
     def p_navigation_hook(self, p):
         '''
         navigation_hook : variable_access
