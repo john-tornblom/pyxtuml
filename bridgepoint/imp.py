@@ -34,7 +34,8 @@ class ModelImporter(object):
         model_name = names[-1]
         
         for f in paths:
-            path = os.path.join('models', model_name)
+            path = os.path.join(os.path.realpath(f), 'models')
+            path = os.path.join(path, model_name)
             source = os.path.join(path, model_name + '.xtuml')
             if _check_magic(source):
                 return cls(path)
