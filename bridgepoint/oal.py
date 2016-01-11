@@ -4,8 +4,8 @@
 '''
 Parser for the Object Action Language (OAL). 
 Heavily inspired by: 
-   - https://github.com/xtuml/bposs/blob/master/mc/mcmc/arlan/arlan.l
-   - https://github.com/xtuml/bposs/blob/master/mc/mcmc/arlan/arlan.y
+   - https://github.com/xtuml/mc/blob/master/mcmc/arlan/arlan.l
+   - https://github.com/xtuml/mc/blob/master/mcmc/arlan/arlan.y
    - https://github.com/xtuml/bridgepoint/blob/master/src/org.xtuml.bp.als.oal/bnf/oal.bnf
 '''
 
