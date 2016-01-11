@@ -1554,6 +1554,10 @@ class TransitionPrebuilder(ActionPrebuilder):
         
         return v_var
     
+    @property
+    def label(self):
+        return ''
+        
     def accept_BodyNode(self, node):
         act_sab = self.new('ACT_SAB')
         relate(act_sab, self._sm_act, 691)
