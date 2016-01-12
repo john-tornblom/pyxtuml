@@ -156,6 +156,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
         self.m = metamodel
         self.c_c = c_c
         self.symtab = SymbolTable()
+        self.is_lvalue = False
         self.pe_pe_cache = xtuml.QuerySet()
         
         scope_filt = lambda sel: (ooaofooa.is_contained_in(sel, self.c_c) or
@@ -758,12 +759,12 @@ class ActionPrebuilder(xtuml.tools.Walker):
         return act_smt
     
     def accept_AssignmentNode(self, node):
-        # TODO: lock/unlock the symbol table for write access.
-        
         act_smt = self.act_smt(node)
         v_val_r = self.accept(node.expression)
+        self.is_lvalue = True
         v_val_l = self.accept(node.variable_access)
         v_val_l.isLValue = True
+        self.is_lvalue = False
         
         # Set the type of implicitly defined variables
         v_tvl = one(v_val_l).V_TVL[801]()
@@ -953,7 +954,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
                 relate(v_val, v_scv, 801)
                 relate(v_val, s_dt, 820)
                 relate(v_scv, cnst_syc, 850)
-            else:
+            elif self.is_lvalue:
                 v_trn = self.v_trn(node, node.variable_name)
                 v_var = one(v_trn).V_VAR[814]()
                 v_val = self.v_val(node, isImplicit=True)
@@ -961,7 +962,9 @@ class ActionPrebuilder(xtuml.tools.Walker):
             
                 relate(v_tvl, v_val, 801)
                 relate(v_tvl, v_var, 805)
-        
+            else:
+                raise Exception("Unknown transient '%s'" % node.variable_name)
+            
         elif one(v_var).V_INT[814]():
             v_irf = self.v_irf(node, node.variable_name)
             v_val = one(v_irf).V_VAL[801]()
