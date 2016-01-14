@@ -103,7 +103,22 @@ class CreateRelatationStmt(object):
 
 class ModelLoader(object):
     '''
-    Lexer and parser for xtUML models (based on sql).
+    Class for loading meta models previously persisted to disk.
+    
+    Data may be provided in any order, e.g. first instances, then a schema, 
+    followed by additional instances. One single loader may be used to build
+    several MetaModel objects, and additionl data may be provided at any time.
+    
+    **NOTE** Additional data will not affect previosly built meta models.
+    
+    Usage example:
+    
+    >>> loader = xtuml.ModelLoader()
+    >>> loader.filename_input('data.sql')
+    >>> loader.filename_input('schema.sql')
+    >>> m1 = loader-build_metamodel()
+    >>> loader.filename_input('additional_data.sql')
+    >>> m2 = loader-build_metamodel()
     '''
     reserved = (
         'CREATE',
@@ -159,7 +174,7 @@ class ModelLoader(object):
     
     def input(self, data, name='<string>'):
         '''
-        Parse input as raw data.
+        Parse data directly from a string.
         '''
         lexer = lex.lex(debuglog=logger,
                         errorlog=logger,
@@ -487,6 +502,10 @@ def load_metamodel(resource):
     '''
     Load and return a meta model from a resource.
     The resource may be either a filename, or a list of filenames.
+    
+    Usage example:
+    
+    >>> metamodel = xtuml.load_metamodel(['schema.sql', 'data.sql'])
     '''
     if isinstance(resource, str):
         resource = [resource]

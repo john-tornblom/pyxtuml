@@ -315,7 +315,10 @@ class IdGenerator(object):
 
 class UUIDGenerator(IdGenerator):
     '''
-    A uuid-based unique id generator for meta models.
+    A uuid-based id generator for meta models. 128-bit unique identifiers
+    are generated randomly when reuested by a meta model. 
+    
+    This is the default id generator.
     '''
     def readfunc(self):
         return uuid.uuid4().int
@@ -323,7 +326,15 @@ class UUIDGenerator(IdGenerator):
 
 class IntegerGenerator(IdGenerator):
     '''
-    An integer-based unique id generator for meta models.
+    An integer-based id generator for meta models. integers are generated
+    sequentially, starting from the number one.
+    
+    Usage example:
+    
+    >>> loader = xtuml.ModelLoader()
+    >>> loader.filename_input("schema.sql")
+    >>> loader.filename_input("data.sql")
+    >>> metamodel = loader.build_metamodel(xtuml.IntegerGenerator())
     '''
     
     _current = 0
