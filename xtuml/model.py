@@ -413,7 +413,9 @@ class MetaModel(object):
 
     def new(self, kind, *args, **kwargs):
         '''
-        Create and return a new meta model instance of some kind.
+        Create and return a new instance in the meta model of some kind.
+        
+        **NOTE**: The kind, i.e. the key letter, is case insensitive.
         '''
         ukind = kind.upper()
         if ukind not in self.classes:
@@ -536,7 +538,6 @@ class MetaModel(object):
         '''
         Check the model for integrity violations on associations.
         '''
-
         return xtuml.check_association_integrity(self, rel_id)
     
     def _default_value(self, ty_name):
@@ -643,7 +644,25 @@ def navigate_one(inst):
     '''
     Initialize a navigation which is modeled as a one-to-one association.
     
-    Return value will be an instance or None.
+    The return value will be an instance or None.
+    
+    Usage example:
+    
+    >>> from xtuml import navigate_one as one
+    >>> m = xtuml.load_metamodel('db.sql')
+    >>> inst = m.select_any('My_Modeled_Class')
+    >>> other_inst = one(inst).Some_Other_Class[4]()
+    
+    The syntax is somewhat similar to the action language used in BridgePoint.
+    The same semantics would be expressed in BridgePoint as:
+    
+    select any inst from instances of My_Modeled_Class;
+    select one other_inst related by inst->Some_Other_Class[R4];
+    
+    **NOTE:** If the navigated association is reflexive, a phrase must be 
+    provided, e.g.
+    
+    >>> other_inst = one(inst).Some_Other_Class[4, 'some phrase']()
     '''
     return navigate_any(inst)
 
@@ -653,7 +672,7 @@ def navigate_any(inst_or_set):
     Initialize a navigation which is modeled as a one-to-many or many-to-many
     association and reduce the set to a single instance. 
     
-    Return value will be an instance, or None.
+    The return value will be an instance, or None.
     '''
     return NavChain(inst_or_set, is_many=False)
 
@@ -663,7 +682,7 @@ def navigate_many(inst_or_set):
     Initialize a navigation which is modeled as a one-to-many or many-to-many
     association.
     
-    Return value will be a set of instances.
+    The return value will be a set of instances.
     '''
     return NavChain(inst_or_set, is_many=True)
 
@@ -776,7 +795,14 @@ def delete(inst):
 
 def where_eq(**kwargs):
     '''
-    Return a navigation where-clause which filters out instances based on named keywords
+    Return a navigation where-clause which filters out instances based on named 
+    keywords.
+    
+    Usage example:
+    
+    >>> from xtuml import where_eq as where
+    >>> m = xtuml.load_metamodel('db.sql')
+    >>> inst = m.select_any('My_Modeled_Class', where(My_Number=5))
     '''
     def query_filter(selected):
         for name, value in kwargs.items():
