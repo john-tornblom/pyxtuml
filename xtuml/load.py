@@ -174,7 +174,8 @@ class ModelLoader(object):
     
     def input(self, data, name='<string>'):
         '''
-        Parse data directly from a string.
+        Parse data directly from a string. The name is used when reporting
+        positional information when the parser encounter syntax errors.
         '''
         lexer = lex.lex(debuglog=logger,
                         errorlog=logger,
@@ -189,16 +190,17 @@ class ModelLoader(object):
 
     def filename_input(self, filename):
         '''
-        Open and read a filename, and parse its content.
+        Open and read a filename from disk, and parse its content.
         '''
         with open(filename, 'r') as f:
             return self.file_input(f)
     
-    def file_input(self, f):
+    def file_input(self, file_object):
         '''
-        Read and parse data from a file handle.
+        Read and parse data from a file object, i.e. the type of object returned
+        by the builtin python function open().
         '''
-        return self.input(f.read(), name=f.name)
+        return self.input(file_object.read(), name=file_object.name)
 
     def populate_classes(self, m):
         '''
