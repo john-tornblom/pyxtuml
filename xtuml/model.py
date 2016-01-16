@@ -318,7 +318,7 @@ class UUIDGenerator(IdGenerator):
     A uuid-based id generator for meta models. 128-bit unique identifiers
     are generated randomly when reuested by a meta model. 
     
-    This is the default id generator.
+    **Note:** This is the default id generator.
     '''
     def readfunc(self):
         return uuid.uuid4().int
@@ -327,7 +327,11 @@ class UUIDGenerator(IdGenerator):
 class IntegerGenerator(IdGenerator):
     '''
     An integer-based id generator for meta models. integers are generated
-    sequentially, starting from the number one.
+    sequentially, starting from the number one. 
+    
+    Generally, the uuid-based id generator shall be used. In some cases such as 
+    testing however, having deterministic unique ids in a metamodel may be 
+    benifitial.
     
     Usage example:
     
@@ -374,6 +378,9 @@ class MetaModel(object):
     '''
     A meta model contains class definitions with associations between them,
     and instances of different class definitions.
+    
+    **Note:** All identifiers, e.g. attributes, key letters (the kind or name of
+    a class) or association ids, are case **insensitive**.
     '''
     
     classes = None
@@ -413,9 +420,11 @@ class MetaModel(object):
 
     def new(self, kind, *args, **kwargs):
         '''
-        Create and return a new instance in the meta model of some kind.
+        Create and return a new instance in the meta model of some *kind*.
         
-        **NOTE**: The kind, i.e. the key letter, is case insensitive.
+        Optionally, initial attribute values may be assigned to the new instance
+        by passing them as positional or keyword arguments. Positional arguments
+        are assigned in the order in which the appear in the metamodel schema.
         '''
         ukind = kind.upper()
         if ukind not in self.classes:
@@ -445,14 +454,14 @@ class MetaModel(object):
         
         return inst
     
-    def clone(self, inst):
+    def clone(self, instance):
         '''
-        Create a shallow clone of inst.
+        Create a shallow clone of an *instance*.
         
-        **Note**: the clone and the original instance does NOT have to be part
-        of the same meta model. 
+        **Note:** the clone and the original instance **does not** have to be
+        part of the same meta model. 
         '''
-        clone = self.new(inst.__class__.__name__)
+        clone = self.new(instance.__class__.__name__)
         for name, _ in inst.__a__:
             value = getattr(inst, name)
             setattr(clone, name, value)
@@ -461,13 +470,14 @@ class MetaModel(object):
         
     def define_relation(self, rel_id, source, target):
         '''
-        Define and return an association between source to target.
+        This method is deprecated. Use *define_association* instead.
         '''
         return self.define_association(rel_id, source, target)
     
     def define_association(self, rel_id, source, target):
         '''
-        Define and return an association between source to target.
+        Define and return an association between *source* to *target* named 
+        *rel_id*.
         '''
         ass = Association(rel_id, source, target)
         self.associations.append(ass)
@@ -506,34 +516,46 @@ class MetaModel(object):
         Target.__q__[source_kind][ass.id][source.phrase] = self._formalized_query(target, source)
     
         return ass
-    
-    def select_one(self, kind, where_cond=None):
+        
+    def select_many(self, kind, where_clause=None):
         '''
-        Query the model for an instance.
-        '''
-        return self.select_any(kind, where_cond)
-    
-    def select_any(self, kind, where_cond=None):
-        '''
-        Query the model for an instance.
+        Query the meta model for a set of instances of some *kind*. Optionally,
+        a conditional *where-clause* in the form of a function may be provided.
+        
+        Usage example:
+        
+        >>> m = xtuml.load_metamodel('db.sql')
+        >>> inst_set = m.select_many('My_Class', lambda sel: sel.number > 5)
         '''
         ukind = kind.upper()
         if ukind not in self.instances:
             raise ModelException("Unknown class %s" % kind)
 
-        s = filter(where_cond, self.instances[ukind])
+        return QuerySet(filter(where_clause, self.instances[ukind]))
+    
+    def select_any(self, kind, where_clause=None):
+        '''
+        This method is deprecated. Use *select_any* instead.
+        '''
+        return self.select_one(kind, where_clause)
+    
+    def select_one(self, kind, where_clause=None):
+        '''
+        Query the model for a single instance of some *kind*. Optionally, a
+        conditional *where-clause* in the form of a function may be provided.
+        
+        Usage example:
+        
+        >>> m = xtuml.load_metamodel('db.sql')
+        >>> inst = m.select_one('My_Class', lambda sel: sel.name == 'Test')
+        '''
+        ukind = kind.upper()
+        if ukind not in self.instances:
+            raise ModelException("Unknown class %s" % kind)
+
+        s = filter(where_clause, self.instances[ukind])
         return next(s, None)
         
-    def select_many(self, kind, where_cond=None):
-        '''
-        Query the model for a set of instances.
-        '''
-        ukind = kind.upper()
-        if ukind not in self.instances:
-            raise ModelException("Unknown class %s" % kind)
-
-        return QuerySet(filter(where_cond, self.instances[ukind]))
-
     def is_consistent(self, rel_id=None):
         '''
         Check the model for integrity violations on associations.
@@ -659,7 +681,7 @@ def navigate_one(inst):
     select any inst from instances of My_Modeled_Class;
     select one other_inst related by inst->Some_Other_Class[R4];
     
-    **NOTE:** If the navigated association is reflexive, a phrase must be 
+    **Note:** If the navigated association is reflexive, a phrase must be 
     provided, e.g.
     
     >>> other_inst = one(inst).Some_Other_Class[4, 'some phrase']()
@@ -713,7 +735,7 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     FROM side. Updated values which affect existing associations are 
     propagated.
     
-    **NOTE**: Reflexive associations require a phrase, and that the order 
+    **Note:** Reflexive associations require a phrase, and that the order 
     amongst the instances is as intended.
     '''
     if None in [from_inst, to_inst]:
@@ -751,7 +773,7 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     Unrelate two instances from each other by reseting the identifying
     attributes on the FROM side of the association.
     
-    **NOTE**: Reflexive associations require a phrase, and that the order amongst
+    **Note:** Reflexive associations require a phrase, and that the order amongst
     the instances is as intended.
     '''
     if None in [from_inst, to_inst]:
