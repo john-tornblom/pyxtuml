@@ -677,10 +677,10 @@ def navigate_one(instance):
     >>> other_inst = one(inst).Some_Other_Class[4]()
     
     The syntax is somewhat similar to the action language used in BridgePoint.
-    The same semantics would be expressed in BridgePoint as:
+    The same semantics would be expressed in BridgePoint as::
     
-    select any inst from instances of My_Modeled_Class;
-    select one other_inst related by inst->Some_Other_Class[R4];
+        select any inst from instances of My_Modeled_Class;
+        select one other_inst related by inst->Some_Other_Class[R4];
     
     **Note:** If the navigated association is reflexive, a phrase must be 
     provided, e.g.
