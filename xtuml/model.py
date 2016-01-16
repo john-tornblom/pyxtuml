@@ -218,7 +218,7 @@ class OrderedSet(collections.MutableSet):
 
 class QuerySet(OrderedSet):
     '''
-    An ordered set which holds instances that match queries from a meta model.
+    An ordered set which holds instances that match queries from a metamodel.
     '''
     
     @property
@@ -234,12 +234,12 @@ class QuerySet(OrderedSet):
 
 class BaseObject(object):
     '''
-    A common base object for all instances created in a meta model. Accesses 
+    A common base object for all instances created in a metamodel. Accesses 
     to attributes, e.g. getattr/setattr, on these objects are case insensitive.
     '''
     __r__ = None  # store relations
     __q__ = None  # store predefined queries
-    __m__ = None  # store a handle to the meta model which created the instance
+    __m__ = None  # store a handle to the metamodel which created the instance
     __c__ = dict()  # store a cached results from queries
     __a__ = list()  # store a list of attributes (name, type)
     __i__ = set() # set of identifying attributes
@@ -281,7 +281,7 @@ class BaseObject(object):
     
 class IdGenerator(object):
     '''
-    Base class for generating unique identifiers in a meta model.
+    Base class for generating unique identifiers in a metamodel.
     '''
     
     readfunc = None
@@ -315,8 +315,8 @@ class IdGenerator(object):
 
 class UUIDGenerator(IdGenerator):
     '''
-    A uuid-based id generator for meta models. 128-bit unique identifiers
-    are generated randomly when reuested by a meta model. 
+    A uuid-based id generator for metamodels. 128-bit unique identifiers
+    are generated randomly when requested by a metamodel. 
     
     **Note:** This is the default id generator.
     '''
@@ -326,7 +326,7 @@ class UUIDGenerator(IdGenerator):
 
 class IntegerGenerator(IdGenerator):
     '''
-    An integer-based id generator for meta models. integers are generated
+    An integer-based id generator for metamodels. integers are generated
     sequentially, starting from the number one. 
     
     Generally, the uuid-based id generator shall be used. In some cases such as 
@@ -376,7 +376,7 @@ def _is_null(inst, name):
         
 class MetaModel(object):
     '''
-    A meta model contains class definitions with associations between them,
+    A metamodel contains class definitions with associations between them,
     and instances of different kinds of classes.
     
     **Note:** All identifiers, e.g. attributes, association ids, key letters 
@@ -390,7 +390,7 @@ class MetaModel(object):
     
     def __init__(self, id_generator=None):
         '''
-        Create a new, empty meta model. 
+        Create a new, empty metamodel. 
         Optionally, specify an id generator used to obtain unique identifiers.
         '''
         if id_generator is None:
@@ -403,7 +403,7 @@ class MetaModel(object):
         
     def define_class(self, kind, attributes, doc=''):
         '''
-        Define and return a new class in the meta model.
+        Define and return a new class in the metamodel.
         '''
         ukind = kind.upper()
         if ukind in self.classes.keys() or ukind in self.instances.keys():
@@ -420,11 +420,11 @@ class MetaModel(object):
 
     def new(self, kind, *args, **kwargs):
         '''
-        Create and return a new instance in the meta model of some *kind*.
+        Create and return a new instance in the metamodel of some *kind*.
         
         Optionally, initial attribute values may be assigned to the new instance
         by passing them as positional or keyword arguments. Positional arguments
-        are assigned in the order in which they appear in the meta model schema.
+        are assigned in the order in which they appear in the metamodel schema.
         '''
         ukind = kind.upper()
         if ukind not in self.classes:
@@ -459,7 +459,7 @@ class MetaModel(object):
         Create a shallow clone of an *instance*.
         
         **Note:** the clone and the original instance **does not** have to be
-        part of the same meta model. 
+        part of the same metamodel. 
         '''
         clone = self.new(instance.__class__.__name__)
         for name, _ in instance.__a__:
@@ -519,7 +519,7 @@ class MetaModel(object):
         
     def select_many(self, kind, where_clause=None):
         '''
-        Query the meta model for a set of instances of some *kind*. Optionally,
+        Query the metamodel for a set of instances of some *kind*. Optionally,
         a conditional *where-clause* in the form of a function may be provided.
         
         Usage example:
@@ -564,7 +564,7 @@ class MetaModel(object):
     
     def _default_value(self, ty_name):
         '''
-        Obtain the default value for a named meta model type.
+        Obtain the default value for a named metamodel type.
         '''
         uname = ty_name.upper()
         if   uname == 'BOOLEAN': return False
@@ -815,7 +815,7 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
 
 def delete(instance):
     '''
-    Delete an *instance* from its meta model.
+    Delete an *instance* from its metamodel.
     '''
     if not isinstance(instance, BaseObject):
         raise ModelException("not an xtuml instance")
