@@ -424,7 +424,7 @@ class MetaModel(object):
         
         Optionally, initial attribute values may be assigned to the new instance
         by passing them as positional or keyword arguments. Positional arguments
-        are assigned in the order in which the appear in the metamodel schema.
+        are assigned in the order in which they appear in the meta model schema.
         '''
         ukind = kind.upper()
         if ukind not in self.classes:
@@ -462,8 +462,8 @@ class MetaModel(object):
         part of the same meta model. 
         '''
         clone = self.new(instance.__class__.__name__)
-        for name, _ in inst.__a__:
-            value = getattr(inst, name)
+        for name, _ in instance.__a__:
+            value = getattr(instance, name)
             setattr(clone, name, value)
             
         return clone
@@ -797,20 +797,20 @@ def unrelate(from_inst, to_inst, rel_id, phrase=''):
     return updated
 
 
-def delete(inst):
+def delete(instance):
     '''
-    Delete an instance from its model.
+    Delete an *instance* from its meta model.
     '''
-    if not isinstance(inst, BaseObject):
+    if not isinstance(instance, BaseObject):
         raise ModelException("not an xtuml instance")
             
-    kind = inst.__class__.__name__.upper()
-    if kind not in inst.__m__.classes:
-        raise ModelException("Unknown class %s" % inst.__class__.__name__)
+    kind = instance.__class__.__name__.upper()
+    if kind not in instance.__m__.classes:
+        raise ModelException("Unknown class %s" % instance.__class__.__name__)
         
-    if inst in inst.__m__.instances[kind]:
-        inst.__m__.instances[kind].remove(inst)
-        inst.__class__.__c__.clear()
+    if instance in instance.__m__.instances[kind]:
+        instance.__m__.instances[kind].remove(instance)
+        instance.__class__.__c__.clear()
     else:
         raise ModelException("Instance not found in its model")
 
