@@ -176,7 +176,7 @@ class ModelLoader(object):
     def input(self, data, name='<string>'):
         '''
         Parse *data* directly from a string. The *name* is used when reporting
-        positional information when the parser encounter syntax errors.
+        positional information if the parser encounter syntax errors.
         '''
         lexer = lex.lex(debuglog=logger,
                         errorlog=logger,
@@ -191,7 +191,7 @@ class ModelLoader(object):
 
     def filename_input(self, filename):
         '''
-        Open and read a *filename* from disk, and parse its content.
+        Open and read from a *filename* on disk, and parse its content.
         '''
         with open(filename, 'r') as f:
             return self.file_input(f)
@@ -504,8 +504,8 @@ class ModelLoader(object):
 
 def load_metamodel(resource):
     '''
-    Load and return a meta model from a *resource*.
-    The *resource* may be either a filename, or a list of filenames.
+    Load and return a metamodel from a *resource*. The *resource* may be either
+    a filename, or a list of filenames.
     
     Usage example:
     
