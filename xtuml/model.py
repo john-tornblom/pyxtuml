@@ -335,10 +335,10 @@ class IntegerGenerator(IdGenerator):
     
     Usage example:
     
-    >>> loader = xtuml.ModelLoader()
-    >>> loader.filename_input("schema.sql")
-    >>> loader.filename_input("data.sql")
-    >>> metamodel = loader.build_metamodel(xtuml.IntegerGenerator())
+    >>> l = xtuml.ModelLoader()
+    >>> l.filename_input("schema.sql")
+    >>> l.filename_input("data.sql")
+    >>> m = loader.build_metamodel(xtuml.IntegerGenerator())
     '''
     
     _current = 0
@@ -377,10 +377,10 @@ def _is_null(inst, name):
 class MetaModel(object):
     '''
     A meta model contains class definitions with associations between them,
-    and instances of different class definitions.
+    and instances of different kinds of classes.
     
-    **Note:** All identifiers, e.g. attributes, key letters (the kind or name of
-    a class) or association ids, are case **insensitive**.
+    **Note:** All identifiers, e.g. attributes, association ids, key letters 
+    (the kind or name of a class), are case **insensitive**.
     '''
     
     classes = None
@@ -662,11 +662,12 @@ def _deferred_association_operation(inst, end, op):
     return l
 
 
-def navigate_one(inst):
+def navigate_one(instance):
     '''
-    Initialize a navigation which is modeled as a one-to-one association.
+    Initialize a navigation from one *instance* to another across a one-to-one
+    association.
     
-    The return value will be an instance or None.
+    The resulting query will return an instance or None.
     
     Usage example:
     
@@ -686,32 +687,35 @@ def navigate_one(inst):
     
     >>> other_inst = one(inst).Some_Other_Class[4, 'some phrase']()
     '''
-    return navigate_any(inst)
+    return navigate_any(instance)
 
 
-def navigate_any(inst_or_set):
+def navigate_any(instance_or_set):
     '''
-    Initialize a navigation which is modeled as a one-to-many or many-to-many
-    association and reduce the set to a single instance. 
+    Initialize a navigation from an instance, or a set of instances, to 
+    associated instances across a one-to-many or many-to-many association.
+
+    The resulting query will return an instance or None.
+    '''
+    return NavChain(instance_or_set, is_many=False)
+
+
+def navigate_many(instance_or_set):
+    '''
+    Initialize a navigation from an instance, or a set of instances, to 
+    associated instances across a one-to-many or many-to-many association.
     
-    The return value will be an instance, or None.
+    The resulting query will return a set of instances.
     '''
-    return NavChain(inst_or_set, is_many=False)
-
-
-def navigate_many(inst_or_set):
-    '''
-    Initialize a navigation which is modeled as a one-to-many or many-to-many
-    association.
-    
-    The return value will be a set of instances.
-    '''
-    return NavChain(inst_or_set, is_many=True)
+    return NavChain(instance_or_set, is_many=True)
 
 
 def navigate_subtype(supertype, rel_id):
     '''
-    Perform a navigation which is modeled as a subtype-supertype association.
+    Perform a navigation from *supertype* to its subtype across *rel_id*. The
+    navigated association must be modeled as a subtype-supertype association.
+    
+    The return value will an instance or None.
     '''
     if not supertype:
         return
@@ -817,7 +821,7 @@ def delete(instance):
 
 def where_eq(**kwargs):
     '''
-    Return a navigation where-clause which filters out instances based on named 
+    Return a where-clause function which filters out instances based on named 
     keywords.
     
     Usage example:
