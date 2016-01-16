@@ -732,38 +732,43 @@ def navigate_subtype(supertype, rel_id):
             return subtype
 
         
-def relate(from_inst, to_inst, rel_id, phrase=''):
+def relate(from_instance, to_instance, rel_id, phrase=''):
     '''
-    Relate two instances to each other by copying the identifying attributes
-    from the instance on the TO side of a association to the instance on the
-    FROM side. Updated values which affect existing associations are 
-    propagated.
+    Relate *from_instance* to *to_instance* across *rel_id*. For refelxive
+    association, a *phrase* indicating the direction must also be provided.
     
-    **Note:** Reflexive associations require a phrase, and that the order 
-    amongst the instances is as intended.
+    The two instances are related to each other by copying the identifying 
+    attributes from the instance on the TO side of a association to the instance
+    n the FROM side. Updated values which affect existing associations are 
+    propagated.
     '''
-    if None in [from_inst, to_inst]:
+    if None in [from_instance, to_instance]:
         return False
     
-    from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _deferred_association_operation(from_inst, ass.source, relate)
+    from_instance, to_instance, ass = _find_association_links(from_instance,
+                                                              to_instance,
+                                                              rel_id,
+                                                              phrase)
+                                                      
+    post_process = _deferred_association_operation(from_instance, ass.source,
+                                                   relate)
 
     updated = False
     for from_name, to_name in zip(ass.source.ids, ass.target.ids):
-        if _is_null(to_inst, to_name):
+        if _is_null(to_instance, to_name):
             raise ModelException('undefined referential attribute %s' % to_name)
         
-        from_value = getattr(from_inst, from_name)
-        to_value = getattr(to_inst, to_name)
+        from_value = getattr(from_instance, from_name)
+        to_value = getattr(to_instance, to_name)
 
         if from_value == to_value:
             continue
 
-        if not _is_null(from_inst, from_name):
+        if not _is_null(from_instance, from_name):
             raise ModelException('instance is already related')
         
         updated = True
-        setattr(from_inst, from_name, to_value)
+        setattr(from_instance, from_name, to_value)
 
     if updated:
         for deferred_relate in post_process:
@@ -772,27 +777,34 @@ def relate(from_inst, to_inst, rel_id, phrase=''):
     return updated
 
 
-def unrelate(from_inst, to_inst, rel_id, phrase=''):
+def unrelate(from_instance, to_instance, rel_id, phrase=''):
     '''
-    Unrelate two instances from each other by reseting the identifying
-    attributes on the FROM side of the association.
+    Unrelate *from_instance* from *to_instance* across *rel_id*. For refelxive
+    association, a *phrase* indicating the direction must also be provided.
     
-    **Note:** Reflexive associations require a phrase, and that the order amongst
-    the instances is as intended.
+    The two instances are unrelated from each other by reseting the identifying
+    attributes on the FROM side of the association. Updated values which affect
+    existing associations are propagated.
     '''
-    if None in [from_inst, to_inst]:
+    if None in [from_instance, to_instance]:
         return False
     
-    from_inst, to_inst, ass = _find_association_links(from_inst, to_inst, rel_id, phrase)
-    post_process = _deferred_association_operation(from_inst, ass.source, unrelate)
+    from_instance, to_instance, ass = _find_association_links(from_instance,
+                                                              to_instance,
+                                                              rel_id,
+                                                              phrase)
+                                                              
+    post_process = _deferred_association_operation(from_instance, ass.source,
+                                                   unrelate)
 
     updated = False
-    for from_name in set(ass.source.ids) & from_inst.__d__ - from_inst.__i__:
-        if _is_null(from_inst, from_name):
+    from_names = set(ass.source.ids) & from_instance.__d__ - from_instance.__i__
+    for from_name in from_names:
+        if _is_null(from_instance, from_name):
             raise ModelException('instances not related')
         
         updated = True
-        setattr(from_inst, from_name, None)
+        setattr(from_instance, from_name, None)
 
     if updated:
         for deferred_unrelate in post_process:

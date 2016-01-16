@@ -42,22 +42,22 @@ def serialize_value(value, ty):
     return transfer_fn[ty](value)
     
     
-def serialize_instance(inst):
+def serialize_instance(instance):
     '''
-    Serialize an xtUML meta model instance.
+    Serialize an *instance* from a meta model.
     '''
     attr_count = 0
 
-    table = inst.__class__.__name__
+    table = instance.__class__.__name__
     s = 'INSERT INTO %s VALUES (' % table
-    for name, ty in inst.__a__:
-        value = getattr(inst, name)
+    for name, ty in instance.__a__:
+        value = getattr(instance, name)
             
         s += '\n    '
         s += serialize_value(value, ty)
 
         attr_count += 1
-        if attr_count < len(inst.__a__):
+        if attr_count < len(instance.__a__):
             s += ', -- %s : %s' % (name, ty)
         else:
             s += ' -- %s : %s' % (name, ty)
@@ -69,7 +69,7 @@ def serialize_instance(inst):
 
 def serialize_instances(metamodel):
     '''
-    Serialize instances located in a xtUML meta model.
+    Serialize all instances in a *metamodel*.
     '''
     s = ''
     for lst in metamodel.instances.values():
@@ -117,7 +117,8 @@ def serialize_class(Cls):
 
 def serialize_schema(metamodel):
     '''
-    Serialize schema for a xtUML meta model.
+    Serialize all class definitions and associaiton definitions in a 
+    *metamodel*.
     '''
     s = ''
     for kind in sorted(metamodel.classes.keys()):
@@ -131,7 +132,8 @@ def serialize_schema(metamodel):
 
 def serialize_database(metamodel):
     '''
-    Serialize schema and instances for a xtUML meta model.
+    Serialize all instances, class definitions and associaiton definitions in a
+    *metamodel*.
     '''
     schema = serialize_schema(metamodel)
     instances = serialize_instances(metamodel)
@@ -161,7 +163,8 @@ def serialize(resource):
 
 def persist_instances(metamodel, path):
     '''
-    Persist instances from a meta model to disk.
+    Persist all instances in *metamodel* by serializing them and stoing to a 
+    *path* on disk.
     '''
     with open(path, 'w') as f:
         for lst in metamodel.instances.values():
@@ -172,7 +175,8 @@ def persist_instances(metamodel, path):
 
 def persist_schema(metamodel, path):
     '''
-    Persist a schema of a meta model to disk.
+    Persist all class definitions and associaiton definitions in a *metamodel* 
+    by serializing them and stoing to a *path* on disk.
     '''
     with open(path, 'w') as f:
         for kind in sorted(metamodel.classes.keys()):
@@ -186,7 +190,8 @@ def persist_schema(metamodel, path):
 
 def persist_database(metamodel, path):
     '''
-    Persist schema and instances from a meta model to disk.
+    Persist all instances, class definitions and associaiton definitions in a
+    *metamodel* by serializing them and stoing to a *path* on disk.
     '''
     with open(path, 'w') as f:
         for kind in sorted(metamodel.classes.keys()):
