@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def serialize_value(value, ty):
     '''
-    Serialize a value from a xtUML meta model instance.
+    Serialize a value from an xtuml metamodel instance.
     '''
     ty = ty.upper()
     
@@ -44,7 +44,7 @@ def serialize_value(value, ty):
     
 def serialize_instance(instance):
     '''
-    Serialize an *instance* from a meta model.
+    Serialize an *instance* from a metamodel.
     '''
     attr_count = 0
 
@@ -81,7 +81,7 @@ def serialize_instances(metamodel):
 
 def serialize_association_link(lnk):
     '''
-    Serialize an xtUML meta model association link.
+    Serialize an xtuml metamodel association link.
     '''
     s = '%s %s (%s)' % (lnk.cardinality.upper(),
                         lnk.kind,
@@ -95,7 +95,7 @@ def serialize_association_link(lnk):
 
 def serialize_association(ass):
     '''
-    Serialize an xtUML meta model association.
+    Serialize an xtuml metamodel association.
     '''
     source = serialize_association_link(ass.source)
     target = serialize_association_link(ass.target)
@@ -106,7 +106,7 @@ def serialize_association(ass):
 
 def serialize_class(Cls):
     '''
-    Serialize an xtUML meta model class.
+    Serialize an xtUML metamodel class.
     '''
     s = 'CREATE TABLE %s (\n    ' % Cls.__name__
     s += ',\n    '.join(['%s %s' % (name, ty.upper()) for name, ty in Cls.__a__])
@@ -117,8 +117,7 @@ def serialize_class(Cls):
 
 def serialize_schema(metamodel):
     '''
-    Serialize all class definitions and associaiton definitions in a 
-    *metamodel*.
+    Serialize all class and association definitions in a *metamodel*.
     '''
     s = ''
     for kind in sorted(metamodel.classes.keys()):
@@ -132,7 +131,7 @@ def serialize_schema(metamodel):
 
 def serialize_database(metamodel):
     '''
-    Serialize all instances, class definitions and associaiton definitions in a
+    Serialize all instances, class definitions and association definitions in a
     *metamodel*.
     '''
     schema = serialize_schema(metamodel)
@@ -143,7 +142,7 @@ def serialize_database(metamodel):
 
 def serialize(resource):
     '''
-    Serialize some xtuml resource, e.g. an instance or a complete meta model.
+    Serialize some xtuml *resource*, e.g. an instance or a complete metamodel.
     '''
     if isinstance(resource, xtuml.MetaModel):
         return serialize_database(resource)
@@ -163,7 +162,7 @@ def serialize(resource):
 
 def persist_instances(metamodel, path):
     '''
-    Persist all instances in *metamodel* by serializing them and stoing to a 
+    Persist all instances in a *metamodel* by serializing them and saving to a 
     *path* on disk.
     '''
     with open(path, 'w') as f:
@@ -175,8 +174,8 @@ def persist_instances(metamodel, path):
 
 def persist_schema(metamodel, path):
     '''
-    Persist all class definitions and associaiton definitions in a *metamodel* 
-    by serializing them and stoing to a *path* on disk.
+    Persist all class and association definitions in a *metamodel* by 
+    serializing them and saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
         for kind in sorted(metamodel.classes.keys()):
@@ -190,8 +189,8 @@ def persist_schema(metamodel, path):
 
 def persist_database(metamodel, path):
     '''
-    Persist all instances, class definitions and associaiton definitions in a
-    *metamodel* by serializing them and stoing to a *path* on disk.
+    Persist all instances, class definitions and association definitions in a
+    *metamodel* by serializing them and saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
         for kind in sorted(metamodel.classes.keys()):
