@@ -13,7 +13,7 @@ import re
 from ply import lex
 from ply import yacc
 
-from xtuml import model
+import xtuml
 
 
 logger = logging.getLogger(__name__)
@@ -105,20 +105,21 @@ class ModelLoader(object):
     '''
     Class for loading meta models previously persisted to disk.
     
-    Data may be provided in any order, e.g. first instances, then a schema, 
-    followed by additional instances. One single loader may be used to build
-    several MetaModel objects, and additionl data may be provided at any time.
+    Data may be provided in any order, e.g. instances followed by associations, 
+    followed by class definitions. One single loader may be used to build
+    several *xyiml.MetaModel* objects, and additionl data may be provided at any
+    time.
     
-    **NOTE** Additional data will not affect previosly built meta models.
+    **Note:** Additional data will not affect previosly built meta models.
     
     Usage example:
     
-    >>> loader = xtuml.ModelLoader()
-    >>> loader.filename_input('data.sql')
-    >>> loader.filename_input('schema.sql')
-    >>> m1 = loader-build_metamodel()
+    >>> l = xtuml.ModelLoader()
+    >>> l.filename_input('data.sql')
+    >>> l.filename_input('schema.sql')
+    >>> m1 = loader.build_metamodel()
     >>> loader.filename_input('additional_data.sql')
-    >>> m2 = loader-build_metamodel()
+    >>> m2 = loader.build_metamodel()
     '''
     reserved = (
         'CREATE',
@@ -174,7 +175,7 @@ class ModelLoader(object):
     
     def input(self, data, name='<string>'):
         '''
-        Parse data directly from a string. The name is used when reporting
+        Parse *data* directly from a string. The *name* is used when reporting
         positional information when the parser encounter syntax errors.
         '''
         lexer = lex.lex(debuglog=logger,
@@ -190,37 +191,38 @@ class ModelLoader(object):
 
     def filename_input(self, filename):
         '''
-        Open and read a filename from disk, and parse its content.
+        Open and read a *filename* from disk, and parse its content.
         '''
         with open(filename, 'r') as f:
             return self.file_input(f)
     
     def file_input(self, file_object):
         '''
-        Read and parse data from a file object, i.e. the type of object returned
-        by the builtin python function open().
+        Read and parse data from a *file object*, i.e. the type of object 
+        returned by the builtin python function *open()*.
         '''
         return self.input(file_object.read(), name=file_object.name)
 
-    def populate_classes(self, m):
+    def populate_classes(self, metamodel):
         '''
-        Populate a metamodel with classes previously encountered from input
+        Populate a *metamodel* with classes previously encountered from input.
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateClassStmt):
-                m.define_class(stmt.kind, stmt.attributes)
+                metamodel.define_class(stmt.kind, stmt.attributes)
 
-    def populate_associations(self, m):
+    def populate_associations(self, metamodel):
         '''
-        Populate a metamodel with associations previously encountered from input
+        Populate a *metamodel* with associations previously encountered from 
+        input.
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateRelatationStmt):
-                m.define_relation(stmt.id, *stmt.end_points)
+                metamodel.define_relation(stmt.id, *stmt.end_points)
 
-    def populate_instances(self, m):
+    def populate_instances(self, metamodel):
         '''
-        Populate a metamodel with instances previously encountered from input
+        Populate a *metamodel* with instances previously encountered from input.
         '''
         for stmt in self.statements:
             if not isinstance(stmt, CreateInstanceStmt):
@@ -228,16 +230,16 @@ class ModelLoader(object):
             
             ukind = stmt.kind.upper()
                 
-            if ukind not in m.classes:
+            if ukind not in metamodel.classes:
                 attributes = list()
                 for idx, value in enumerate(stmt.values):
                     name = '_%s' % idx
                     ty = guess_type_name(value)
                     attributes.append((name, ty))
                 
-                m.define_class(stmt.kind, attributes)
+                metamodel.define_class(stmt.kind, attributes)
             
-            Cls = m.classes[ukind]
+            Cls = metamodel.classes[ukind]
             args = list()
             
             if len(Cls.__a__) != len(stmt.values):
@@ -249,22 +251,22 @@ class ModelLoader(object):
                 args.append(value)
             
             
-            m.new(stmt.kind, *args)
+            metamodel.new(stmt.kind, *args)
 
 
-    def populate(self, m):
+    def populate(self, metamodel):
         '''
-        Populate a metamodel with entities previously encountered from input
+        Populate a *metamodel* with entities previously encountered from input.
         '''
-        self.populate_classes(m)
-        self.populate_associations(m)
-        self.populate_instances(m)
+        self.populate_classes(metamodel)
+        self.populate_associations(metamodel)
+        self.populate_instances(metamodel)
         
     def build_metamodel(self, id_generator=None):
         '''
-        Build and return a meta model from previously parsed input.
+        Build and return a *xtuml.MetaModel* containing previously loaded input.
         '''
-        m = model.MetaModel(id_generator)
+        m = xtuml.MetaModel(id_generator)
         
         self.populate(m)
         
@@ -437,11 +439,11 @@ class ModelLoader(object):
 
     def p_association_end(self, p):
         '''association_end : cardinality identifier LPAREN identifier_sequence RPAREN'''
-        p[0] = model.AssociationLink(p[2], p[1], p[4])
+        p[0] = xtuml.AssociationLink(p[2], p[1], p[4])
 
     def p_phrased_association_end(self, p):
         '''association_end : cardinality identifier LPAREN identifier_sequence RPAREN PHRASE STRING'''
-        p[0] = model.AssociationLink(p[2], p[1], p[4], p[7][1:-1])
+        p[0] = xtuml.AssociationLink(p[2], p[1], p[4], p[7][1:-1])
 
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''
@@ -502,8 +504,8 @@ class ModelLoader(object):
 
 def load_metamodel(resource):
     '''
-    Load and return a meta model from a resource.
-    The resource may be either a filename, or a list of filenames.
+    Load and return a meta model from a *resource*.
+    The *resource* may be either a filename, or a list of filenames.
     
     Usage example:
     
