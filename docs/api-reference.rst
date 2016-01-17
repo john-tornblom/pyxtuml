@@ -6,8 +6,8 @@ The following section lists functions, classes and exceptions from the xtuml
 module. The operations are independent of the underlying metamodel definition, 
 i.e. the sql schema.
 
-Loading Metaodels
-^^^^^^^^^^^^^^^^^
+Loading Metamodels
+^^^^^^^^^^^^^^^^^^
 .. autofunction:: xtuml.load_metamodel
 
 .. autoclass:: xtuml.ModelLoader
