@@ -103,14 +103,14 @@ class CreateRelatationStmt(object):
 
 class ModelLoader(object):
     '''
-    Class for loading meta models previously persisted to disk.
+    Class for loading metamodels previously persisted to disk.
     
     Data may be provided in any order, e.g. instances followed by associations, 
     followed by class definitions. One single loader may be used to build
-    several *xyiml.MetaModel* objects, and additionl data may be provided at any
-    time.
+    several *xtuml.MetaModel* objects, and additional data may be provided at
+    any time.
     
-    **Note:** Additional data will not affect previosly built meta models.
+    **Note:** Additional data will not affect previosly built metamodels.
     
     Usage example:
     
@@ -519,4 +519,48 @@ def load_metamodel(resource):
         loader.filename_input(filename)
     
     return loader.build_metamodel()
+
+
+
+
+
+
+
+
+
+
+
+
+class IntegerGenerator(IdGenerator):
+    '''
+    An integer-based id generator for metamodels. integers are generated
+    sequentially, starting from the number one. 
+    
+    Generally, the uuid-based id generator shall be used. In some cases such as 
+    testing however, having deterministic unique ids in a metamodel may be 
+    benifitial.
+    
+    Usage example:
+    
+    >>> l = xtuml.ModelLoader()
+    >>> l.filename_input("schema.sql")
+    >>> l.filename_input("data.sql")
+    >>> m = loader.build_metamodel(xtuml.IntegerGenerator())
+    '''
+    
+    _current = 0
+    def readfunc(self):
+        return self._current + 1
+
+
+
+
+
+
+
+
+
+
+
+
 
