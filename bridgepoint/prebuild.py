@@ -1773,9 +1773,21 @@ class ProvidedSignalPrebuilder(ActionPrebuilder):
         return v_val
 
 
-def prebuild_action(inst):
+def prebuild_action(instance):
     '''
-    Populate an action, e.g. an instance of S_SYNC or O_TFR.
+    Transform textual OAL actions of an *instance* to instances in the ooaofooa
+    subsystems Value and Body. The provided *instance* must be an instance of 
+    one of the following classes:
+    
+    - S_SYNC
+    - S_BRG
+    - O_TFR
+    - O_DBATTR
+    - SM_ACT
+    - SPR_RO
+    - SPR_RS
+    - SPR_PO
+    - SPR_PS
     '''
     walker_map = {
         'S_SYNC': FunctionPrebuilder,
@@ -1788,21 +1800,32 @@ def prebuild_action(inst):
         'SPR_PO': ProvidedOperationPrebuilder,
         'SPR_PS': ProvidedSignalPrebuilder
     }
-    kind = inst.__class__.__name__
-    walker = walker_map[kind](inst.__m__, inst)
+    kind = instance.__class__.__name__
+    walker = walker_map[kind](instance.__m__, instance)
     logger.info('processing action %s' % walker.label)
     # walker.visitors.append(xtuml.tools.NodePrintVisitor())
-    root = oal.parse(inst.Action_Semantics_internal)
+    root = oal.parse(instance.Action_Semantics_internal)
     return walker.accept(root)
     
                 
-def prebuild_model(m):
+def prebuild_model(metamodel):
     '''
-    Populate all actions in a model.
+    Transform textual OAL actions in a ooaofooa *metamodel* to instances in the
+    subsystems Value and Body. Instances of the following classes are supported:
+    
+    - S_SYNC
+    - S_BRG
+    - O_TFR
+    - O_DBATTR
+    - SM_ACT
+    - SPR_RO
+    - SPR_RS
+    - SPR_PO
+    - SPR_PS
     '''
     for kind in ['S_SYNC','S_BRG','O_TFR', 'O_DBATTR', 'SM_ACT', 'SPR_RO',
                  'SPR_RS', 'SPR_PO', 'SPR_PS']:
-        for inst in m.select_many(kind):
+        for inst in metamodel.select_many(kind):
             if inst.Suc_Pars:
                 prebuild_action(inst)
 

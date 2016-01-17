@@ -3637,11 +3637,9 @@ def mk_component(bp_model, c_c=None):
     return target
 
 
-class Loader(xtuml.ModelLoader):
+class ModelLoader(xtuml.ModelLoader):
     '''
-    A xtuml meta model loader with ooaofooa schema and globals pre-defined.
-    In addition, filename_input has been extended to support loading of
-    directory.
+    A *xtuml.MetaModel* loader with ooaofooa schema and globals pre-defined.
     '''
     
     def __init__(self, load_globals=True):
@@ -3650,20 +3648,20 @@ class Loader(xtuml.ModelLoader):
         if load_globals:
             self.input(globals, 'predefined globals (v%02.1f)' % __version__)
         
-    def filename_input(self, filename):
+    def filename_input(self, path_or_filename):
         '''
-        Open and read a filename, and parse its content.
+        Open and read input from a *path or filename*, and parse its content.
         
         If the filename is a directory, files that ends with .xtuml located
         somewhere in the directory or sub directories will be loaded as well.
         '''
-        if os.path.isdir(filename):
-            for path, _, files in os.walk(filename):
+        if os.path.isdir(path_or_filename):
+            for path, _, files in os.walk(path_or_filename):
                 for name in files:
                     if name.endswith('.xtuml'):
                         xtuml.ModelLoader.filename_input(self, os.path.join(path, name))
         else:
-            xtuml.ModelLoader.filename_input(self, filename)
+            xtuml.ModelLoader.filename_input(self, path_or_filename)
 
     def build_component(self, name=None):
         mm = self.build_metamodel()
@@ -3676,9 +3674,13 @@ class Loader(xtuml.ModelLoader):
             return mk_component(mm, c_c)
 
 
+# Backwards compatabillity with older versions of pyxtuml
+Loader = ModelLoader
+
+
 def empty_model():
     '''
-    Create an empty ooaofooa model, expressed in a metamodel
+    Create an empty ooaofooa model, expressed in a metamodel.
     '''
     loader = Loader()
     return loader.build_metamodel()
@@ -3686,7 +3688,7 @@ def empty_model():
 
 def load_model(resource):
     '''
-    Load and return a model from a resource.
+    Load and return a model from a *resource*.
     The resource may be either a filename, a path, or a list of filenames
     and/or paths.
     '''

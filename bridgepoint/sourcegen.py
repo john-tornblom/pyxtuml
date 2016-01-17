@@ -545,11 +545,25 @@ class ActionTextGenWalker(Walker):
         self.buf(inst.Name)
     
 
-def gen_text_action(inst, level=-1):
+def gen_text_action(instance):
     '''
-    Generate textual action code from a bridgepoint metamodel instance.
+    Generate textual OAL action code from an *instance* in the BridgePoint 
+    metamodel. The input may be an instance of the following classes:
+
+    - S_SYNC
+    - S_BRG
+    - O_TFR
+    - O_DBATTR
+    - SM_ACT
+    - SPR_RO
+    - SPR_RS
+    - SPR_PO
+    - SPR_PS
+        
+    In addition, anything in the ooaofooa subsystems Value or Body, e.g. ACT_SMT
+    or V_VAL are also supported.
     '''
-    w = ActionTextGenWalker(level)
-    w.accept(inst)
+    w = ActionTextGenWalker(-1)
+    w.accept(instance)
     return str(w)
 
