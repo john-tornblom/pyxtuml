@@ -243,7 +243,8 @@ class ModelLoader(object):
             args = list()
             
             if len(Cls.__a__) != len(stmt.values):
-                logger.warn('schema missmatch while loading an instance of %s', stmt.kind)
+                logger.warn('schema missmatch while loading an instance of %s',
+                            stmt.kind)
                 
             for attr, value in zip(Cls.__a__, stmt.values):
                 _, ty = attr
@@ -347,7 +348,8 @@ class ModelLoader(object):
         t.endlexpos = t.lexpos + len(t.value)
 
     def t_error(self, t):
-        raise ParsingException("illegal character '%s' at %s:%d" % (t.value[0], t.lexer.filename, t.lineno))
+        raise ParsingException("illegal character '%s' at %s:%d" % (t.value[0],
+                               t.lexer.filename, t.lineno))
 
     def p_empty_translation_unit(self, p):
         '''translation_unit :'''
@@ -448,13 +450,15 @@ class ModelLoader(object):
     def p_cardinality_1(self, p):
         '''cardinality : NUMBER'''
         if p[1] != '1':
-            raise ParsingException("illegal cardinality (%s) at %s:%d" % (p[1], p.lexer.filename, p.lineno(1)))
+            raise ParsingException("illegal cardinality (%s) at %s:%d" % (p[1],
+                                   p.lexer.filename, p.lineno(1)))
         p[0] = p[1]
 
     def p_cardinality_many(self, p):
         '''cardinality : ID'''
         if p[1] not in ['M', 'MC']:
-            raise ParsingException("illegal cardinality (%s) at %s:%d" % (p[1], p.lexer.filename, p.lineno(1)))
+            raise ParsingException("illegal cardinality (%s) at %s:%d" % (p[1],
+                                   p.lexer.filename, p.lineno(1)))
         p[0] = p[1]
 
     def p_cardinality_01(self, p):
@@ -495,9 +499,7 @@ class ModelLoader(object):
     def p_error(self, p):
         if p:
             raise ParsingException("illegal token %s (%s) at %s:%d" % (p.type, 
-                                                                       p.value, 
-                                                                       p.lexer.filename, 
-                                                                       p.lineno))
+                                   p.value, p.lexer.filename, p.lineno))
         else:
             raise ParsingException("unknown error")
 
@@ -519,48 +521,4 @@ def load_metamodel(resource):
         loader.filename_input(filename)
     
     return loader.build_metamodel()
-
-
-
-
-
-
-
-
-
-
-
-
-class IntegerGenerator(IdGenerator):
-    '''
-    An integer-based id generator for metamodels. integers are generated
-    sequentially, starting from the number one. 
-    
-    Generally, the uuid-based id generator shall be used. In some cases such as 
-    testing however, having deterministic unique ids in a metamodel may be 
-    benifitial.
-    
-    Usage example:
-    
-    >>> l = xtuml.ModelLoader()
-    >>> l.filename_input("schema.sql")
-    >>> l.filename_input("data.sql")
-    >>> m = loader.build_metamodel(xtuml.IntegerGenerator())
-    '''
-    
-    _current = 0
-    def readfunc(self):
-        return self._current + 1
-
-
-
-
-
-
-
-
-
-
-
-
 
