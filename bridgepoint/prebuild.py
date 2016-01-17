@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Copyright (C) 2015 John Törnblom
+# Copyright (C) 2015-2016 John Törnblom
 '''
 Transform OAL actions from its textual form into instances in a the ooaofooa
-meta model.
+metamodel.
 '''
 
 import logging

@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright (C) 2015 John Törnblom
+# Copyright (C) 2015-2016 John Törnblom
 '''
 Check a bridgepoint model for association constraint violations in its 
 metamodel (ooaofooa).

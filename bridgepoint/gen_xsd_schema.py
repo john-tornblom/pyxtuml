@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# Copyright (C) 2015 John Törnblom
+# Copyright (C) 2015-2016 John Törnblom
 '''
 Generate an xsd schema file for an xtUML model. 
 The arguments are either xtuml files, or folders containing *.xtuml files.

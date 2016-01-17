@@ -1,3 +1,6 @@
+# encoding: utf-8
+# Copyright (C) 2015-2016 John Törnblom
+
 import sys
 import os.path
 

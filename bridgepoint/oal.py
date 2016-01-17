@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright (C) 2015 John Törnblom
+# Copyright (C) 2015-2016 John Törnblom
 
 '''
 Parser for the Object Action Language (OAL). 
