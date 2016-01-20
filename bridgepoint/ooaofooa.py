@@ -3683,15 +3683,15 @@ Loader = ModelLoader
 
 def empty_model():
     '''
-    Create an empty ooaofooa model, expressed in a metamodel.
+    Load and return an empty metamodel expressed in ooaofooa.
     '''
     loader = Loader()
     return loader.build_metamodel()
 
 
-def load_model(resource):
+def load_metamodel(resource):
     '''
-    Load and return a model from a *resource*.
+    Load and return a metamodel expressed in ooaofooa from a *resource*.
     The resource may be either a filename, a path, or a list of filenames
     and/or paths.
     '''

@@ -60,7 +60,7 @@ All operations require input expressed in the BridgePoint metamodel (ooaofooa).
 
 Loading Models
 ^^^^^^^^^^^^^^
-.. autofunction:: bridgepoint.load_model
+.. autofunction:: bridgepoint.load_metamodel
 
 .. autoclass:: bridgepoint.ModelLoader
    :members: filename_input
