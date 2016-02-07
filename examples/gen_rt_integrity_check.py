@@ -269,7 +269,7 @@ def main():
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
 
-    m = ooaofooa.load_model(args)
+    m = ooaofooa.load_metamodel(args)
     for c_c in m.select_many('C_C'):
 
         filt = lambda sel: ooaofooa.is_contained_in(sel, c_c) and sel.Name == opts.function

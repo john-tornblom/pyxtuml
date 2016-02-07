@@ -15,7 +15,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
     
-m = ooaofooa.load_model(sys.argv[1])
+m = ooaofooa.load_metamodel(sys.argv[1])
 
 
 get_name = lambda inst: one(inst).S_DT[17]().Name

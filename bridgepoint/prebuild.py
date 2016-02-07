@@ -1861,7 +1861,7 @@ def main():
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
-    m = ooaofooa.load_model(args)        
+    m = ooaofooa.load_metamodel(args)
     prebuild_model(m)
     
     xtuml.persist_instances(m, opts.output)

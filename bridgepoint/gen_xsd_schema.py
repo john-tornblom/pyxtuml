@@ -266,7 +266,7 @@ def main():
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
-    m = ooaofooa.load_model(args)
+    m = ooaofooa.load_metamodel(args)
     c_c = m.select_any('C_C', lambda inst: inst.Name == opts.component)
     if c_c:
         schema = build_schema(m, c_c)

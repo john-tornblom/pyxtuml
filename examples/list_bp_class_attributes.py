@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
     
-m = ooaofooa.load_model(sys.argv[1])
+m = ooaofooa.load_metamodel(sys.argv[1])
 
 
 by_name = lambda inst: inst.Name
