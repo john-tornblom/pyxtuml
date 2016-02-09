@@ -356,8 +356,7 @@ def _is_null(inst, name):
 
     name = name.upper()
     for attr_name, attr_ty in inst.__a__:
-        attr_name.upper()
-        if attr_name != name:
+        if attr_name.upper() != name:
             continue
 
         attr_ty = attr_ty.upper()
