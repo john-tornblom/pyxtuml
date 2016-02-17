@@ -16,17 +16,21 @@ logger = logging.getLogger('consistency_check')
 
 
 def main():
-    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]", 
-                                   version=xtuml.version.complete_string, 
+    parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]",
+                                   version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
     
     parser.set_description(__doc__.strip())
     
-    parser.add_option("-r", dest="r", type='int', metavar="<number>", 
-                      help="limit consistency check to one or more associations", 
+    parser.add_option("-r", "-R", dest="rel_ids", type='int', metavar="<number>",
+                      help="limit consistency check to one or more associations",
+                      action="append", default=[])
+
+    parser.add_option("-k", dest="kinds", type='string', metavar="<key letter>",
+                      help="limit check for uniqueness constraint violations to one or more classes",
                       action="append", default=[])
     
-    parser.add_option("-v", "--verbosity", dest='verbosity', action="count", 
+    parser.add_option("-v", "--verbosity", dest='verbosity', action="count",
                       help="increase debug logging level", default=1)
     
     (opts, args) = parser.parse_args()
@@ -49,12 +53,17 @@ def main():
     m = loader.build_metamodel()
     
     error = False
-    for rel_id in opts.r:
+    for rel_id in opts.rel_ids:
         error |= xtuml.check_association_integrity(m, rel_id)
     
-    if not opts.r:
+    if not opts.rel_ids:
         error |= xtuml.check_association_integrity(m)
 
+    for kind in opts.kinds:
+        error |= xtuml.check_uniqueness_constraint(m, kind)
+    
+    if not opts.kinds:
+        error |= xtuml.check_uniqueness_constraint(m)
     sys.exit(error)
     
     

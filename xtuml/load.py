@@ -100,6 +100,14 @@ class CreateRelatationStmt(object):
         self.end_points = (ass1, ass2)
         self.id = rel_id
         
+ 
+class CreateUniqueStmt(object):
+    
+    def __init__(self, kind, name, attributes):
+        self.kind = kind
+        self.name = name
+        self.attributes = attributes
+
 
 class ModelLoader(object):
     '''
@@ -132,6 +140,9 @@ class ModelLoader(object):
         'FROM',
         'TO',
         'PHRASE',
+        'UNIQUE',
+        'INDEX',
+        'ON',
         'TRUE',
         'FALSE'
     )
@@ -220,6 +231,15 @@ class ModelLoader(object):
             if isinstance(stmt, CreateRelatationStmt):
                 metamodel.define_relation(stmt.id, *stmt.end_points)
 
+    def populate_unique_identifiers(self, metamodel):
+        '''
+        Populate a *metamodel* with class unique identifiers previously
+        encountered from input.
+        '''
+        for stmt in self.statements:
+            if isinstance(stmt, CreateUniqueStmt):
+                metamodel.define_unique_identifier(stmt.kind, stmt.name, *stmt.attributes)
+
     def populate_instances(self, metamodel):
         '''
         Populate a *metamodel* with instances previously encountered from input.
@@ -251,9 +271,7 @@ class ModelLoader(object):
                 value = deserialize_value(ty, value) 
                 args.append(value)
             
-            
             metamodel.new(stmt.kind, *args)
-
 
     def populate(self, metamodel):
         '''
@@ -261,6 +279,7 @@ class ModelLoader(object):
         '''
         self.populate_classes(metamodel)
         self.populate_associations(metamodel)
+        self.populate_unique_identifiers(metamodel)
         self.populate_instances(metamodel)
         
     def build_metamodel(self, id_generator=None):
@@ -373,7 +392,7 @@ class ModelLoader(object):
         statement : create_table_statement SEMICOLON
                   | insert_into_statement SEMICOLON
                   | create_rop_statement SEMICOLON
-                  
+                  | create_index_statement SEMICOLON
         '''
         p[0] = p[1]
 
@@ -491,11 +510,20 @@ class ModelLoader(object):
                    | FROM
                    | TO
                    | PHRASE
+                   | UNIQUE
+                   | INDEX
+                   | ON
                    | TRUE
                    | FALSE
         '''
         p[0] = p[1]
         
+    def p_create_index_statement(self, p):
+        '''
+        create_index_statement : CREATE UNIQUE INDEX identifier ON identifier LPAREN identifier_sequence RPAREN
+        '''
+        p[0] = CreateUniqueStmt(p[6], p[4], p[8])
+
     def p_error(self, p):
         if p:
             raise ParsingException("illegal token %s (%s) at %s:%d" % (p.type, 

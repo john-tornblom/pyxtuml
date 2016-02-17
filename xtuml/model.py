@@ -244,6 +244,7 @@ class BaseObject(object):
     __a__ = list()  # store a list of attributes (name, type)
     __i__ = set() # set of identifying attributes
     __d__ = set() # set of derived attributes
+    __u__ = dict() # store unique identifiers
     
     def __init__(self):
         self.__c__.clear()
@@ -411,7 +412,8 @@ class MetaModel(object):
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                              __c__=dict(), __m__=self,
                                              __i__=set(), __d__=set(),
-                                             __a__=attributes, __doc__=doc))
+                                             __u__=dict(), __doc__=doc,
+                                             __a__=attributes))
         self.classes[ukind] = Cls
         self.instances[ukind] = list()
         
@@ -516,6 +518,20 @@ class MetaModel(object):
     
         return ass
         
+    def define_unique_identifier(self, kind, name, *named_attributes):
+        '''
+        Define a unique identifier for some *kind* of class based on its *named attributes*
+        '''
+        if not named_attributes:
+            return
+        
+        kind = kind.upper()
+        if isinstance(name, int):
+            name = 'I%d' % name
+        
+        Cls = self.classes[kind]
+        Cls.__u__[name] = set(named_attributes)
+
     def select_many(self, kind, where_clause=None):
         '''
         Query the metamodel for a set of instances of some *kind*. Optionally,
@@ -555,11 +571,14 @@ class MetaModel(object):
         s = filter(where_clause, self.instances[ukind])
         return next(s, None)
         
-    def is_consistent(self, rel_id=None):
+    def is_consistent(self):
         '''
-        Check the model for integrity violations on associations.
+        Check the model for integrity violations.
         '''
-        return xtuml.check_association_integrity(self, rel_id)
+        if not xtuml.check_association_integrity(self):
+            return False
+        
+        return xtuml.check_uniqueness_constraint(self)
     
     def _default_value(self, ty_name):
         '''

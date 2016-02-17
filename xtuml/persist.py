@@ -114,6 +114,17 @@ def serialize_class(Cls):
 
     return s
 
+def serialize_unique_identifiers(metamodel):
+    s = ''
+    
+    for kind in sorted(metamodel.classes.keys()):
+        for name, attributes in metamodel.classes[kind].__u__.items():
+            attributes = ', '.join(attributes)
+            s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
+                                                           kind,
+                                                           attributes)
+
+    return s
 
 def serialize_schema(metamodel):
     '''
@@ -131,13 +142,14 @@ def serialize_schema(metamodel):
 
 def serialize_database(metamodel):
     '''
-    Serialize all instances, class definitions and association definitions in a
-    *metamodel*.
+    Serialize all instances, class definitions, association definitions, and
+    unique identifiers  in a *metamodel*.
     '''
     schema = serialize_schema(metamodel)
     instances = serialize_instances(metamodel)
+    identifiers = serialize_unique_identifiers(metamodel)
     
-    return ''.join([schema, instances])
+    return ''.join([schema, instances, identifiers])
 
 
 def serialize(resource):
@@ -187,6 +199,21 @@ def persist_schema(metamodel, path):
             f.write(s)
 
 
+def persist_unique_identifiers(metamodel, path):
+    '''
+    Persist all unique identifiers in a *metamodel* by serializing them and
+    saving to a *path* on disk.
+    '''
+    with open(path, 'w') as f:
+        for kind in sorted(metamodel.classes.keys()):
+            for name, attributes in metamodel.classes[kind].__u__.items():
+                attributes = ', '.join(attributes)
+                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
+                                                              kind,
+                                                              attributes)
+                f.write(s)
+
+
 def persist_database(metamodel, path):
     '''
     Persist all instances, class definitions and association definitions in a
@@ -197,6 +224,13 @@ def persist_database(metamodel, path):
             s = serialize_class(metamodel.classes[kind])
             f.write(s)
             
+            for name, attributes in metamodel.classes[kind].__u__.items():
+                attributes = ', '.join(attributes)
+                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
+                                                              kind,
+                                                              attributes)
+                f.write(s)
+                
         for ass in sorted(metamodel.associations, key=lambda x: x.id):
             s = serialize_association(ass)
             f.write(s)

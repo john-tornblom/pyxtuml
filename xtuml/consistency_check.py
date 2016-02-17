@@ -27,7 +27,7 @@ def pretty_to_link(inst, from_link, to_link):
             idx = from_link.ids.index(name)
             name = to_link.ids[idx]
             values += '%s%s=%s' % (prefix, name, value)
-            prefix=', '
+            prefix = ', '
                 
     return '%s(%s)' % (to_link.kind, values)
         
@@ -44,9 +44,36 @@ def pretty_from_link(inst, from_link, to_link):
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
             values += '%s%s=%s' % (prefix, name, value)
-            prefix=', '
+            prefix = ', '
                 
     return '%s(%s)' % (from_link.kind, values)
+
+
+def check_uniqueness_constraint(m, kind=None):
+    '''
+    Check the model for uniqueness constraint violations.
+    '''
+    if kind is None:
+        classes = m.classes.values()
+    else:
+        classes = [m.classes[kind.upper()]]
+    
+    res = True
+    for Cls in classes:
+        for inst in m.select_many(Cls.__name__):
+            for identifier in Cls.__u__.keys():
+                kwargs = dict()
+                for name in Cls.__u__[identifier]:
+                    kwargs[name] = getattr(inst, name)
+                
+                where_clause = xtuml.where_eq(**kwargs)
+                s = m.select_many(Cls.__name__, where_clause)
+                if len(s) != 1:
+                    res = False
+                    logger.warning('uniqueness constraint violation in %s'
+                                   ' (%s)' % (Cls.__name__, identifier))
+
+    return res
 
 
 def check_link_integrity(m, rel_id, from_link, to_link):
@@ -62,8 +89,8 @@ def check_link_integrity(m, rel_id, from_link, to_link):
           (len(q_set) > 1 and not to_link.is_many)):
             res = False
             logger.warning('integrity violation in '
-                           '%s --(%s)--> %s' % (pretty_from_link(inst, from_link, to_link), 
-                                                rel_id, 
+                           '%s --(%s)--> %s' % (pretty_from_link(inst, from_link, to_link),
+                                                rel_id,
                                                 pretty_to_link(inst, from_link, to_link)))
     
     return res
@@ -86,22 +113,35 @@ def check_association_integrity(m, rel_id=None):
 
 
 def main():
-    parser = optparse.OptionParser(usage="%prog [options] <sql_file> [another_sql_file...].", 
-                                   version=xtuml.version.complete_string, 
+    parser = optparse.OptionParser(usage="%prog [options] <sql_file> [another_sql_file...].",
+                                   version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
     
     parser.set_description(__doc__.strip())
     
-    parser.add_option("-r", dest="r", type='int', metavar="<number>", 
-                      help="limit consistency check to one or more associations", 
+    parser.add_option("-r", "-R", dest="rel_ids", type='int', metavar="<number>",
+                      help="limit consistency check to one or more associations",
                       action="append", default=[])
 
+    parser.add_option("-k", dest="kinds", type='string', metavar="<key letter>",
+                      help="limit check for uniqueness constraint violations to one or more classes",
+                      action="append", default=[])
+    
+    parser.add_option("-v", "--verbosity", dest='verbosity', action="count",
+                      help="increase debug logging level", default=1)
+    
     (opts, args) = parser.parse_args()
     if len(args) == 0:
         parser.print_help()
         sys.exit(1)
         
-    logging.basicConfig(level=logging.WARNING)
+    levels = {
+              0: logging.ERROR,
+              1: logging.WARNING,
+              2: logging.INFO,
+              3: logging.DEBUG,
+    }
+    logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
     loader = xtuml.ModelLoader()
     for filename in args:
@@ -110,12 +150,18 @@ def main():
     m = loader.build_metamodel()
     
     error = False
-    for rel_id in opts.r:
+    for rel_id in opts.rel_ids:
         error |= xtuml.check_association_integrity(m, rel_id)
     
-    if not opts.r:
+    if not opts.rel_ids:
         error |= xtuml.check_association_integrity(m)
 
+    for kind in opts.kinds:
+        error |= xtuml.check_uniqueness_constraint(m, kind)
+    
+    if not opts.kinds:
+        error |= xtuml.check_uniqueness_constraint(m)
+        
     sys.exit(error)
     
     

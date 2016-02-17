@@ -45,5 +45,6 @@ from .model import delete
 from .model import where_eq
 
 from .consistency_check import check_association_integrity
+from .consistency_check import check_uniqueness_constraint
 
 from . import version

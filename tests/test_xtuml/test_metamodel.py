@@ -381,30 +381,45 @@ class TestModel(unittest.TestCase):
         pe_pe = m.new('PE_PE', Visibility=True, type=5)
         s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
         
-        self.assertFalse(m.is_consistent(22))
+        
+        self.assertFalse(xtuml.check_association_integrity(m, 22))
         self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
-        self.assertTrue(m.is_consistent(22))
+        self.assertTrue(xtuml.check_association_integrity(m, 22))
         
-        self.assertFalse(m.is_consistent(21))
+        self.assertFalse(xtuml.check_association_integrity(m, 21))
         self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
-        self.assertTrue(m.is_consistent(21))
+        self.assertTrue(xtuml.check_association_integrity(m, 21))
         
-        self.assertFalse(m.is_consistent(20))
+        self.assertFalse(xtuml.check_association_integrity(m, 20))
         self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
-        self.assertTrue(m.is_consistent(20))
+        self.assertTrue(xtuml.check_association_integrity(m, 20))
         
-        self.assertFalse(m.is_consistent(8001))
+        self.assertFalse(xtuml.check_association_integrity(m, 8001))
         self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
-        self.assertTrue(m.is_consistent(8001))
+        self.assertTrue(xtuml.check_association_integrity(m, 8001))
         
-        self.assertFalse(m.is_consistent(19))
+        self.assertFalse(xtuml.check_association_integrity(m, 19))
         self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
-        self.assertTrue(m.is_consistent(19))
+        self.assertTrue(xtuml.check_association_integrity(m, 19))
         
         # the old, unused association R8 is still present in ooaofooa, and thus
         # consistency check fails on S_EE.
         #self.assertTrue(m.is_consistent())
         
+    def test_uniqueness_constraint(self):
+        m = self.metamodel
+        self.assertTrue(m.is_consistent())
+        
+        s_dt = m.select_one('S_DT', where(Name='string'))
+        m.clone(s_dt)
+        
+        self.assertFalse(m.is_consistent())
+        self.assertTrue(xtuml.check_uniqueness_constraint(m, 'PE_PE'))
+        
+        xtuml.delete(s_dt)
+        self.assertTrue(m.is_consistent())
+
+
 class TestDefineAssociations(unittest.TestCase):
     '''
     Test suite for the tests the class xtuml.MetaModel ability to define associations.

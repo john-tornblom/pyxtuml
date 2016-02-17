@@ -60,7 +60,7 @@ def main():
         loader.filename_input(filename)
 
     c = loader.build_component(opts.component)
-    xtuml.persist_schema(c, opts.output)
+    xtuml.persist_database(c, opts.output)
 
     
 if __name__ == '__main__':
