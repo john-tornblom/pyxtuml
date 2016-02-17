@@ -49,6 +49,22 @@ def pretty_from_link(inst, from_link, to_link):
     return '%s(%s)' % (from_link.kind, values)
 
 
+def pretty_unique_identifier(inst, identifier):
+    '''
+    Create a human-readable representation a unique identifier.
+    '''
+    values = ''
+    prefix = ''
+    
+    for name, ty in inst.__a__:
+        if name in inst.__u__[identifier]:
+            value = getattr(inst, name)
+            value = xtuml.serialize_value(value, ty)
+            values += '%s%s=%s' % (prefix, name, value)
+            prefix = ', '
+                    
+    return '%s(%s)' % (identifier, values)
+
 def check_uniqueness_constraint(m, kind=None):
     '''
     Check the model for uniqueness constraint violations.
@@ -70,8 +86,9 @@ def check_uniqueness_constraint(m, kind=None):
                 s = m.select_many(Cls.__name__, where_clause)
                 if len(s) != 1:
                     res = False
-                    logger.warning('uniqueness constraint violation in %s'
-                                   ' (%s)' % (Cls.__name__, identifier))
+                    id_string = pretty_unique_identifier(inst, identifier)
+                    logger.warning('uniqueness constraint violation in %s, %s' 
+                                   % (Cls.__name__, id_string))
 
     return res
 
