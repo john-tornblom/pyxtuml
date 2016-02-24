@@ -117,11 +117,11 @@ def serialize_class(Cls):
 def serialize_unique_identifiers(metamodel):
     s = ''
     
-    for kind in sorted(metamodel.classes.keys()):
-        for name, attributes in metamodel.classes[kind].__u__.items():
+    for Cls in sorted(metamodel.classes.values()):
+        for name, attributes in Cls.__u__.items():
             attributes = ', '.join(attributes)
             s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
-                                                           kind,
+                                                           Cls.__name__,
                                                            attributes)
 
     return s
@@ -205,11 +205,11 @@ def persist_unique_identifiers(metamodel, path):
     saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
-        for kind in sorted(metamodel.classes.keys()):
-            for name, attributes in metamodel.classes[kind].__u__.items():
+        for Cls in sorted(metamodel.classes.values()):
+            for name, attributes in Cls.__u__.items():
                 attributes = ', '.join(attributes)
                 s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
-                                                              kind,
+                                                              Cls.__name__,
                                                               attributes)
                 f.write(s)
 
@@ -221,13 +221,14 @@ def persist_database(metamodel, path):
     '''
     with open(path, 'w') as f:
         for kind in sorted(metamodel.classes.keys()):
-            s = serialize_class(metamodel.classes[kind])
+            Cls = metamodel.classes[kind]
+            s = serialize_class(Cls)
             f.write(s)
             
-            for name, attributes in metamodel.classes[kind].__u__.items():
+            for name, attributes in Cls.__u__.items():
                 attributes = ', '.join(attributes)
                 s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
-                                                              kind,
+                                                              Cls.__name__,
                                                               attributes)
                 f.write(s)
                 
