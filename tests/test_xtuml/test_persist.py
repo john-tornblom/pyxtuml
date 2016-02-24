@@ -205,6 +205,30 @@ class TestPersist(unittest.TestCase):
         xtuml.relate(x1, x2, 1, 'succeeds')
 
         self.assertTrue(xtuml.navigate_one(x1).X[1, 'precedes']())
+
+    def test_serialize_unique_identifiers(self):
+        schema = '''
+        CREATE TABLE X (s1 STRING, s2 STRING);
+        CREATE UNIQUE INDEX I1 ON X (s1, s2);
+        '''
+        
+        loader = xtuml.ModelLoader()
+        loader.input(schema)
+        m = loader.build_metamodel()
+        
+        s = xtuml.serialize_schema(m)
+        s += xtuml.serialize_unique_identifiers(m)
+        
+        loader = xtuml.ModelLoader()
+        loader.input(s)
+        m = loader.build_metamodel()
+
+        x1 = m.new('X', s1='s1', s2='s2')
+        x2 = m.new('X', s1='s1', s2='s2')
+
+        self.assertFalse(m.is_consistent())
+        x2.s2 = 'S2'
+        self.assertTrue(m.is_consistent())
         
     def test_serialize_none_values(self):
         schema = '''
@@ -372,6 +396,9 @@ def compare_metamodel_classes(m1, m2):
             return False
 
         if Cls1.__d__ != Cls2.__d__:
+            return False
+
+        if Cls1.__u__ != Cls2.__u__:
             return False
         
     return True
