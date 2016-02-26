@@ -32,7 +32,7 @@ Or fetch the source from github:
 
 ::
 
-    $ git clone https://github.com/john-tornblom/pyxtuml.git
+    $ git clone https://github.com/xtuml/pyxtuml.git
     $ cd pyxtuml
     $ python setup.py install
    
@@ -47,7 +47,7 @@ Usage example
 =============
 
 The `examples
-folder <https://github.com/john-tornblom/pyxtuml/tree/master/examples>`__
+folder <https://github.com/xtuml/pyxtuml/tree/master/examples>`__
 contains a few scripts which demonstrate how pyxtuml may be used.
 
 The following command will create an empty metamodel and populate it
@@ -163,7 +163,7 @@ Reporting bugs
 ==============
 
 If you encounter problems with pyxtuml, please `file a github
-issue <https://github.com/john-tornblom/pyxtuml/issues/new>`__. If you
+issue <https://github.com/xtuml/pyxtuml/issues/new>`__. If you
 plan on sending pull request which affect more than a few lines of code,
 please file an issue before you start to work on you changes. This will
 allow us to discuss the solution properly before you commit time and
@@ -175,7 +175,7 @@ License
 
 pyxtuml is licensed under the GPLv3, see LICENSE for more information.
 
-.. |Build Status| image:: https://travis-ci.org/john-tornblom/pyxtuml.svg?branch=master
-   :target: https://travis-ci.org/john-tornblom/pyxtuml
-.. |Coverage Status| image:: https://coveralls.io/repos/john-tornblom/pyxtuml/badge.svg?branch=master
-   :target: https://coveralls.io/r/john-tornblom/pyxtuml?branch=master
+.. |Build Status| image:: https://travis-ci.org/xtuml/pyxtuml.svg?branch=master
+   :target: https://travis-ci.org/xtuml/pyxtuml
+.. |Coverage Status| image:: https://coveralls.io/repos/xtuml/pyxtuml/badge.svg?branch=master
+   :target: https://coveralls.io/r/xtuml/pyxtuml?branch=master
