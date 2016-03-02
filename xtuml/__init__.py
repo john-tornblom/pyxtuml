@@ -48,4 +48,8 @@ from .model import where_eq
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
 
+from .tools import Walker
+from .tools import Visitor
+from .tools import NodePrintVisitor
+
 from . import version
