@@ -81,12 +81,28 @@ class NodePrintVisitor(Visitor):
     '''
     
     def __init__(self):
-        self.__lvl = 0
+        self._lvl = 0
+        self._suppressed = list()
         
     def default_enter(self, node):
-        print('%s%s' % ("  " * self.__lvl, node.__class__.__name__))
-        self.__lvl += 1
+        text = self.render(node)
+        if text is None:
+            self._suppressed.append(node)
+        else:
+            print('%s%s' % ("  " * self._lvl, text))
+            self._lvl += 1
 
     def default_leave(self, node):
-        self.__lvl -= 1
+        if self._suppressed and self._suppressed[-1] == node:
+            self._suppressed.pop()
+        else:
+            self._lvl -= 1
     
+    def render(self, node):
+        name = 'render_' + type(node).__name__
+        fn = getattr(self, name, self.default_render)
+        return fn(node)
+        
+    def default_render(self, node):
+        return type(node).__name__
+
