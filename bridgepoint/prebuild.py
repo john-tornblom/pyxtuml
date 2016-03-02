@@ -364,7 +364,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
     
     def act_sel(self, node):
         act_smt = self.act_smt(node)
-        act_lnk = act_lnk_start = self.accept(node.navigation_chain)
+        act_lnk = act_lnk_start = act_lnk_end = self.accept(node.navigation_chain)
         
         while act_lnk:
             act_lnk_end = act_lnk

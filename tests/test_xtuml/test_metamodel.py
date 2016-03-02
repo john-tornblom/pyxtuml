@@ -600,7 +600,7 @@ class TestIdGenerator(unittest.TestCase):
             self.assertEqual(v, count)
             count += 1
             if count == 10:
-                break;
+                break
 
 
 if __name__ == "__main__":

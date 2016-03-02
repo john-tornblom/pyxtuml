@@ -125,9 +125,9 @@ class ModelLoader(object):
     >>> l = xtuml.ModelLoader()
     >>> l.filename_input('data.sql')
     >>> l.filename_input('schema.sql')
-    >>> m1 = loader.build_metamodel()
-    >>> loader.filename_input('additional_data.sql')
-    >>> m2 = loader.build_metamodel()
+    >>> m1 = l.build_metamodel()
+    >>> l.filename_input('additional_data.sql')
+    >>> m2 = l.build_metamodel()
     '''
     reserved = (
         'CREATE',

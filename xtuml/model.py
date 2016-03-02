@@ -339,7 +339,7 @@ class IntegerGenerator(IdGenerator):
     >>> l = xtuml.ModelLoader()
     >>> l.filename_input("schema.sql")
     >>> l.filename_input("data.sql")
-    >>> m = loader.build_metamodel(xtuml.IntegerGenerator())
+    >>> m = l.build_metamodel(xtuml.IntegerGenerator())
     '''
     
     _current = 0
