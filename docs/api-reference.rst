@@ -17,8 +17,6 @@ Loading Metamodels
 
 .. autoclass:: xtuml.IntegerGenerator
 
-
-
 Metamodel Operations
 ^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: xtuml.MetaModel
@@ -32,8 +30,10 @@ Metamodel Operations
 .. autofunction:: xtuml.relate
 .. autofunction:: xtuml.unrelate
 .. autofunction:: xtuml.where_eq
+.. autofunction:: xtuml.sort_reflexive
 
 .. autofunction:: xtuml.check_association_integrity
+.. autofunction:: xtuml.check_uniqueness_constraint
 
 Persistance
 ^^^^^^^^^^^
@@ -46,6 +46,17 @@ Persistance
 .. autofunction:: xtuml.serialize_schema
 .. autofunction:: xtuml.serialize_instances
 .. autofunction:: xtuml.serialize_instance
+
+Tools
+^^^^^
+.. autoclass:: xtuml.Walker
+   :members: visitors, accept, default_accept
+
+.. autoclass:: xtuml.Visitor
+   :members: enter, leave, default_enter, default_leave
+
+.. autoclass:: xtuml.NodePrintVisitor
+   :members: render, default_render
 
 Exceptions
 ^^^^^^^^^^
