@@ -50,11 +50,13 @@ Persistance
 Tools
 ^^^^^
 .. autoclass:: xtuml.Walker
-   :members: visitors, accept, default_accept
+   :members: accept, default_accept
 
+   .. autoinstanceattribute:: xtuml.Walker.visitors
+      
 .. autoclass:: xtuml.Visitor
    :members: enter, leave, default_enter, default_leave
-
+   
 .. autoclass:: xtuml.NodePrintVisitor
    :members: render, default_render
 
