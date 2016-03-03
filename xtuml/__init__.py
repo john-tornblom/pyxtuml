@@ -44,6 +44,7 @@ from .model import relate
 from .model import unrelate
 from .model import delete
 from .model import where_eq
+from .model import sort_reflexive
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint

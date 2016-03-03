@@ -278,6 +278,45 @@ class TestModel(unittest.TestCase):
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
+    def testSortReflexive(self):
+        act_blk = self.metamodel.new('ACT_BLK')
+        
+        prev = None
+        for idx in range(10):
+            inst = self.metamodel.new('ACT_SMT', LineNumber=idx)
+            self.assertTrue(xtuml.relate(inst, act_blk, 602))
+            xtuml.relate(prev, inst, 661, 'precedes')
+            prev = inst
+            
+        inst_set = xtuml.navigate_many(act_blk).ACT_SMT[602]()
+        inst_set = xtuml.sort_reflexive(inst_set, 661, 'precedes')
+        self.assertEqual(len(inst_set), 10)
+        for idx, inst in enumerate(inst_set):
+            self.assertEqual(inst.LineNumber, idx)
+        
+        inst_set = xtuml.navigate_many(act_blk).ACT_SMT[602]()
+        inst_set = xtuml.sort_reflexive(inst_set, 661, 'succeeds')
+        self.assertEqual(len(inst_set), 10)
+        for idx, inst in enumerate(inst_set):
+            self.assertEqual(inst.LineNumber, 9 - idx)
+
+    def testSortReflexiveNone(self):
+        inst_set = xtuml.sort_reflexive(None, None, None)
+        self.assertEqual(len(inst_set), 0)
+    
+    @expect_exception(xtuml.ModelException)
+    def testSortReflexiveWithRecursion(self):
+        act_blk = self.metamodel.new('ACT_BLK')
+        first = self.metamodel.new('ACT_SMT')
+        act_smt = self.metamodel.new('ACT_SMT')
+        self.assertTrue(xtuml.relate(act_blk, first, 602))
+        self.assertTrue(xtuml.relate(first, act_smt, 661, 'succeeds'))
+        self.assertTrue(xtuml.relate(act_smt, act_smt, 661, 'succeeds'))
+        
+        inst_set = xtuml.navigate_many(act_blk).ACT_SMT[602]()
+        self.assertEqual(len(inst_set), 1)
+        xtuml.sort_reflexive(inst_set, 661, 'precedes')
+        
     def testRelateReflexive2(self):
         inst1 = self.metamodel.new('ACT_SMT')
         inst2 = self.metamodel.new('ACT_SMT')

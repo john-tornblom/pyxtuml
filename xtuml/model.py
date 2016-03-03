@@ -749,7 +749,44 @@ def navigate_subtype(supertype, rel_id):
         if subtype:
             return subtype
 
+
+def sort_reflexive(set_of_instances, rel_id, phrase):
+    '''
+    Sort a *set of instances* in the order they appear across a conditional and
+    reflexive association. The first instance in the resulting ordered set is
+    **not** associated to an instance across the given *phrase*.
+    '''
+    if (not isinstance(set_of_instances, QuerySet) or 
+        not set_of_instances.first):
+        return QuerySet()
+    
+    if isinstance(rel_id, int):
+        rel_id = 'R%d' % rel_id
         
+    kind = type(set_of_instances.first).__name__.upper()
+    ass = next(iter(set_of_instances.first.__r__[rel_id]))
+    if ass.source.phrase == phrase:
+        other_phrase = ass.target.phrase
+    else:
+        other_phrase = ass.source.phrase
+        
+    first_filt = lambda sel: not navigate_one(sel).nav(kind, rel_id, phrase)()
+    set_of_instances.first.__r__[rel_id]
+    def sequence_generator():
+        count = 0
+        for inst in filter(first_filt, set_of_instances):
+            while inst:
+                count += 1
+                yield inst
+                inst = navigate_one(inst).nav(kind, rel_id, other_phrase)()
+                
+                if count > len(set_of_instances):
+                    raise ModelException('Detected recursion in '
+                                         'reflexive navigation')
+                
+    return QuerySet(sequence_generator())
+
+    
 def relate(from_instance, to_instance, rel_id, phrase=''):
     '''
     Relate *from_instance* to *to_instance* across *rel_id*. For refelxive
