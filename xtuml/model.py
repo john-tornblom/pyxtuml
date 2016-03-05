@@ -37,10 +37,10 @@ class NavChain(object):
     
     def __init__(self, handle, is_many=True):
         if handle is None:
-            self.handle = QuerySet()
+            self.handle = set()
         
         elif isinstance(handle, BaseObject):
-            self.handle = QuerySet([handle])
+            self.handle = set([handle])
         
         elif isinstance(handle, QuerySet):
             self.handle = handle
@@ -56,7 +56,7 @@ class NavChain(object):
         if isinstance(relid, int):
             relid = 'R%d' % relid
         
-        result = QuerySet()
+        result = set()
         for child in iter(self.handle):
             result |= child.__q__[kind][relid][phrase](child)
 
@@ -605,7 +605,7 @@ class MetaModel(object):
     def _select_endpoint(self, inst, source, target, kwargs):
         target_kind = target.kind.upper()
         if not target_kind in self.instances:
-            return QuerySet()
+            return frozenset()
         
         keys = chain(target.ids, kwargs.keys())
         values = chain([getattr(inst, name) for name in source.ids], kwargs.values())
@@ -615,7 +615,7 @@ class MetaModel(object):
         cache = self.classes[target_kind].__c__
         
         if cache_key not in cache:
-            cache[cache_key] = QuerySet(self._query(target_kind, target.is_many, kwargs))
+            cache[cache_key] = frozenset(self._query(target_kind, target.is_many, kwargs))
             
         return cache[cache_key]
     
