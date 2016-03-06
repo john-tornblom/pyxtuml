@@ -608,7 +608,8 @@ class MetaModel(object):
             return frozenset()
         
         keys = chain(target.ids, kwargs.keys())
-        values = chain([getattr(inst, name) for name in source.ids], kwargs.values())
+        values = chain([getattr(inst, name) for name in source.ids],
+                       kwargs.values())
         kwargs = dict(zip(keys, values))
                             
         cache_key = frozenset(list(kwargs.items()))
