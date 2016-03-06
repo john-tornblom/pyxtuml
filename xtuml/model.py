@@ -23,6 +23,17 @@ class ModelException(Exception):
     pass
 
 
+def navigation(handle, kind, relid, phrase):
+    kind = kind.upper()
+    if isinstance(relid, int):
+        relid = 'R%d' % relid
+
+    for start_inst in iter(handle):
+        query = start_inst.__q__[kind][relid][phrase]
+        for inst in query(start_inst):
+            yield inst
+
+
 class NavChain(object):
     '''
     A navigation chain initializes a query from one or more instances.
@@ -35,33 +46,21 @@ class NavChain(object):
        res = NavChain(inst).X[100, 'phrase'].Y[101](lamda x: <filter expression>)
     '''
     
-    def __init__(self, handle, is_many=True):
+    def __init__(self, handle):
         if handle is None:
-            self.handle = set()
-        
-        elif isinstance(handle, BaseObject):
-            self.handle = set([handle])
-        
-        elif isinstance(handle, QuerySet):
-            self.handle = handle
-        
-        else:
-            raise ModelException("Unable to navigate instances of '%s'" % type(handle))
+            handle = []
             
-        self.is_many = is_many
+        elif isinstance(handle, BaseObject):
+            handle = [handle]
+        
+        elif not isinstance(handle, collections.Iterable):
+            raise ModelException("Unable to navigate across '%s'" % type(handle))
+        
+        self.handle = handle
         self._kind = None
-    
+        
     def nav(self, kind, relid, phrase=''):
-        kind = kind.upper()
-        if isinstance(relid, int):
-            relid = 'R%d' % relid
-        
-        result = set()
-        for child in iter(self.handle):
-            result |= child.__q__[kind][relid][phrase](child)
-
-        self.handle = result
-        
+        self.handle = navigation(self.handle, kind, relid, phrase)
         return self
     
     def __getattr__(self, name):
@@ -76,12 +75,24 @@ class NavChain(object):
         
         return self.nav(self._kind, relid, phrase)
 
+
+class NavOneChain(NavChain):
+    
     def __call__(self, where_clause=None):
-        s = filter(where_clause, self.handle)
-        if self.is_many:
-            return QuerySet(s)
-        else:
-            return next(s, None)
+        handle = self.handle or list()
+        if not where_clause:
+            where_clause = lambda sel: True
+        
+        for inst in handle:
+            if where_clause(inst):
+                return inst
+
+
+class NavManyChain(NavChain):
+    
+    def __call__(self, where_clause=None):
+        handle = self.handle or list()
+        return QuerySet(filter(where_clause, handle))
 
 
 class Association(object):
@@ -232,6 +243,35 @@ class QuerySet(OrderedSet):
             return next(reversed(self))
 
 
+class Query(object):
+    result = None
+    generator = None
+    
+    def __init__(self, table, kwargs):
+        self.result = set()
+        self.table = table
+        self.kwargs = kwargs
+        self.generator = self.mk_generator()
+        
+    def mk_generator(self):
+        for inst in iter(self.table):
+            for name, value in self.kwargs.items():
+                if getattr(inst, name) != value or _is_null(inst, name):
+                    break
+            else:
+                self.result.add(inst)
+                yield inst
+    
+        self.generator = None
+    
+    def execute(self):
+        for inst in self.result:
+            yield inst
+            
+        while self.generator:
+            yield next(self.generator)
+        
+        
 class BaseObject(object):
     '''
     A common base object for all instances created in a metamodel. Accesses 
@@ -592,16 +632,6 @@ class MetaModel(object):
         elif uname == 'UNIQUE_ID': return next(self.id_generator)
         else: raise ModelException("Unknown type named '%s'" % ty_name)
         
-    def _query(self, kind, many, kwargs):
-        for inst in iter(self.instances[kind]):
-            for name, value in kwargs.items():
-                if getattr(inst, name) != value or _is_null(inst, name):
-                    break
-            else:
-                yield inst
-                if not many:
-                    return
-                    
     def _select_endpoint(self, inst, source, target, kwargs):
         target_kind = target.kind.upper()
         if not target_kind in self.instances:
@@ -611,15 +641,14 @@ class MetaModel(object):
         values = chain([getattr(inst, name) for name in source.ids],
                        kwargs.values())
         kwargs = dict(zip(keys, values))
-                            
+
         cache_key = frozenset(list(kwargs.items()))
         cache = self.classes[target_kind].__c__
-        
         if cache_key not in cache:
-            cache[cache_key] = frozenset(self._query(target_kind, target.is_many, kwargs))
+            cache[cache_key] = Query(self.instances[target_kind], kwargs)
             
-        return cache[cache_key]
-    
+        return cache[cache_key].execute()
+
     def _formalized_query(self, source, target):
         return lambda inst, **kwargs: self._select_endpoint(inst, source,
                                                             target, kwargs)
@@ -717,7 +746,7 @@ def navigate_any(instance_or_set):
 
     The resulting query will return an instance or None.
     '''
-    return NavChain(instance_or_set, is_many=False)
+    return NavOneChain(instance_or_set)
 
 
 def navigate_many(instance_or_set):
@@ -727,7 +756,7 @@ def navigate_many(instance_or_set):
     
     The resulting query will return a set of instances.
     '''
-    return NavChain(instance_or_set, is_many=True)
+    return NavManyChain(instance_or_set)
 
 
 def navigate_subtype(supertype, rel_id):

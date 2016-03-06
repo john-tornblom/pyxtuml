@@ -69,7 +69,7 @@ class TestNavChain(unittest.TestCase):
 
     @expect_exception(xtuml.ModelException)
     def testNavigateInvalidHandle(self):
-        self.assertIsNone(xtuml.navigate_one('test')())
+        self.assertIsNone(xtuml.navigate_one(50)())
 
         
 class TestModel(unittest.TestCase):
