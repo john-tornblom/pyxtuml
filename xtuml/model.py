@@ -621,7 +621,8 @@ class MetaModel(object):
         return cache[cache_key]
     
     def _formalized_query(self, source, target):
-        return lambda inst, **kwargs: self._select_endpoint(inst, source, target, kwargs)
+        return lambda inst, **kwargs: self._select_endpoint(inst, source,
+                                                            target, kwargs)
     
 
 def _find_association_links(inst1, inst2, rel_id, phrase):
