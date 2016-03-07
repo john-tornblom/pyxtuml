@@ -248,18 +248,18 @@ class Query(object):
     generator = None
     
     def __init__(self, table, kwargs):
-        self.result = set()
+        self.result = collections.deque()
+        self.items = collections.deque(kwargs.items())
         self.table = table
-        self.kwargs = kwargs
         self.generator = self.mk_generator()
         
     def mk_generator(self):
         for inst in iter(self.table):
-            for name, value in self.kwargs.items():
+            for name, value in iter(self.items):
                 if getattr(inst, name) != value or _is_null(inst, name):
                     break
             else:
-                self.result.add(inst)
+                self.result.append(inst)
                 yield inst
     
         self.generator = None
@@ -928,8 +928,9 @@ def where_eq(**kwargs):
     >>> m = xtuml.load_metamodel('db.sql')
     >>> inst = m.select_any('My_Modeled_Class', where(My_Number=5))
     '''
+    items = list(kwargs.items())
     def query_filter(selected):
-        for name, value in kwargs.items():
+        for name, value in items:
             if getattr(selected, name) != value:
                 return False
             
