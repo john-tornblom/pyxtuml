@@ -272,7 +272,7 @@ class ModelLoader(object):
         args = list()
             
         if len(Cls.__a__) != len(stmt.values):
-            logger.warn('schema missmatch while loading an instance of %s',
+            logger.warn('schema mismatch while loading an instance of %s',
                         stmt.kind)
                 
         for attr, value in zip(Cls.__a__, stmt.values):
