@@ -25,7 +25,7 @@ class MyWalker(xtuml.Walker):
     
     def accept_PE_PE(self, inst):
         '''
-        Packeable Element is a subtype of something packageable
+        Packeable Element is the supertype of something packageable
         '''
         self.accept(subtype(inst, 8001))
 
