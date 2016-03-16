@@ -296,12 +296,18 @@ class ModelLoader(object):
             
         Cls = metamodel.classes[ukind]
             
+        schema_unames = [name.upper() for name, _ in Cls.__a__]
+        inst_unames = [name.upper() for name in stmt.names]
+        
+        if set(inst_unames) - set(schema_unames):
+            logger.warn('schema mismatch while loading an instance of %s',
+                        stmt.kind)
+            
         kwargs = dict()
-        names = [name.upper() for name in stmt.names]
         for name, ty in Cls.__a__:
             uname = name.upper()
-            if name in names:
-                idx = names.index(uname)
+            if name in inst_unames:
+                idx = inst_unames.index(uname)
                 value = deserialize_value(ty, stmt.values[idx])
                 kwargs[name] = value
             else:
