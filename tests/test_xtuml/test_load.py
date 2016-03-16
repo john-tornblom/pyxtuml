@@ -395,6 +395,40 @@ class TestLoader(unittest.TestCase):
         '''
         self.assertTrue(m.select_any('X'))
 
+    @load
+    def test_insert_named_values(self, m):
+        '''
+        CREATE TABLE X (VAR1 STRING, VAR2 BOOLEAN, VAR3 INTEGER);
+        INSERT INTO X (VAR2, VAR3, VAR1) VALUES (TRUE, 5, 'test');
+        '''
+        x = m.select_any('X')
+        self.assertTrue(x)
+        self.assertEqual(x.VAR1, 'test')
+        self.assertEqual(x.VAR2, True)
+        self.assertEqual(x.VAR3, 5)
+
+    @load
+    def test_insert_incomplete_named_values(self, m):
+        '''
+        CREATE TABLE X (VAR1 STRING, VAR2 BOOLEAN, VAR3 INTEGER);
+        INSERT INTO X (VAR2, VAR1) VALUES (TRUE, 'test');
+        '''
+        x = m.select_any('X')
+        self.assertTrue(x)
+        self.assertEqual(x.VAR1, 'test')
+        self.assertEqual(x.VAR2, True)
+        self.assertTrue(x.VAR3 is None)
+
+    @load
+    def test_insert_unknown_named_values(self, m):
+        '''
+        INSERT INTO X (VAR2, VAR1) VALUES (TRUE, 'test');
+        '''
+        x = m.select_any('X')
+        self.assertTrue(x)
+        self.assertEqual(x.VAR1, 'test')
+        self.assertEqual(x.VAR2, True)
+
 
 if __name__ == "__main__":
     unittest.main()

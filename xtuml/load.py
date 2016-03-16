@@ -82,11 +82,11 @@ class ParsingException(Exception):
 
 class CreateInstanceStmt(object):
     
-    def __init__(self, kind, values):
+    def __init__(self, kind, values, names):
         self.kind = kind
         self.values = values
+        self.names = names
 
-        
 class CreateClassStmt(object):
     
     def __init__(self, kind, attributes):
@@ -224,7 +224,7 @@ class ModelLoader(object):
 
     def populate_associations(self, metamodel):
         '''
-        Populate a *metamodel* with associations previously encountered from 
+        Populate a *metamodel* with associations previously encountered from
         input.
         '''
         for stmt in self.statements:
@@ -238,41 +238,92 @@ class ModelLoader(object):
         '''
         for stmt in self.statements:
             if isinstance(stmt, CreateUniqueStmt):
-                metamodel.define_unique_identifier(stmt.kind, stmt.name, *stmt.attributes)
+                metamodel.define_unique_identifier(stmt.kind, stmt.name, 
+                                                   *stmt.attributes)
+
+    @staticmethod
+    def _populate_matching_class(metamodel, kind, names, values):
+        '''
+        Populate a *metamodel* with a class that matches the given *insert
+        statement*.
+        '''
+        attributes = list()
+        for name, value in zip(names, values):
+            ty = guess_type_name(value)
+            attr = (name, ty)
+            attributes.append(attr)
+                
+        return metamodel.define_class(kind, attributes)
+    
+    @staticmethod
+    def _populate_instance_with_positional_arguments(metamodel, stmt):
+        '''
+        Populate a *metamodel* with an instance previously encountered from 
+        input that was defined using positional arguments.
+        '''
+        ukind = stmt.kind.upper()
+                
+        if ukind not in metamodel.classes:
+            names = ['_%s' % idx for idx in range(len(stmt.values))]
+            ModelLoader._populate_matching_class(metamodel, stmt.kind, 
+                                                 names, stmt.values)
+            
+        Cls = metamodel.classes[ukind]
+        args = list()
+            
+        if len(Cls.__a__) != len(stmt.values):
+            logger.warn('schema missmatch while loading an instance of %s',
+                        stmt.kind)
+                
+        for attr, value in zip(Cls.__a__, stmt.values):
+            _, ty = attr
+            value = deserialize_value(ty, value) 
+            args.append(value)
+            
+        metamodel.new(stmt.kind, *args)
+    
+    @staticmethod
+    def _populate_instance_with_named_arguments(metamodel, stmt):
+        '''
+        Populate a *metamodel* with an instance previously encountered from 
+        input that was defined using named arguments.
+        '''
+        ukind = stmt.kind.upper()
+            
+        if ukind not in metamodel.classes:
+            ModelLoader._populate_matching_class(metamodel, stmt.kind, 
+                                                 stmt.names, stmt.values)
+            
+        Cls = metamodel.classes[ukind]
+            
+        kwargs = dict()
+        names = [name.upper() for name in stmt.names]
+        for name, ty in Cls.__a__:
+            uname = name.upper()
+            if name in names:
+                idx = names.index(uname)
+                value = deserialize_value(ty, stmt.values[idx])
+                kwargs[name] = value
+            else:
+                kwargs[name] = None
+                
+        metamodel.new(stmt.kind, **kwargs)
 
     def populate_instances(self, metamodel):
         '''
-        Populate a *metamodel* with instances previously encountered from input.
+        Populate a *metamodel* with instances previously encountered from
+        input.
         '''
         for stmt in self.statements:
             if not isinstance(stmt, CreateInstanceStmt):
                 continue
             
-            ukind = stmt.kind.upper()
+            if stmt.names:
+                self._populate_instance_with_named_arguments(metamodel, stmt)
+            else:
+                self._populate_instance_with_positional_arguments(metamodel,
+                                                                  stmt)
                 
-            if ukind not in metamodel.classes:
-                attributes = list()
-                for idx, value in enumerate(stmt.values):
-                    name = '_%s' % idx
-                    ty = guess_type_name(value)
-                    attributes.append((name, ty))
-                
-                metamodel.define_class(stmt.kind, attributes)
-            
-            Cls = metamodel.classes[ukind]
-            args = list()
-            
-            if len(Cls.__a__) != len(stmt.values):
-                logger.warn('schema missmatch while loading an instance of %s',
-                            stmt.kind)
-                
-            for attr, value in zip(Cls.__a__, stmt.values):
-                _, ty = attr
-                value = deserialize_value(ty, value) 
-                args.append(value)
-            
-            metamodel.new(stmt.kind, *args)
-
     def populate(self, metamodel):
         '''
         Populate a *metamodel* with entities previously encountered from input.
@@ -417,12 +468,18 @@ class ModelLoader(object):
         '''attribute : identifier identifier'''
         p[0] = (p[1], p[2])
 
-    def p_insert_into_statement(self, p):
+    def p_ordered_insert_into_statement(self, p):
         '''
         insert_into_statement : INSERT INTO identifier VALUES LPAREN value_sequence RPAREN
         '''
-        p[0] = CreateInstanceStmt(p[3], p[6])
+        p[0] = CreateInstanceStmt(p[3], p[6], None)
 
+    def p_named_insert_into_statement(self, p):
+        '''
+        insert_into_statement : INSERT INTO identifier LPAREN identifier_sequence RPAREN VALUES LPAREN value_sequence RPAREN
+        '''
+        p[0] = CreateInstanceStmt(p[3], p[9], p[5])
+    
     def p_empty_value_sequence(self, p):
         '''value_sequence : '''
         p[0] = []
