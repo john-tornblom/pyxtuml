@@ -303,17 +303,18 @@ class ModelLoader(object):
             logger.warn('schema mismatch while loading an instance of %s',
                         stmt.kind)
             
-        kwargs = dict()
+        args = list()
         for name, ty in Cls.__a__:
             uname = name.upper()
-            if name in inst_unames:
+            if uname in inst_unames:
                 idx = inst_unames.index(uname)
                 value = deserialize_value(ty, stmt.values[idx])
-                kwargs[name] = value
             else:
-                kwargs[name] = None
+                value = None
                 
-        metamodel.new(stmt.kind, **kwargs)
+            args.append(value)
+                
+        metamodel.new(stmt.kind, *args)
 
     def populate_instances(self, metamodel):
         '''

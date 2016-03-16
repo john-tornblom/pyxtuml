@@ -420,6 +420,16 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(x.VAR3 is None)
 
     @load
+    def test_insert_value_named_self(self, m):
+        '''
+        CREATE TABLE X (self STRING);
+        INSERT INTO X (self) VALUES ('test');
+        '''
+        x = m.select_any('X')
+        self.assertTrue(x)
+        self.assertEqual(x.self, 'test')
+
+    @load
     def test_insert_unknown_named_values(self, m):
         '''
         INSERT INTO X (VAR2, VAR1) VALUES (TRUE, 'test');
