@@ -34,6 +34,10 @@ def main():
                       help="export sql schema for the component named NAME",
                       action="store", default=None)
     
+    parser.add_option("-d", "--derived-attributes", dest="derived",
+                      help="include derived attributes in the schema",
+                      action="store_true", default=False)
+    
     parser.add_option("-o", "--output", dest='output', metavar="PATH",
                       help="save sql schema to PATH (required)",
                       action="store", default=None)
@@ -59,7 +63,7 @@ def main():
     for filename in args:
         loader.filename_input(filename)
 
-    c = loader.build_component(opts.component)
+    c = loader.build_component(opts.component, opts.derived)
     xtuml.persist_database(c, opts.output)
 
     

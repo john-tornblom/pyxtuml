@@ -3813,7 +3813,7 @@ def get_related_attributes(r_rgo, r_rto):
     return l1, l2
 
             
-def mk_class(m, o_obj):
+def mk_class(m, o_obj, derived_attributes=False):
     '''
     Create a pyxtuml class from a BridgePoint class.
     '''
@@ -3823,12 +3823,15 @@ def mk_class(m, o_obj):
         
     while o_attr:
         ty = get_attribute_type(o_attr)
-        if ty and not one(o_attr).O_BATTR[106].O_DBATTR[107]():
-            attributes.append((o_attr.Name, ty))
-        else:
+        if not derived_attributes and one(o_attr).O_BATTR[106].O_DBATTR[107]():
+            logger.warning('Omitting derived attribute %s.%s ' %
+                           (o_obj.Key_Lett, o_attr.Name))
+        elif not ty:
             logger.warning('Omitting unsupported attribute %s.%s ' %
                            (o_obj.Key_Lett, o_attr.Name))
-            
+        else:
+            attributes.append((o_attr.Name, ty))
+        
         o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
             
     Cls = m.define_class(o_obj.Key_Lett, list(attributes), o_obj.Descrip)
@@ -3959,7 +3962,7 @@ def mk_association(m, r_rel):
     return fn(m, inst)
 
 
-def mk_component(bp_model, c_c=None):
+def mk_component(bp_model, c_c=None, derived_attributes=False):
     '''
     Create a pyxtuml meta model from a BridgePoint model. 
     Optionally, restrict to classes and associations contained in the
@@ -3970,7 +3973,7 @@ def mk_component(bp_model, c_c=None):
     c_c_filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
     
     for o_obj in bp_model.select_many('O_OBJ', c_c_filt):
-        mk_class(target, o_obj)
+        mk_class(target, o_obj, derived_attributes)
         
     for r_rel in bp_model.select_many('R_REL', c_c_filt):
         mk_association(target, r_rel)
@@ -4004,15 +4007,15 @@ class ModelLoader(xtuml.ModelLoader):
         else:
             xtuml.ModelLoader.filename_input(self, path_or_filename)
 
-    def build_component(self, name=None):
+    def build_component(self, name=None, derived_attributes=False):
         mm = self.build_metamodel()
         c_c = mm.select_any('C_C', where(Name=name))
         if c_c:
-            return mk_component(mm, c_c)
+            return mk_component(mm, c_c, derived_attributes)
         elif name:
             raise Exception('Unable to find the component %s' % name)
         else:
-            return mk_component(mm, c_c)
+            return mk_component(mm, c_c, derived_attributes)
 
 
 # Backwards compatabillity with older versions of pyxtuml

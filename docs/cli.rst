@@ -54,6 +54,7 @@ Option                     Description
 --version                  show program's version number and exit
 --help, -h                 show this help message and exit
 --component=NAME, -c NAME  export sql schema for the component named NAME
+--derived-attributes, -d   include derived attributes in the schema
 --output=PATH, -o PATH     save sql schema to PATH (required)
 --verbosity, -v            increase debug logging level
 =========================  ==============================================
