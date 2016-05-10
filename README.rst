@@ -10,7 +10,7 @@ pyxtuml is a python library for parsing, manipulating, and generating
 Documentation
 =============
 
-Information on how to use pyxtuml is available at `Read the Docs <http://pyxtuml.readthedocs.org>`__.
+Information on how to use pyxtuml is available at `Read the Docs <http://pyxtuml.readthedocs.io>`__.
 
 ==============
 Reporting bugs
