@@ -53,7 +53,7 @@ setup(name='pyxtuml',
       description='Library for parsing, manipulating, and generating BridgePoint xtUML models',
       author='John Törnblom',
       author_email='john.tornblom@gmail.com',
-      url='https://github.com/john-tornblom/pyxtuml',
+      url='https://github.com/xtuml/pyxtuml',
       license='GPLv3',
       classifiers=[
           'Development Status :: 4 - Beta',
