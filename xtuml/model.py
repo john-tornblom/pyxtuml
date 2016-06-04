@@ -793,27 +793,29 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
     
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
-        
+    
+    # Figure out the phrase in the other direction
     kind = type(set_of_instances.first).__name__.upper()
     ass = next(iter(set_of_instances.first.__r__[rel_id]))
     if ass.source.phrase == phrase:
         other_phrase = ass.target.phrase
     else:
         other_phrase = ass.source.phrase
-        
+    
     first_filt = lambda sel: not navigate_one(sel).nav(kind, rel_id, phrase)()
-    set_of_instances.first.__r__[rel_id]
+    first_instances = list(filter(first_filt, set_of_instances))
+    if not first_instances:
+        #the instance sequence is recursive, start anywhere
+        first_instances = [set_of_instances.first]
+    
     def sequence_generator():
-        count = 0
-        for inst in filter(first_filt, set_of_instances):
+        for first in first_instances:
+            inst = first
             while inst:
-                count += 1
                 yield inst
                 inst = navigate_one(inst).nav(kind, rel_id, other_phrase)()
-                
-                if count > len(set_of_instances):
-                    raise ModelException('Detected recursion in '
-                                         'reflexive navigation')
+                if inst is first:
+                    break
                 
     return QuerySet(sequence_generator())
 
