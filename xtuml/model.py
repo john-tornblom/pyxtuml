@@ -95,6 +95,15 @@ class NavManyChain(NavChain):
         return QuerySet(filter(where_clause, handle))
 
 
+class Index(dict):
+    name = None
+    attributes = frozenset()
+    
+    def __init__(self, name, attributes):
+        self.name = name
+        self.attributes = frozenset(attributes)
+
+
 class Association(object):
     '''
     An association connects two classes to each other via two association links.
@@ -302,7 +311,8 @@ class BaseObject(object):
         uname = name.upper()
         for attr, _ in self.__a__:
             if attr.upper() == uname:
-                return self.__dict__[attr]
+                if attr in self.__dict__:
+                    return self.__dict__[attr]
 
         return object.__getattribute__(self, name)
     
@@ -310,6 +320,23 @@ class BaseObject(object):
         uname = name.upper()
         for attr, _ in self.__a__:
             if attr.upper() == uname:
+                for index in self.__u__.values():
+                    if attr not in index.attributes:
+                        continue
+                    
+                    instance_key = dict()
+                    for index_part in index.attributes:
+                        instance_key[index_part] = getattr(self, index_part, None)
+
+                    frozenkey = frozenset(list(instance_key.items()))
+                    if frozenkey in index:
+                        del index[frozenkey]
+                        
+                    instance_key[attr] = value
+                    if None not in instance_key.values():
+                        frozenkey = frozenset(list(instance_key.items()))
+                        index[frozenkey] = self
+                
                 self.__dict__[attr] = value
                 self.__c__.clear()
                 return
@@ -570,8 +597,9 @@ class MetaModel(object):
             name = 'I%d' % name
         
         Cls = self.classes[kind]
-        Cls.__u__[name] = set(named_attributes)
-
+        index = Index(name, named_attributes)
+        Cls.__u__[frozenset(named_attributes)] = index
+        
     def select_many(self, kind, where_clause=None):
         '''
         Query the metamodel for a set of instances of some *kind*. Optionally,
@@ -642,6 +670,16 @@ class MetaModel(object):
                        kwargs.values())
         kwargs = dict(zip(keys, values))
 
+        index = frozenset(kwargs.keys())
+        Target = self.classes[target_kind]
+        if index in Target.__u__:
+            index = Target.__u__[index]
+            frozenkey = frozenset(list(kwargs.items()))
+            if frozenkey in index:
+                return iter([index[frozenkey]])
+            else:
+                return iter([])
+            
         cache_key = frozenset(list(kwargs.items()))
         cache = self.classes[target_kind].__c__
         if cache_key not in cache:

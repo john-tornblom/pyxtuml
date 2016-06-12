@@ -49,7 +49,7 @@ def pretty_from_link(inst, from_link, to_link):
     return '%s(%s)' % (from_link.kind, values)
 
 
-def pretty_unique_identifier(inst, identifier):
+def pretty_unique_identifier(inst, index):
     '''
     Create a human-readable representation a unique identifier.
     '''
@@ -57,13 +57,13 @@ def pretty_unique_identifier(inst, identifier):
     prefix = ''
     
     for name, ty in inst.__a__:
-        if name in inst.__u__[identifier]:
+        if name in index.attributes:
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
             values += '%s%s=%s' % (prefix, name, value)
             prefix = ', '
                     
-    return '%s(%s)' % (identifier, values)
+    return '%s(%s)' % (index.name, values)
 
 def check_uniqueness_constraint(m, kind=None):
     '''
@@ -77,16 +77,16 @@ def check_uniqueness_constraint(m, kind=None):
     res = True
     for Cls in classes:
         for inst in m.select_many(Cls.__name__):
-            for identifier in Cls.__u__.keys():
+            for index in Cls.__u__.values():
                 kwargs = dict()
-                for name in Cls.__u__[identifier]:
+                for name in index.attributes:
                     kwargs[name] = getattr(inst, name)
                 
                 where_clause = xtuml.where_eq(**kwargs)
                 s = m.select_many(Cls.__name__, where_clause)
                 if len(s) != 1:
                     res = False
-                    id_string = pretty_unique_identifier(inst, identifier)
+                    id_string = pretty_unique_identifier(inst, index)
                     logger.warning('uniqueness constraint violation in %s, %s' 
                                    % (Cls.__name__, id_string))
 

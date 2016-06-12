@@ -118,9 +118,9 @@ def serialize_unique_identifiers(metamodel):
     s = ''
     
     for Cls in sorted(metamodel.classes.values()):
-        for name, attributes in Cls.__u__.items():
-            attributes = ', '.join(attributes)
-            s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
+        for index in Cls.__u__.values():
+            attributes = ', '.join(index.attributes)
+            s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (index.name,
                                                            Cls.__name__,
                                                            attributes)
 
@@ -206,9 +206,9 @@ def persist_unique_identifiers(metamodel, path):
     '''
     with open(path, 'w') as f:
         for Cls in sorted(metamodel.classes.values()):
-            for name, attributes in Cls.__u__.items():
-                attributes = ', '.join(attributes)
-                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
+            for index in Cls.__u__.values():
+                attributes = ', '.join(index.attributes)
+                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (index.name,
                                                               Cls.__name__,
                                                               attributes)
                 f.write(s)
@@ -225,9 +225,9 @@ def persist_database(metamodel, path):
             s = serialize_class(Cls)
             f.write(s)
             
-            for name, attributes in Cls.__u__.items():
-                attributes = ', '.join(attributes)
-                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
+            for index in Cls.__u__.values():
+                attributes = ', '.join(index.attributes)
+                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (index.name,
                                                               Cls.__name__,
                                                               attributes)
                 f.write(s)
