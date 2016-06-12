@@ -104,6 +104,16 @@ class Index(dict):
         self.attributes = frozenset(attributes)
 
 
+class WhereClause(dict):
+    
+    def __call__(self, selected):
+        for name, value in self.items():
+            if getattr(selected, name) != value:
+                return False
+            
+        return True
+
+
 class Association(object):
     '''
     An association connects two classes to each other via two association links.
@@ -636,6 +646,16 @@ class MetaModel(object):
         if ukind not in self.instances:
             raise ModelException("Unknown class %s" % kind)
 
+        if isinstance(where_clause, WhereClause):
+            indexkey = frozenset(where_clause.keys())
+            querykey = frozenset(list(where_clause.items()))
+            Cls = self.classes[ukind]
+            
+            if indexkey in Cls.__u__:
+                index = Cls.__u__[indexkey]
+                if querykey in index:
+                    return index[querykey]
+
         s = filter(where_clause, self.instances[ukind])
         return next(s, None)
         
@@ -684,7 +704,7 @@ class MetaModel(object):
         cache = self.classes[target_kind].__c__
         if cache_key not in cache:
             cache[cache_key] = Query(self.instances[target_kind], kwargs)
-            
+        
         return cache[cache_key].execute()
 
     def _formalized_query(self, source, target):
@@ -968,13 +988,5 @@ def where_eq(**kwargs):
     >>> m = xtuml.load_metamodel('db.sql')
     >>> inst = m.select_any('My_Modeled_Class', where(My_Number=5))
     '''
-    items = list(kwargs.items())
-    def query_filter(selected):
-        for name, value in items:
-            if getattr(selected, name) != value:
-                return False
-            
-        return True
-
-    return query_filter
+    return WhereClause(kwargs)
 
