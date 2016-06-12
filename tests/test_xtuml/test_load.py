@@ -15,10 +15,11 @@ def load_docstring(fn):
         try:
             loader = xtuml.ModelLoader()
             loader.input(fn.__doc__)
-            metamodel = loader.build_metamodel()
-            fn(self, metamodel)
+            res = loader.build_metamodel()
         except Exception as ex:
-            fn(self, ex)
+            res = ex
+            
+        fn(self, res)
             
     return load_wrapper
 
