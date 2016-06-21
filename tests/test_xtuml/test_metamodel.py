@@ -196,7 +196,7 @@ class TestModel(unittest.TestCase):
         self.assertRaises(xtuml.ModelException, self.metamodel.new, 'A')
         
     def test_undefined_class(self):
-        self.assertRaises(xtuml.ModelException, self.metamodel.new, 
+        self.assertRaises(xtuml.UnknownClassException, self.metamodel.new, 
                           'MY_UNDEFINED_CLASS')
 
     def test_redefined_class(self):
@@ -205,11 +205,11 @@ class TestModel(unittest.TestCase):
                           'MY_CLASS', [])
 
     def test_select_any_undefined(self):
-        self.assertRaises(xtuml.ModelException, self.metamodel.select_any,
+        self.assertRaises(xtuml.UnknownClassException, self.metamodel.select_any,
                           'MY_CLASS')
 
     def test_select_many_undefined(self):
-        self.assertRaises(xtuml.ModelException, self.metamodel.select_many,
+        self.assertRaises(xtuml.UnknownClassException, self.metamodel.select_many,
                           'MY_CLASS')
         
     def test_relate(self):
