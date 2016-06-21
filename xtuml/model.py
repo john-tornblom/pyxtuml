@@ -23,6 +23,10 @@ class ModelException(Exception):
     pass
 
 
+class UnknownClassException(ModelException):
+    pass
+
+
 def navigation(handle, kind, relid, phrase):
     kind = kind.upper()
     if isinstance(relid, int):
@@ -483,7 +487,7 @@ class MetaModel(object):
         Define and return a new class in the metamodel.
         '''
         ukind = kind.upper()
-        if ukind in self.classes.keys() or ukind in self.instances.keys():
+        if ukind in self.classes or ukind in self.instances:
             raise ModelException('A class with the name %s is already defined' % kind)
     
         Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
@@ -496,6 +500,16 @@ class MetaModel(object):
         
         return Cls
 
+    def find_class(self, kind):
+        '''
+        Find a class of some *kind* in the metamodel.
+        '''
+        ukind = kind.upper()
+        if ukind in self.classes:
+            return self.classes[ukind]
+        else:
+            raise UnknownClassException(kind)
+
     def new(self, kind, *args, **kwargs):
         '''
         Create and return a new instance in the metamodel of some *kind*.
@@ -504,11 +518,7 @@ class MetaModel(object):
         by passing them as positional or keyword arguments. Positional arguments
         are assigned in the order in which they appear in the metamodel schema.
         '''
-        ukind = kind.upper()
-        if ukind not in self.classes:
-            raise ModelException("Unknown class %s" % kind)
-            
-        Cls = self.classes[ukind]
+        Cls = self.find_class(kind)
         inst = Cls()
         
         # set all attributes with an initial default value
@@ -528,7 +538,7 @@ class MetaModel(object):
         for name, value in kwargs.items():
             setattr(inst, name, value)
             
-        self.instances[ukind].append(inst)
+        self.instances[kind.upper()].append(inst)
         
         return inst
     
@@ -602,11 +612,10 @@ class MetaModel(object):
         if not named_attributes:
             return
         
-        kind = kind.upper()
         if isinstance(name, int):
             name = 'I%d' % name
         
-        Cls = self.classes[kind]
+        Cls = self.find_class(kind)
         index = Index(name, named_attributes)
         Cls.__u__[frozenset(named_attributes)] = index
         
@@ -622,7 +631,7 @@ class MetaModel(object):
         '''
         ukind = kind.upper()
         if ukind not in self.instances:
-            raise ModelException("Unknown class %s" % kind)
+            raise UnknownClassException(kind)
 
         return QuerySet(filter(where_clause, self.instances[ukind]))
     
@@ -644,7 +653,7 @@ class MetaModel(object):
         '''
         ukind = kind.upper()
         if ukind not in self.instances:
-            raise ModelException("Unknown class %s" % kind)
+            raise UnknownClassException(kind)
 
         if isinstance(where_clause, WhereClause):
             indexkey = frozenset(where_clause.keys())
