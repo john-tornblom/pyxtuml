@@ -30,6 +30,10 @@ def main():
                       help="limit check for uniqueness constraint violations to one or more classes",
                       action="append", default=[])
     
+    parser.add_option("-g", "--globals", dest="globals",
+                      help="add builtin global data types automatically, e.g. boolean, integer and real",
+                      action="store_true", default=False)
+                      
     parser.add_option("-v", "--verbosity", dest='verbosity', action="count",
                       help="increase debug logging level", default=1)
     
@@ -46,7 +50,7 @@ def main():
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
-    loader = ooaofooa.Loader()
+    loader = ooaofooa.Loader(load_globals=opts.globals)
     for filename in args:
         loader.filename_input(filename)
 
@@ -64,6 +68,7 @@ def main():
     
     if not opts.kinds:
         error |= xtuml.check_uniqueness_constraint(m)
+    
     sys.exit(error)
     
     
