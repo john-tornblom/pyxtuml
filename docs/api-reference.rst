@@ -20,7 +20,7 @@ Loading Metamodels
 Metamodel Operations
 ^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: xtuml.MetaModel
-   :members: clone, new, select_one, select_many
+   :members: clone, new, find_class, select_one, select_many
 
 .. autofunction:: xtuml.delete
 .. autofunction:: xtuml.navigate_one
