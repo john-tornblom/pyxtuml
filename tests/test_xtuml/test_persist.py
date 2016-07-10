@@ -344,7 +344,7 @@ class TestPersist(unittest.TestCase):
         loader.input(schema)
         m = loader.build_metamodel()
         
-        X = m.classes['X']
+        X = m.find_class('X')
         s1 = xtuml.serialize(X)
         s2 = xtuml.serialize_class(X)
         self.assertTrue(s1)

@@ -261,14 +261,12 @@ class ModelLoader(object):
         Populate a *metamodel* with an instance previously encountered from 
         input that was defined using positional arguments.
         '''
-        ukind = stmt.kind.upper()
-                
-        if ukind not in metamodel.classes:
+        if stmt.kind.upper() not in metamodel.classes:
             names = ['_%s' % idx for idx in range(len(stmt.values))]
             ModelLoader._populate_matching_class(metamodel, stmt.kind, 
                                                  names, stmt.values)
             
-        Cls = metamodel.classes[ukind]
+        Cls = metamodel.find_class(stmt.kind)
         args = list()
             
         if len(Cls.__a__) != len(stmt.values):
@@ -288,13 +286,11 @@ class ModelLoader(object):
         Populate a *metamodel* with an instance previously encountered from 
         input that was defined using named arguments.
         '''
-        ukind = stmt.kind.upper()
-            
-        if ukind not in metamodel.classes:
+        if stmt.kind.upper() not in metamodel.classes:
             ModelLoader._populate_matching_class(metamodel, stmt.kind, 
                                                  stmt.names, stmt.values)
             
-        Cls = metamodel.classes[ukind]
+        Cls = metamodel.find_class(stmt.kind)
             
         schema_unames = [name.upper() for name, _ in Cls.__a__]
         inst_unames = [name.upper() for name in stmt.names]
