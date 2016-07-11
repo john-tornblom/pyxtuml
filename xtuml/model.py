@@ -283,13 +283,12 @@ class BaseObject(object):
     '''
     __r__ = None  # store relations
     __q__ = None  # store predefined queries
-    __c__ = dict()  # store a cached results from queries
     __i__ = set() # set of identifying attributes
     __d__ = set() # set of derived attributes
     __u__ = dict() # store unique identifiers
     
     def __init__(self):
-        self.__c__.clear()
+        self.__metaclass__.cache.clear()
         
     def __add__(self, other):
         assert isinstance(other, BaseObject)
@@ -313,7 +312,7 @@ class BaseObject(object):
         for attr, _ in self.__metaclass__.attributes:
             if attr.upper() == uname:
                 self.__dict__[attr] = value
-                self.__c__.clear()
+                self.__metaclass__.cache.clear()
                 return
 
         self.__dict__[name] = value
@@ -328,14 +327,15 @@ class MetaClass(object):
     attributes = None
     clazz = None
     instances = None
+    cache = None
     
     def __init__(self, kind, metamodel=None):
         self.metamodel = metamodel
         self.kind = kind
         self.attributes = list()
         self.instances = list()
+        self.cache = dict()
         self.clazz = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
-                                                    __c__=dict(),
                                                     __i__=set(), __d__=set(),
                                                     __u__=dict(),
                                                     __metaclass__=self))
@@ -410,7 +410,7 @@ class MetaClass(object):
     def delete(self, inst):
         if inst in self.instances:
             self.instances.remove(inst)
-            self.clazz.__c__.clear()
+            self.cache.clear()
         else:
             raise ModelException("Instance not found in its model")
 
@@ -720,11 +720,10 @@ class MetaModel(object):
         kwargs = dict(zip(keys, values))
 
         cache_key = frozenset(list(kwargs.items()))
-        cache = metaclass.clazz.__c__
-        if cache_key not in cache:
-            cache[cache_key] = Query(metaclass.instances, kwargs)
+        if cache_key not in metaclass.cache:
+            metaclass.cache[cache_key] = Query(metaclass.instances, kwargs)
             
-        return cache[cache_key].execute()
+        return metaclass.cache[cache_key].execute()
 
     def _formalized_query(self, source, target):
         return lambda inst, **kwargs: self._select_endpoint(inst, source,
