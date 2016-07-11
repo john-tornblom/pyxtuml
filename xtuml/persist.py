@@ -47,17 +47,16 @@ def serialize_instance(instance):
     Serialize an *instance* from a metamodel.
     '''
     attr_count = 0
-
-    table = instance.__class__.__name__
-    s = 'INSERT INTO %s VALUES (' % table
-    for name, ty in instance.__a__:
+    metaclass = instance.__metaclass__
+    s = 'INSERT INTO %s VALUES (' % metaclass.kind
+    for name, ty in metaclass.attributes:
         value = getattr(instance, name)
             
         s += '\n    '
         s += serialize_value(value, ty)
 
         attr_count += 1
-        if attr_count < len(instance.__a__):
+        if attr_count < len(metaclass.attributes):
             s += ', -- %s : %s' % (name, ty)
         else:
             s += ' -- %s : %s' % (name, ty)
@@ -72,9 +71,8 @@ def serialize_instances(metamodel):
     Serialize all instances in a *metamodel*.
     '''
     s = ''
-    for lst in metamodel.instances.values():
-        for inst in lst:
-            s += serialize_instance(inst)
+    for inst in metamodel.instances:
+        s += serialize_instance(inst)
     
     return s
 
@@ -108,8 +106,11 @@ def serialize_class(Cls):
     '''
     Serialize an xtUML metamodel class.
     '''
-    s = 'CREATE TABLE %s (\n    ' % Cls.__name__
-    s += ',\n    '.join(['%s %s' % (name, ty.upper()) for name, ty in Cls.__a__])
+    metaclass = Cls.__metaclass__
+    attributes = ['%s %s' % (name, ty.upper()) for name, ty in metaclass.attributes]
+    
+    s = 'CREATE TABLE %s (\n    ' % metaclass.kind
+    s += ',\n    '.join(attributes)
     s += '\n);\n'
 
     return s
@@ -117,7 +118,7 @@ def serialize_class(Cls):
 def serialize_unique_identifiers(metamodel):
     s = ''
     
-    for Cls in sorted(metamodel.classes.values()):
+    for Cls in metamodel.classes:
         for name, attributes in Cls.__u__.items():
             attributes = ', '.join(attributes)
             s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
@@ -131,8 +132,8 @@ def serialize_schema(metamodel):
     Serialize all class and association definitions in a *metamodel*.
     '''
     s = ''
-    for kind in sorted(metamodel.classes.keys()):
-        s += serialize_class(metamodel.classes[kind])
+    for kind in sorted(metamodel.metaclasses.keys()):
+        s += serialize_class(metamodel.metaclasses[kind].clazz)
     
     for ass in sorted(metamodel.associations, key=lambda x: x.id):
         s += serialize_association(ass)
@@ -178,10 +179,9 @@ def persist_instances(metamodel, path):
     *path* on disk.
     '''
     with open(path, 'w') as f:
-        for lst in metamodel.instances.values():
-            for inst in lst:
-                s = serialize_instance(inst)
-                f.write(s)
+        for inst in metamodel.instances:
+            s = serialize_instance(inst)
+            f.write(s)
 
 
 def persist_schema(metamodel, path):
@@ -190,8 +190,8 @@ def persist_schema(metamodel, path):
     serializing them and saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
-        for kind in sorted(metamodel.classes.keys()):
-            s = serialize_class(metamodel.classes[kind])
+        for kind in sorted(metamodel.metaclasses.keys()):
+            s = serialize_class(metamodel.metaclasses[kind].clazz)
             f.write(s)
             
         for ass in sorted(metamodel.associations, key=lambda x: x.id):
@@ -205,7 +205,7 @@ def persist_unique_identifiers(metamodel, path):
     saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
-        for Cls in sorted(metamodel.classes.values()):
+        for Cls in metamodel.classes:
             for name, attributes in Cls.__u__.items():
                 attributes = ', '.join(attributes)
                 s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
@@ -220,8 +220,8 @@ def persist_database(metamodel, path):
     *metamodel* by serializing them and saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
-        for kind in sorted(metamodel.classes.keys()):
-            Cls = metamodel.classes[kind]
+        for kind in sorted(metamodel.metaclasses.keys()):
+            Cls = metamodel.metaclasses[kind].clazz
             s = serialize_class(Cls)
             f.write(s)
             
@@ -236,7 +236,6 @@ def persist_database(metamodel, path):
             s = serialize_association(ass)
             f.write(s)
 
-        for lst in metamodel.instances.values():
-            for inst in lst:
-                s = serialize_instance(inst)
-                f.write(s)
+        for inst in metamodel.instances:
+            s = serialize_instance(inst)
+            f.write(s)

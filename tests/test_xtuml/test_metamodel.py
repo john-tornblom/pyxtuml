@@ -531,7 +531,8 @@ class TestBaseObject(unittest.TestCase):
         self.assertNotIn(inst2, q)
         
     def test_non_persisting_attribute(self):
-        inst = xtuml.BaseObject()
+        metaclass = xtuml.MetaClass('kind')
+        inst = metaclass.new()
         
         setattr(inst, 'test1', 1)
         self.assertEqual(getattr(inst, 'test1'), 1)
@@ -546,11 +547,13 @@ class TestBaseObject(unittest.TestCase):
         self.assertEqual(inst.test3, 3)
         
     def test_gettattr_with_undefined_attribute(self):
-        inst = xtuml.BaseObject()
+        metaclass = xtuml.MetaClass('kind')
+        inst = metaclass.new()
         self.assertRaises(AttributeError, getattr, inst, 'test')
         
     def test_undefined_attribute_access(self):
-        inst = xtuml.BaseObject()
+        metaclass = xtuml.MetaClass('kind')
+        inst = metaclass.new()
         try:
             _ = inst.test
             self.fail('AttributeError expected')

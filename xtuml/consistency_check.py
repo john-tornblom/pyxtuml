@@ -19,8 +19,9 @@ def pretty_to_link(inst, from_link, to_link):
     '''
     values = ''
     prefix = ''
- 
-    for name, ty in inst.__a__:
+    metaclass = inst.__metaclass__
+    
+    for name, ty in metaclass.attributes:
         if name in from_link.ids:
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
@@ -38,9 +39,10 @@ def pretty_from_link(inst, from_link, to_link):
     '''
     values = ''
     prefix = ''
- 
-    for name, ty in inst.__a__:
-        if name in inst.__i__:
+    metaclass = inst.__metaclass__
+    
+    for name, ty in metaclass.attributes:
+        if name in metaclass.identifying_attributes:
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
             values += '%s%s=%s' % (prefix, name, value)
@@ -55,9 +57,10 @@ def pretty_unique_identifier(inst, identifier):
     '''
     values = ''
     prefix = ''
+    metaclass = inst.__metaclass__
     
-    for name, ty in inst.__a__:
-        if name in inst.__u__[identifier]:
+    for name, ty in metaclass.attributes:
+        if name in metaclass.identifying_attributes:
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
             values += '%s%s=%s' % (prefix, name, value)
@@ -70,25 +73,25 @@ def check_uniqueness_constraint(m, kind=None):
     Check the model for uniqueness constraint violations.
     '''
     if kind is None:
-        classes = m.classes.values()
+        metaclasses = m.metaclasses.values()
     else:
-        classes = [m.classes[kind.upper()]]
+        metaclasses = [m.find_metaclass(kind)]
     
     res = True
-    for Cls in classes:
-        for inst in m.select_many(Cls.__name__):
-            for identifier in Cls.__u__.keys():
+    for metaclass in metaclasses:
+        for inst in metaclass.select_many():
+            for identifier in metaclass.indices:
                 kwargs = dict()
-                for name in Cls.__u__[identifier]:
+                for name in metaclass.indices[identifier]:
                     kwargs[name] = getattr(inst, name)
                 
                 where_clause = xtuml.where_eq(**kwargs)
-                s = m.select_many(Cls.__name__, where_clause)
+                s = metaclass.select_many(where_clause)
                 if len(s) != 1:
                     res = False
                     id_string = pretty_unique_identifier(inst, identifier)
                     logger.warning('uniqueness constraint violation in %s, %s' 
-                                   % (Cls.__name__, id_string))
+                                   % (metaclass.kind, id_string))
 
     return res
 

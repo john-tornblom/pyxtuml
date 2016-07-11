@@ -1800,8 +1800,8 @@ def prebuild_action(instance):
         'SPR_PO': ProvidedOperationPrebuilder,
         'SPR_PS': ProvidedSignalPrebuilder
     }
-    kind = instance.__class__.__name__
-    walker = walker_map[kind](instance.__m__, instance)
+    metaclass = instance.__metaclass__
+    walker = walker_map[metaclass.kind](metaclass.metamodel, instance)
     logger.info('processing action %s' % walker.label)
     # walker.visitors.append(xtuml.tools.NodePrintVisitor())
     root = oal.parse(instance.Action_Semantics_internal)

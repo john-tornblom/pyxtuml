@@ -261,19 +261,19 @@ class ModelLoader(object):
         Populate a *metamodel* with an instance previously encountered from 
         input that was defined using positional arguments.
         '''
-        if stmt.kind.upper() not in metamodel.classes:
+        if stmt.kind.upper() not in metamodel.metaclasses:
             names = ['_%s' % idx for idx in range(len(stmt.values))]
             ModelLoader._populate_matching_class(metamodel, stmt.kind, 
                                                  names, stmt.values)
             
-        Cls = metamodel.find_class(stmt.kind)
+        metaclass = metamodel.find_metaclass(stmt.kind)
         args = list()
             
-        if len(Cls.__a__) != len(stmt.values):
+        if len(metaclass.attributes) != len(stmt.values):
             logger.warn('schema mismatch while loading an instance of %s',
                         stmt.kind)
                 
-        for attr, value in zip(Cls.__a__, stmt.values):
+        for attr, value in zip(metaclass.attributes, stmt.values):
             _, ty = attr
             value = deserialize_value(ty, value) 
             args.append(value)
@@ -286,13 +286,13 @@ class ModelLoader(object):
         Populate a *metamodel* with an instance previously encountered from 
         input that was defined using named arguments.
         '''
-        if stmt.kind.upper() not in metamodel.classes:
+        if stmt.kind.upper() not in metamodel.metaclasses:
             ModelLoader._populate_matching_class(metamodel, stmt.kind, 
                                                  stmt.names, stmt.values)
             
-        Cls = metamodel.find_class(stmt.kind)
+        metaclass = metamodel.find_metaclass(stmt.kind)
             
-        schema_unames = [name.upper() for name, _ in Cls.__a__]
+        schema_unames = [name.upper() for name in metaclass.attribute_names]
         inst_unames = [name.upper() for name in stmt.names]
         
         if set(inst_unames) - set(schema_unames):
@@ -300,7 +300,7 @@ class ModelLoader(object):
                         stmt.kind)
             
         args = list()
-        for name, ty in Cls.__a__:
+        for name, ty in metaclass.attributes:
             uname = name.upper()
             if uname in inst_unames:
                 idx = inst_unames.index(uname)

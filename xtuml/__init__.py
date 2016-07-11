@@ -33,6 +33,7 @@ from .model import IntegerGenerator
 
 from .model import QuerySet
 from .model import BaseObject
+from .model import MetaClass
 from .model import MetaModel
 from .model import ModelException
 from .model import UnknownClassException

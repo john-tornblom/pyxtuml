@@ -283,9 +283,7 @@ class BaseObject(object):
     '''
     __r__ = None  # store relations
     __q__ = None  # store predefined queries
-    __m__ = None  # store a handle to the metamodel which created the instance
     __c__ = dict()  # store a cached results from queries
-    __a__ = list()  # store a list of attributes (name, type)
     __i__ = set() # set of identifying attributes
     __d__ = set() # set of derived attributes
     __u__ = dict() # store unique identifiers
@@ -304,7 +302,7 @@ class BaseObject(object):
 
     def __getattr__(self, name):
         uname = name.upper()
-        for attr, _ in self.__a__:
+        for attr, _ in self.__metaclass__.attributes:
             if attr.upper() == uname:
                 return self.__dict__[attr]
 
@@ -312,7 +310,7 @@ class BaseObject(object):
     
     def __setattr__(self, name, value):
         uname = name.upper()
-        for attr, _ in self.__a__:
+        for attr, _ in self.__metaclass__.attributes:
             if attr.upper() == uname:
                 self.__dict__[attr] = value
                 self.__c__.clear()
@@ -322,8 +320,108 @@ class BaseObject(object):
         
     def __str__(self):
         return str(self.__dict__)
+
+
+class MetaClass(object):
+    metamodel = None
+    kind = None
+    attributes = None
+    clazz = None
+    instances = None
     
+    def __init__(self, kind, metamodel=None):
+        self.metamodel = metamodel
+        self.kind = kind
+        self.attributes = list()
+        self.instances = list()
+        self.clazz = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
+                                                    __c__=dict(),
+                                                    __i__=set(), __d__=set(),
+                                                    __u__=dict(),
+                                                    __metaclass__=self))
+        
+        
+    @property
+    def attribute_names(self):
+        return [name for name, _ in self.attributes]
     
+    @property
+    def referential_attributes(self):
+        return self.clazz.__d__
+    
+    @property
+    def identifying_attributes(self):
+        return self.clazz.__i__
+        
+    @property
+    def indices(self):
+        return self.clazz.__u__
+        
+    def add_attribute(self, name, ty):
+        attr = (name, ty)
+        self.attributes.append(attr)
+        setattr(self.clazz, name, None)
+        
+    def default_value(self, type_name):
+        uname = type_name.upper()
+        if   uname == 'BOOLEAN':
+            return False
+            
+        elif uname == 'INTEGER':
+            return 0
+            
+        elif uname == 'REAL':
+            return 0.0
+            
+        elif uname == 'STRING':
+            return ''
+            
+        elif uname == 'UNIQUE_ID':
+            return next(self.metamodel.id_generator)
+            
+        else:
+            raise ModelException("Unknown type named '%s'" % type_name)
+        
+    def new(self, *args, **kwargs):
+        inst = self.clazz()
+        
+        # set all attributes with an initial default value
+        for name, ty in self.attributes:
+            if name in inst.__d__:
+                value = None
+            else:
+                value = self.default_value(ty)
+            setattr(inst, name, value)
+            
+        # set all positional arguments
+        for attr, value in zip(self.attributes, args):
+            name, ty = attr
+            setattr(inst, name, value)
+            
+        # set all named arguments
+        for name, value in kwargs.items():
+            setattr(inst, name, value)
+            
+        self.instances.append(inst)
+        
+        return inst
+
+    def delete(self, inst):
+        if inst in self.instances:
+            self.instances.remove(inst)
+            self.clazz.__c__.clear()
+        else:
+            raise ModelException("Instance not found in its model")
+
+    def select_one(self, where_clause=None):
+        query = filter(where_clause, self.instances)
+        return next(query, None)
+
+    def select_many(self, where_clause=None):
+        query = filter(where_clause, self.instances)
+        return QuerySet(query)
+
+
 class IdGenerator(object):
     '''
     Base class for generating unique identifiers in a metamodel.
@@ -400,7 +498,7 @@ def _is_null(inst, name):
         return True
 
     name = name.upper()
-    for attr_name, attr_ty in inst.__a__:
+    for attr_name, attr_ty in inst.__metaclass__.attributes:
         if attr_name.upper() != name:
             continue
 
@@ -426,9 +524,7 @@ class MetaModel(object):
     **Note:** All identifiers, e.g. attributes, association ids, key letters 
     (the kind or name of a class), are case **insensitive**.
     '''
-    
-    classes = None
-    instances = None
+    metaclasses = None
     associations = None
     id_generator = None
     
@@ -439,37 +535,51 @@ class MetaModel(object):
         '''
         if id_generator is None:
             id_generator = UUIDGenerator()
-            
-        self.classes = dict()
-        self.instances = dict()
+        
+        self.metaclasses = dict()
         self.associations = list()
         self.id_generator = id_generator
-        
+    
+    @property
+    def instances(self):
+        for metaclass in self.metaclasses.values():
+            for inst in metaclass.instances:
+                yield inst
+    
+    @property
+    def classes(self):
+        for metaclass in self.metaclasses.values():
+            yield metaclass.clazz
+    
     def define_class(self, kind, attributes, doc=''):
         '''
         Define and return a new class in the metamodel.
         '''
         ukind = kind.upper()
-        if ukind in self.classes or ukind in self.instances:
+        if ukind in self.metaclasses:
             raise ModelException('A class with the name %s is already defined' % kind)
-    
-        Cls = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
-                                             __c__=dict(), __m__=self,
-                                             __i__=set(), __d__=set(),
-                                             __u__=dict(), __doc__=doc,
-                                             __a__=attributes))
-        self.classes[ukind] = Cls
-        self.instances[ukind] = list()
+
+        metaclass = MetaClass(kind, self)
+        for name, ty in attributes:
+            metaclass.add_attribute(name, ty)
+            
+        self.metaclasses[ukind] = metaclass
         
-        return Cls
+        return metaclass
 
     def find_class(self, kind):
         '''
         Find a class of some *kind* in the metamodel.
         '''
+        return self.find_metaclass(kind).clazz
+
+    def find_metaclass(self, kind):
+        '''
+        Find a metaclass of some *kind* in the metamodel.
+        '''
         ukind = kind.upper()
-        if ukind in self.classes:
-            return self.classes[ukind]
+        if ukind in self.metaclasses:
+            return self.metaclasses[ukind]
         else:
             raise UnknownClassException(kind)
 
@@ -481,30 +591,9 @@ class MetaModel(object):
         by passing them as positional or keyword arguments. Positional arguments
         are assigned in the order in which they appear in the metamodel schema.
         '''
-        Cls = self.find_class(kind)
-        inst = Cls()
+        metaclass = self.find_metaclass(kind)
+        return metaclass.new(*args, **kwargs)
         
-        # set all attributes with an initial default value
-        for name, ty in inst.__a__:
-            if name in inst.__d__:
-                value = None
-            else:
-                value = self._default_value(ty)
-            setattr(inst, name, value)
-            
-        # set all positional arguments
-        for attr, value in zip(inst.__a__, args):
-            name, ty = attr
-            setattr(inst, name, value)
-            
-        # set all named arguments
-        for name, value in kwargs.items():
-            setattr(inst, name, value)
-            
-        self.instances[kind.upper()].append(inst)
-        
-        return inst
-    
     def clone(self, instance):
         '''
         Create a shallow clone of an *instance*.
@@ -512,8 +601,8 @@ class MetaModel(object):
         **Note:** the clone and the original instance **does not** have to be
         part of the same metamodel. 
         '''
-        clone = self.new(instance.__class__.__name__)
-        for name, _ in instance.__a__:
+        clone = self.new(instance.__metaclass__.kind)
+        for name, _ in instance.__metaclass__.attributes:
             value = getattr(instance, name)
             setattr(clone, name, value)
             
@@ -536,8 +625,8 @@ class MetaModel(object):
         source_kind = source.kind.upper()
         target_kind = target.kind.upper()
         
-        Source = self.classes[source_kind]
-        Target = self.classes[target_kind]
+        Source = self.find_class(source_kind)
+        Target = self.find_class(target_kind)
 
         Source.__d__ |= set(ass.source.ids)
         Target.__i__ |= set(ass.target.ids)
@@ -591,15 +680,12 @@ class MetaModel(object):
         >>> m = xtuml.load_metamodel('db.sql')
         >>> inst_set = m.select_many('My_Class', lambda sel: sel.number > 5)
         '''
-        ukind = kind.upper()
-        if ukind not in self.instances:
-            raise UnknownClassException(kind)
-
-        return QuerySet(filter(where_clause, self.instances[ukind]))
+        metaclass = self.find_metaclass(kind)
+        return metaclass.select_many(where_clause)
     
     def select_any(self, kind, where_clause=None):
         '''
-        This method is deprecated. Use *select_any* instead.
+        This method is deprecated. Use *select_one* instead.
         '''
         return self.select_one(kind, where_clause)
     
@@ -613,12 +699,8 @@ class MetaModel(object):
         >>> m = xtuml.load_metamodel('db.sql')
         >>> inst = m.select_one('My_Class', lambda sel: sel.name == 'Test')
         '''
-        ukind = kind.upper()
-        if ukind not in self.instances:
-            raise UnknownClassException(kind)
-
-        s = filter(where_clause, self.instances[ukind])
-        return next(s, None)
+        metaclass = self.find_metaclass(kind)
+        return metaclass.select_one(where_clause)
         
     def is_consistent(self):
         '''
@@ -629,32 +711,17 @@ class MetaModel(object):
         
         return xtuml.check_uniqueness_constraint(self)
     
-    def _default_value(self, ty_name):
-        '''
-        Obtain the default value for a named metamodel type.
-        '''
-        uname = ty_name.upper()
-        if   uname == 'BOOLEAN': return False
-        elif uname == 'INTEGER': return 0
-        elif uname == 'REAL': return 0.0
-        elif uname == 'STRING': return ''
-        elif uname == 'UNIQUE_ID': return next(self.id_generator)
-        else: raise ModelException("Unknown type named '%s'" % ty_name)
-        
     def _select_endpoint(self, inst, source, target, kwargs):
-        target_kind = target.kind.upper()
-        if not target_kind in self.instances:
-            return frozenset()
-        
+        metaclass = self.find_metaclass(target.kind)
         keys = chain(target.ids, kwargs.keys())
         values = chain([getattr(inst, name) for name in source.ids],
                        kwargs.values())
         kwargs = dict(zip(keys, values))
 
         cache_key = frozenset(list(kwargs.items()))
-        cache = self.classes[target_kind].__c__
+        cache = metaclass.clazz.__c__
         if cache_key not in cache:
-            cache[cache_key] = Query(self.instances[target_kind], kwargs)
+            cache[cache_key] = Query(metaclass.instances, kwargs)
             
         return cache[cache_key].execute()
 
@@ -917,15 +984,7 @@ def delete(instance):
     if not isinstance(instance, BaseObject):
         raise ModelException("not an xtuml instance")
             
-    kind = instance.__class__.__name__.upper()
-    if kind not in instance.__m__.classes:
-        raise ModelException("Unknown class %s" % instance.__class__.__name__)
-        
-    if instance in instance.__m__.instances[kind]:
-        instance.__m__.instances[kind].remove(instance)
-        instance.__class__.__c__.clear()
-    else:
-        raise ModelException("Instance not found in its model")
+    metaclass = instance.__metaclass__.delete(instance)
 
 
 def where_eq(**kwargs):

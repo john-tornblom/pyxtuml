@@ -379,26 +379,26 @@ def compare_metamodel_classes(m1, m2):
     Helper function for detecting differences in class definitions 
     in two metamodels.
     '''
-    if len(m1.classes.keys()) != len(m2.classes.keys()):
+    if len(m1.metaclasses.keys()) != len(m2.metaclasses.keys()):
         return False
     
-    for kind in m1.classes.keys():
-        Cls1 = m1.classes[kind]
-        Cls2 = m2.classes[kind]
+    for kind in m1.metaclasses.keys():
+        metaclass1 = m1.metaclasses[kind]
+        metaclass2 = m2.metaclasses[kind]
         
-        if Cls1.__name__ != Cls2.__name__:
+        if metaclass1.kind != metaclass2.kind:
             return False
         
-        if Cls1.__a__ != Cls2.__a__:
+        if metaclass1.attributes != metaclass2.attributes:
             return False
 
-        if Cls1.__i__ != Cls2.__i__:
+        if metaclass1.identifying_attributes != metaclass2.identifying_attributes:
             return False
 
-        if Cls1.__d__ != Cls2.__d__:
+        if metaclass1.referential_attributes != metaclass2.referential_attributes:
             return False
 
-        if Cls1.__u__ != Cls2.__u__:
+        if metaclass1.indices != metaclass2.indices:
             return False
         
     return True
