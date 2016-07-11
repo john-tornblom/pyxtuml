@@ -339,7 +339,8 @@ class MetaClass(object):
                                                     __i__=set(), __d__=set(),
                                                     __u__=dict(),
                                                     __metaclass__=self))
-        
+    def __call__(self, *args, **kwargs):
+        return self.new(*args, **kwargs)
         
     @property
     def attribute_names(self):

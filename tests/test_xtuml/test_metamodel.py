@@ -507,14 +507,15 @@ class TestDefineAssociations(unittest.TestCase):
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
 
 
-class TestBaseObject(unittest.TestCase):
+class TestMetaClass(unittest.TestCase):
     '''
     Test suite for the class xtuml.BaseObject
     '''
-    
+    My_Class = xtuml.MetaClass('My_Class')
+
     def test_plus_operator(self):
-        inst1 = xtuml.BaseObject()
-        inst2 = xtuml.BaseObject()
+        inst1 = self.My_Class()
+        inst2 = self.My_Class()
 
         q = inst1 + inst2
         self.assertEqual(2, len(q))
@@ -522,8 +523,8 @@ class TestBaseObject(unittest.TestCase):
         self.assertIn(inst2, q)
         
     def test_minus_operator(self):
-        inst1 = xtuml.BaseObject()
-        inst2 = xtuml.BaseObject()
+        inst1 = self.My_Class()
+        inst2 = self.My_Class()
 
         q = inst1 - inst2
         self.assertEqual(1, len(q))
@@ -531,8 +532,7 @@ class TestBaseObject(unittest.TestCase):
         self.assertNotIn(inst2, q)
         
     def test_non_persisting_attribute(self):
-        metaclass = xtuml.MetaClass('kind')
-        inst = metaclass.new()
+        inst = self.My_Class()
         
         setattr(inst, 'test1', 1)
         self.assertEqual(getattr(inst, 'test1'), 1)
@@ -547,13 +547,11 @@ class TestBaseObject(unittest.TestCase):
         self.assertEqual(inst.test3, 3)
         
     def test_gettattr_with_undefined_attribute(self):
-        metaclass = xtuml.MetaClass('kind')
-        inst = metaclass.new()
+        inst = self.My_Class()
         self.assertRaises(AttributeError, getattr, inst, 'test')
         
     def test_undefined_attribute_access(self):
-        metaclass = xtuml.MetaClass('kind')
-        inst = metaclass.new()
+        inst = self.My_Class()
         try:
             _ = inst.test
             self.fail('AttributeError expected')
