@@ -507,7 +507,7 @@ class TestDefineAssociations(unittest.TestCase):
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
 
 
-class TestMetaClass(unittest.TestCase):
+class TestBaseObject(unittest.TestCase):
     '''
     Test suite for the class xtuml.BaseObject
     '''
@@ -559,6 +559,41 @@ class TestMetaClass(unittest.TestCase):
             pass
 
 
+class TestMetaClass(unittest.TestCase):
+    '''
+    Test suite for xtuml.MetaClass
+    '''
+    
+    def setUp(self):
+        self.metaclass = xtuml.MetaClass('Test')
+        
+    def test_default_value(self):
+        self.assertEqual(self.metaclass.default_value('integer'), 0)
+        self.assertEqual(self.metaclass.default_value('Integer'), 0)
+        self.assertEqual(self.metaclass.default_value('real'), 0.0)
+        self.assertEqual(self.metaclass.default_value('STRING'), '')
+        self.assertEqual(self.metaclass.default_value('unique_id'), None)
+        self.assertEqual(self.metaclass.default_value('boolean'), False)
+    
+    def test_modifying_attributes(self):
+        self.metaclass.add_attribute('number', 'integer')
+        self.metaclass.add_attribute('name', 'string')
+    
+        inst1 = self.metaclass.new(number=2, name='test')
+        self.assertEqual(inst1.number, 2)
+        self.assertEqual(inst1.name, 'test')
+    
+        self.assertIn('number', self.metaclass.attribute_names)
+        self.assertIn('name', self.metaclass.attribute_names)
+    
+        self.metaclass.remove_attribute('name')
+        self.assertNotIn('name', self.metaclass.attribute_names)
+        
+        self.assertEqual(inst1.number, 2)
+        self.assertEqual(inst1.name, 'test')
+        
+        
+        
 class TestQuerySet(unittest.TestCase):
     '''
     Test suite for the class xtuml.QuerySet

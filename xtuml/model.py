@@ -359,6 +359,13 @@ class MetaClass(object):
         self.attributes.append(attr)
         setattr(self.clazz, name, None)
         
+    def remove_attribute(self, name):
+        for idx, attr in enumerate(self.attributes):
+            attr_name, _ = attr
+            if attr_name == name:
+                del self.attributes[idx]
+                return
+        
     def default_value(self, type_name):
         uname = type_name.upper()
         if   uname == 'BOOLEAN':
@@ -374,8 +381,10 @@ class MetaClass(object):
             return ''
             
         elif uname == 'UNIQUE_ID':
-            return next(self.metamodel.id_generator)
-            
+            if self.metamodel:
+                return next(self.metamodel.id_generator)
+            else:
+                return None
         else:
             raise ModelException("Unknown type named '%s'" % type_name)
         
