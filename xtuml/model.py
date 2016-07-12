@@ -285,7 +285,6 @@ class BaseObject(object):
     __q__ = None  # store predefined queries
     __i__ = set() # set of identifying attributes
     __d__ = set() # set of derived attributes
-    __u__ = dict() # store unique identifiers
     
     def __init__(self):
         self.__metaclass__.cache.clear()
@@ -325,6 +324,7 @@ class MetaClass(object):
     metamodel = None
     kind = None
     attributes = None
+    indices = None
     clazz = None
     instances = None
     cache = None
@@ -333,11 +333,11 @@ class MetaClass(object):
         self.metamodel = metamodel
         self.kind = kind
         self.attributes = list()
+        self.indices = dict()
         self.instances = list()
         self.cache = dict()
         self.clazz = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
                                                     __i__=set(), __d__=set(),
-                                                    __u__=dict(),
                                                     __metaclass__=self))
     def __call__(self, *args, **kwargs):
         return self.new(*args, **kwargs)
@@ -353,10 +353,6 @@ class MetaClass(object):
     @property
     def identifying_attributes(self):
         return self.clazz.__i__
-        
-    @property
-    def indices(self):
-        return self.clazz.__u__
         
     def add_attribute(self, name, ty):
         attr = (name, ty)
@@ -668,8 +664,8 @@ class MetaModel(object):
         if isinstance(name, int):
             name = 'I%d' % name
         
-        Cls = self.find_class(kind)
-        Cls.__u__[name] = set(named_attributes)
+        metaclass = self.find_metaclass(kind)
+        metaclass.indices[name] = set(named_attributes)
 
     def select_many(self, kind, where_clause=None):
         '''

@@ -118,13 +118,12 @@ def serialize_class(Cls):
 def serialize_unique_identifiers(metamodel):
     s = ''
     
-    for Cls in metamodel.classes:
-        for name, attributes in Cls.__u__.items():
-            attributes = ', '.join(attributes)
-            s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
-                                                           Cls.__name__,
-                                                           attributes)
-
+    for metaclass in metamodel.metaclasses.values():
+        for index_name, attribute_names in metaclass.indices.items():
+            attribute_names = ', '.join(attribute_names)
+            s += 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (index_name,
+                                                          metaclass.kind,
+                                                          attribute_names)
     return s
 
 def serialize_schema(metamodel):
@@ -205,12 +204,12 @@ def persist_unique_identifiers(metamodel, path):
     saving to a *path* on disk.
     '''
     with open(path, 'w') as f:
-        for Cls in metamodel.classes:
-            for name, attributes in Cls.__u__.items():
-                attributes = ', '.join(attributes)
-                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
-                                                              Cls.__name__,
-                                                              attributes)
+        for metaclass in metamodel.metaclasses.values():
+            for index_name, attribute_names in metaclass.indices.items():
+                attribute_names = ', '.join(attribute_names)
+                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (index_name,
+                                                              metaclass.kind,
+                                                              attribute_names)
                 f.write(s)
 
 
@@ -221,15 +220,15 @@ def persist_database(metamodel, path):
     '''
     with open(path, 'w') as f:
         for kind in sorted(metamodel.metaclasses.keys()):
-            Cls = metamodel.metaclasses[kind].clazz
-            s = serialize_class(Cls)
+            metaclass = metamodel.metaclasses[kind]
+            s = serialize_class(metaclass.clazz)
             f.write(s)
             
-            for name, attributes in Cls.__u__.items():
-                attributes = ', '.join(attributes)
-                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (name,
-                                                              Cls.__name__,
-                                                              attributes)
+            for index_name, attribute_names in metaclass.indices.items():
+                attribute_names = ', '.join(attribute_names)
+                s = 'CREATE UNIQUE INDEX %s ON %s (%s);\n' % (index_name,
+                                                              metaclass.kind,
+                                                              attribute_names)
                 f.write(s)
                 
         for ass in sorted(metamodel.associations, key=lambda x: x.id):
