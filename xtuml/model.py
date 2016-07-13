@@ -27,15 +27,14 @@ class UnknownClassException(ModelException):
     pass
 
 
-def navigation(handle, kind, relid, phrase):
+def navigation(handle, kind, rel_id, phrase):
     kind = kind.upper()
-    if isinstance(relid, int):
-        relid = 'R%d' % relid
+    if isinstance(rel_id, int):
+        rel_id = 'R%d' % rel_id
 
-    for start_inst in iter(handle):
-        query = start_inst.__q__[kind][relid][phrase]
-        for inst in query(start_inst):
-            yield inst
+    for inst in iter(handle):
+        for result in inst.__metaclass__.navigate(inst, kind, rel_id, phrase):
+            yield result
 
 
 class NavChain(object):
@@ -432,6 +431,16 @@ class MetaClass(object):
         query = filter(where_clause, self.instances)
         return QuerySet(query)
 
+    def navigate(self, inst, kind, rel_id, phrase=''):
+        return inst.__q__[kind][rel_id][phrase](inst)
+
+    def query(self, kwargs):
+        index = frozenset(list(kwargs.items()))
+        if index not in self.cache:
+            self.cache[index] = Query(self.instances, kwargs)
+            
+        return self.cache[index].execute()
+
 
 class IdGenerator(object):
     '''
@@ -729,11 +738,7 @@ class MetaModel(object):
                        kwargs.values())
         kwargs = dict(zip(keys, values))
 
-        cache_key = frozenset(list(kwargs.items()))
-        if cache_key not in metaclass.cache:
-            metaclass.cache[cache_key] = Query(metaclass.instances, kwargs)
-            
-        return metaclass.cache[cache_key].execute()
+        return metaclass.query(kwargs)
 
     def _formalized_query(self, source, target):
         return lambda inst, **kwargs: self._select_endpoint(inst, source,
