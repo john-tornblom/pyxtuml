@@ -20,6 +20,7 @@ class TestGenerate(PrebuildFunctionTestCase):
         
         self.metamodel.new('SM_EVT',
                            SM_ID=sm_sm.SM_ID,
+                           SMspd_ID=self.metamodel.id_generator.next(),
                            Numb=2,
                            Drv_Lbl='A2',
                            Mning='my_event')
@@ -37,6 +38,7 @@ class TestGenerate(PrebuildFunctionTestCase):
         
         self.metamodel.new('SM_EVT',
                            SM_ID=sm_sm.SM_ID,
+                           SMspd_ID=self.metamodel.id_generator.next(),
                            Numb=2,
                            Drv_Lbl='B2',
                            Mning='my_second_event')
@@ -52,6 +54,7 @@ class TestGenerate(PrebuildFunctionTestCase):
         relate(pe_pe, o_obj, 8001)
         sm_evt = self.metamodel.new('SM_EVT',
                                     SM_ID=sm_sm.SM_ID,
+                                    SMspd_ID=self.metamodel.id_generator.next(),
                                     Numb=1,
                                     Drv_Lbl='C1',
                                     Mning='my_third_event')
