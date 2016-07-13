@@ -354,12 +354,17 @@ class MetaClass(object):
     def identifying_attributes(self):
         return self.clazz.__i__
         
-    def add_attribute(self, name, ty):
+    def append_attribute(self, name, ty):
         attr = (name, ty)
         self.attributes.append(attr)
         setattr(self.clazz, name, None)
         
-    def remove_attribute(self, name):
+    def insert_attribute(self, index, name, ty):
+        attr = (name, ty)
+        self.attributes.insert(index, attr)
+        setattr(self.clazz, name, None)
+        
+    def delete_attribute(self, name):
         for idx, attr in enumerate(self.attributes):
             attr_name, _ = attr
             if attr_name == name:
@@ -559,7 +564,7 @@ class MetaModel(object):
     
     def define_class(self, kind, attributes, doc=''):
         '''
-        Define and return a new class in the metamodel.
+        Define a new class in the metamodel, and return its metaclass.
         '''
         ukind = kind.upper()
         if ukind in self.metaclasses:
@@ -567,7 +572,7 @@ class MetaModel(object):
 
         metaclass = MetaClass(kind, self)
         for name, ty in attributes:
-            metaclass.add_attribute(name, ty)
+            metaclass.append_attribute(name, ty)
             
         self.metaclasses[ukind] = metaclass
         

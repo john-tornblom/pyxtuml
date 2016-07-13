@@ -576,22 +576,24 @@ class TestMetaClass(unittest.TestCase):
         self.assertEqual(self.metaclass.default_value('boolean'), False)
     
     def test_modifying_attributes(self):
-        self.metaclass.add_attribute('number', 'integer')
-        self.metaclass.add_attribute('name', 'string')
+        self.metaclass.append_attribute('number', 'integer')
+        self.metaclass.append_attribute('name', 'string')
+        self.metaclass.insert_attribute(1, 'email', 'string')
     
-        inst1 = self.metaclass.new(number=2, name='test')
+        inst1 = self.metaclass(number=2, name='test', email='test@test.com')
         self.assertEqual(inst1.number, 2)
         self.assertEqual(inst1.name, 'test')
+        self.assertEqual(inst1.email, 'test@test.com')
     
-        self.assertIn('number', self.metaclass.attribute_names)
-        self.assertIn('name', self.metaclass.attribute_names)
+        for expected_name, name in zip(['number', 'email', 'name'], 
+                                       self.metaclass.attribute_names):
+            self.assertEqual(expected_name, name)
     
-        self.metaclass.remove_attribute('name')
+        self.metaclass.delete_attribute('name')
         self.assertNotIn('name', self.metaclass.attribute_names)
         
         self.assertEqual(inst1.number, 2)
         self.assertEqual(inst1.name, 'test')
-        
         
         
 class TestQuerySet(unittest.TestCase):
