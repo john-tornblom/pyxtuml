@@ -398,7 +398,7 @@ class MetaClass(object):
         
         # set all attributes with an initial default value
         for name, ty in self.attributes:
-            if name in inst.__d__:
+            if name in self.referential_attributes:
                 value = None
             else:
                 value = self.default_value(ty)
