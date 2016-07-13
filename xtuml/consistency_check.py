@@ -80,6 +80,20 @@ def check_uniqueness_constraint(m, kind=None):
     res = True
     for metaclass in metaclasses:
         for inst in metaclass.select_many():
+            
+            for name, ty in metaclass.attributes:
+                if name not in metaclass.identifying_attributes:
+                    continue
+                
+                value = getattr(inst, name)
+                isnull = value is None
+                isnull |= (ty == 'UNIQUE_ID' and not value)
+                if isnull:
+                    res = False
+                    logger.warning('%s.%s is part of an identifier and is null' 
+                                   % (metaclass.kind, name))
+            
+            
             for identifier in metaclass.indices:
                 kwargs = dict()
                 for name in metaclass.indices[identifier]:
