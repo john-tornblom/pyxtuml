@@ -424,12 +424,20 @@ class MetaClass(object):
             raise ModelException("Instance not found in its model")
 
     def select_one(self, where_clause=None):
-        query = filter(where_clause, self.instances)
-        return next(query, None)
+        if isinstance(where_clause, dict):
+            s = self.query(where_clause)
+        else:
+            s = iter(filter(where_clause, self.instances))
+            
+        return next(s, None)
 
     def select_many(self, where_clause=None):
-        query = filter(where_clause, self.instances)
-        return QuerySet(query)
+        if isinstance(where_clause, dict):
+            s = self.query(where_clause)
+        else:
+            s = filter(where_clause, self.instances)
+        
+        return QuerySet(s)
 
     def navigate(self, inst, kind, rel_id, phrase=''):
         return inst.__q__[kind][rel_id][phrase](inst)
@@ -1002,6 +1010,16 @@ def delete(instance):
     metaclass = instance.__metaclass__.delete(instance)
 
 
+class WhereEqual(dict):
+    
+    def __call__(self, selected):
+        for name in self:
+            if getattr(selected, name) != self.get(name):
+                return False
+            
+        return True
+
+
 def where_eq(**kwargs):
     '''
     Return a where-clause function which filters out instances based on named 
@@ -1013,13 +1031,5 @@ def where_eq(**kwargs):
     >>> m = xtuml.load_metamodel('db.sql')
     >>> inst = m.select_any('My_Modeled_Class', where(My_Number=5))
     '''
-    items = list(kwargs.items())
-    def query_filter(selected):
-        for name, value in items:
-            if getattr(selected, name) != value:
-                return False
-            
-        return True
-
-    return query_filter
+    return WhereEqual(kwargs)
 
