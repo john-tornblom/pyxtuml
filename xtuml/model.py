@@ -330,7 +330,6 @@ class BaseObject(object):
     A common base object for all instances created in a metamodel. Accesses 
     to attributes, e.g. getattr/setattr, on these objects are case insensitive.
     '''
-    __r__ = None  # store relations
     __i__ = set() # set of identifying attributes
     __d__ = set() # set of derived attributes
     
@@ -386,8 +385,7 @@ class MetaClass(object):
         self.links = dict()
         self.instances = list()
         self.cache = dict()
-        self.clazz = type(kind, (BaseObject,), dict(__r__=dict(),
-                                                    __i__=set(), __d__=set(),
+        self.clazz = type(kind, (BaseObject,), dict(__i__=set(), __d__=set(),
                                                     __metaclass__=self))
     def __call__(self, *args, **kwargs):
         return self.new(*args, **kwargs)
@@ -741,15 +739,6 @@ class MetaModel(object):
         Source.__d__ |= set(ass.source.ids)
         Target.__i__ |= set(ass.target.ids)
         
-        if ass.id not in Source.__r__:
-            Source.__r__[ass.id] = set()
-            
-        if ass.id not in Target.__r__:
-            Target.__r__[ass.id] = set()
-            
-        Source.__r__[ass.id].add(ass)
-        Target.__r__[ass.id].add(ass)
-        
         return ass
         
     def define_unique_identifier(self, kind, name, *named_attributes):
@@ -904,14 +893,24 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
         rel_id = 'R%d' % rel_id
     
     # Figure out the phrase in the other direction
-    kind = type(set_of_instances.first).__name__.upper()
-    ass = next(iter(set_of_instances.first.__r__[rel_id]))
-    if ass.source.phrase == phrase:
-        other_phrase = ass.target.phrase
+    metaclass = set_of_instances.first.__metaclass__
+    for link in metaclass.links.values():
+        if link.to_metaclass != metaclass:
+            continue
+        
+        if link.rel_id != rel_id:
+            continue
+
+        if link.phrase == phrase:
+            continue
+
+        other_phrase = link.phrase
+        break
     else:
-        other_phrase = ass.source.phrase
+        raise UnknownAssociationException(metaclass.kind, rel_id, phrase)
     
-    first_filt = lambda sel: not navigate_one(sel).nav(kind, rel_id, phrase)()
+
+    first_filt = lambda sel: not navigate_one(sel).nav(metaclass.kind, rel_id, phrase)()
     first_instances = list(filter(first_filt, set_of_instances))
     if not first_instances:
         #the instance sequence is recursive, start anywhere
@@ -922,7 +921,7 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
             inst = first
             while inst:
                 yield inst
-                inst = navigate_one(inst).nav(kind, rel_id, other_phrase)()
+                inst = navigate_one(inst).nav(metaclass.kind, rel_id, other_phrase)()
                 if inst is first:
                     break
                 
