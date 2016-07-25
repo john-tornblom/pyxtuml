@@ -27,6 +27,17 @@ class UnknownClassException(ModelException):
     pass
 
 
+class UnknownAssociationException(ModelException):
+
+    def __init__(self, from_kind, to_kind, rel_id, phrase):
+        if phrase:
+            msg = "%s->%s[%s, %s]" % (from_kind, to_kind, repr(rel_id), repr(phrase))
+        else:
+            msg = "%s->%s[%s]" % (from_kind, to_kind, repr(rel_id))
+
+        ModelException.__init__(self, msg)
+
+
 def navigation(handle, kind, rel_id, phrase):
     kind = kind.upper()
     if isinstance(rel_id, int):
@@ -96,6 +107,45 @@ class NavManyChain(NavChain):
     def __call__(self, where_clause=None):
         handle = self.handle or list()
         return QuerySet(filter(where_clause, handle))
+
+
+class Link(object):
+    
+    def __init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map):
+        if isinstance(rel_id, int):
+            rel_id = 'R%d' % rel_id
+        
+        self.rel_id = rel_id
+        self.from_metaclass = from_metaclass
+        self.to_metaclass = to_metaclass
+        self.phrase = phrase
+        self.key_map = key_map
+        
+    @property
+    def kind(self):
+        return self.to_metaclass.kind
+
+    def navigate(self, inst):
+        kwargs = dict()
+        for key, mapped_key in self.key_map:
+            kwargs[mapped_key] = getattr(inst, key)
+
+        return self.to_metaclass.query(kwargs)
+        
+    def __repr__(self):
+        if self.phrase:
+            return "%s->%s[%s, %s]" % (self.kind, self.to_metaclass.kind, 
+                                       repr(self.rel_id), repr(self.phrase))
+        else:
+            return "%s->%s[%s]" % (self.kind, self.to_metaclass.kind, 
+                                   repr(self.rel_id))
+
+
+class ReversedLink(Link):
+    
+    def __init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map):
+        key_map = [(key2, key1) for key1, key2 in key_map]
+        Link.__init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map)
 
 
 class Association(object):
@@ -281,7 +331,6 @@ class BaseObject(object):
     to attributes, e.g. getattr/setattr, on these objects are case insensitive.
     '''
     __r__ = None  # store relations
-    __q__ = None  # store predefined queries
     __i__ = set() # set of identifying attributes
     __d__ = set() # set of derived attributes
     
@@ -323,6 +372,7 @@ class MetaClass(object):
     metamodel = None
     kind = None
     attributes = None
+    links = None
     indices = None
     clazz = None
     instances = None
@@ -333,9 +383,10 @@ class MetaClass(object):
         self.kind = kind
         self.attributes = list()
         self.indices = dict()
+        self.links = dict()
         self.instances = list()
         self.cache = dict()
-        self.clazz = type(kind, (BaseObject,), dict(__r__=dict(), __q__=dict(),
+        self.clazz = type(kind, (BaseObject,), dict(__r__=dict(),
                                                     __i__=set(), __d__=set(),
                                                     __metaclass__=self))
     def __call__(self, *args, **kwargs):
@@ -352,6 +403,25 @@ class MetaClass(object):
     @property
     def identifying_attributes(self):
         return self.clazz.__i__
+        
+    def add_link(self, metaclass, rel_id, phrase, key_map, reverse=False):
+        if isinstance(rel_id, int):
+            rel_id = 'R%d' % rel_id
+        
+        if reverse:
+            link = ReversedLink(self, rel_id, metaclass, phrase, key_map)
+        else:
+            link = Link(self, rel_id, metaclass, phrase, key_map)
+            
+        key = (metaclass.kind, rel_id, phrase)
+        self.links[key] = link
+        
+    def find_link(self, kind, rel_id, phrase):
+        if isinstance(rel_id, int):
+            rel_id = 'R%d' % rel_id
+            
+        key = (kind, rel_id, phrase)
+        return self.links.get(key, None)
         
     def append_attribute(self, name, ty):
         attr = (name, ty)
@@ -440,8 +510,13 @@ class MetaClass(object):
         return QuerySet(s)
 
     def navigate(self, inst, kind, rel_id, phrase=''):
-        return inst.__q__[kind][rel_id][phrase](inst)
-
+        key = (kind, rel_id, phrase)
+        if key in self.links:
+            link = self.links[key]
+            return link.navigate(inst)
+        else:
+            raise UnknownAssociationException(self.kind, kind, rel_id, phrase)
+            
     def query(self, kwargs):
         index = frozenset(list(kwargs.items()))
         if index not in self.cache:
@@ -647,6 +722,13 @@ class MetaModel(object):
         Define and return an association between *source* to *target* named 
         *rel_id*.
         '''
+        source_metaclass = self.find_metaclass(source.kind)
+        target_metaclass = self.find_metaclass(target.kind)
+        
+        key_map = list(zip(source.ids, target.ids))
+        source_metaclass.add_link(target_metaclass, rel_id, target.phrase, key_map)
+        target_metaclass.add_link(source_metaclass, rel_id, source.phrase, key_map, reverse=True)
+        
         ass = Association(rel_id, source, target)
         self.associations.append(ass)
         
@@ -668,21 +750,6 @@ class MetaModel(object):
         Source.__r__[ass.id].add(ass)
         Target.__r__[ass.id].add(ass)
         
-        if target_kind not in Source.__q__:
-            Source.__q__[target_kind] = dict()
-            
-        if source_kind not in Target.__q__:
-            Target.__q__[source_kind] = dict()
-        
-        if ass.id not in Source.__q__[target_kind]:
-            Source.__q__[target_kind][ass.id] = dict()
-            
-        if ass.id not in Target.__q__[source_kind]:
-            Target.__q__[source_kind][ass.id] = dict()
-        
-        Source.__q__[target_kind][ass.id][target.phrase] = self._formalized_query(source, target)
-        Target.__q__[source_kind][ass.id][source.phrase] = self._formalized_query(target, source)
-    
         return ass
         
     def define_unique_identifier(self, kind, name, *named_attributes):
@@ -753,63 +820,6 @@ class MetaModel(object):
                                                             target, kwargs)
     
 
-def _find_association_links(inst1, inst2, rel_id, phrase):
-    '''
-    Find association links which correspond to the given arguments.
-    '''
-    if isinstance(rel_id, int):
-        rel_id = 'R%d' % rel_id
-    
-    kind1 = inst1.__class__.__name__.upper()
-    kind2 = inst2.__class__.__name__.upper()
-    
-    if (rel_id not in inst1.__r__ or
-        rel_id not in inst2.__r__):
-        raise ModelException('Unknown association %s---(%s)---%s' % (kind1,
-                                                                     rel_id,
-                                                                     kind2))
-    for ass in chain(inst1.__r__[rel_id], inst2.__r__[rel_id]):
-        source_kind = ass.source.kind.upper()
-        target_kind = ass.target.kind.upper()
-        
-        if  (kind1 == source_kind and 
-             kind2 == target_kind and 
-             ass.source.phrase == phrase):
-            return inst1, inst2, ass
-        
-        elif (kind1 == target_kind and 
-              kind2 == source_kind and 
-              ass.target.phrase == phrase):
-            return inst2, inst1, ass
-
-    raise ModelException("Unknown association %s---(%s.'%s')---%s" % (inst1.__class__.__name__,
-                                                                      rel_id,
-                                                                      phrase,
-                                                                      inst2.__class__.__name__))
-
-
-def _deferred_association_operation(inst, end, op):
-    '''
-    Generate list of deferred operations which needs to be invoked after an 
-    update to identifying attributes on the association end point is made.
-    '''
-    kind = inst.__class__.__name__.upper()
-    l = list()
-    for ass in chain(*inst.__r__.values()):
-        if kind != ass.target.kind.upper():
-            continue
-        if not set(end.ids) & inst.__d__ - inst.__i__ & set(ass.target.ids):
-            # TODO: what about attributes which are both identifying, and referential?
-            continue
-
-        nav = navigate_many(inst).nav(ass.source.kind, ass.id, ass.source.phrase)
-        for from_inst in nav():
-            fn = partial(op, from_inst, inst, ass.id, ass.target.phrase)
-            l.append(fn)
-
-    return l
-
-
 def navigate_one(instance):
     '''
     Initialize a navigation from one *instance* to another across a one-to-one
@@ -871,8 +881,8 @@ def navigate_subtype(supertype, rel_id):
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
 
-    for kind, query in supertype.__q__.items():
-        if rel_id not in query:
+    for kind, rel_id_candidate, _ in supertype.__metaclass__.links:
+        if rel_id != rel_id_candidate:
             continue
         
         subtype = navigate_one(supertype).nav(kind, rel_id)()
@@ -919,6 +929,65 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
     return QuerySet(sequence_generator())
 
     
+def _find_link(inst1, inst2, rel_id, phrase):
+    metaclass1 = inst1.__metaclass__
+    metaclass2 = inst2.__metaclass__
+
+    link = metaclass2.find_link(metaclass1.kind, rel_id, phrase)
+    if link and not isinstance(link, ReversedLink):
+        return inst2, inst1, link
+        
+    link = metaclass1.find_link(metaclass2.kind, rel_id, phrase)
+    if link and not isinstance(link, ReversedLink):
+        return inst1, inst2, link
+
+    if isinstance(rel_id, int):
+        rel_id = 'R%d' % rel_id
+        
+    for other_link in metaclass1.links.values():
+        if other_link == link:
+            continue
+        
+        if other_link.to_metaclass != metaclass1:
+            continue
+        
+        if other_link.rel_id != rel_id:
+            continue
+
+        if other_link.phrase == phrase:
+            continue
+
+        return inst1, inst2, other_link
+        
+    raise UnknownAssociationException(metaclass1.kind, metaclass2.kind,
+                                      rel_id, phrase)
+                                          
+
+def _deferred_link_operation(inst, link, op):
+    '''
+    Generate list of deferred operations which needs to be invoked after an 
+    update to identifying attributes on the association end point is made.
+    '''
+    l = list()
+    
+    metaclass = inst.__metaclass__
+    keys = set([key for key, _ in link.key_map])
+    for link in metaclass.links.values():
+        if not isinstance(link, ReversedLink):
+            continue
+        
+        derived_keys = set([key for key, _ in link.key_map])
+        if not (keys & derived_keys):
+            continue
+        
+        nav = navigate_many(inst).nav(link.to_metaclass.kind, link.rel_id, link.phrase)
+        for from_inst in nav():
+            fn = partial(op, from_inst, inst, link.rel_id, link.phrase)
+            l.append(fn)
+
+    return l
+
+    
 def relate(from_instance, to_instance, rel_id, phrase=''):
     '''
     Relate *from_instance* to *to_instance* across *rel_id*. For refelxive
@@ -931,17 +1000,14 @@ def relate(from_instance, to_instance, rel_id, phrase=''):
     '''
     if None in [from_instance, to_instance]:
         return False
-    
-    from_instance, to_instance, ass = _find_association_links(from_instance,
-                                                              to_instance,
-                                                              rel_id,
-                                                              phrase)
+        
+    from_instance, to_instance, link = _find_link(from_instance, to_instance,
+                                                  rel_id, phrase)
                                                       
-    post_process = _deferred_association_operation(from_instance, ass.source,
-                                                   relate)
-
+    post_process = _deferred_link_operation(from_instance, link, relate)
     updated = False
-    for from_name, to_name in zip(ass.source.ids, ass.target.ids):
+    
+    for from_name, to_name in link.key_map:
         if _is_null(to_instance, to_name):
             raise ModelException('undefined referential attribute %s' % to_name)
         
@@ -976,17 +1042,12 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     if None in [from_instance, to_instance]:
         return False
     
-    from_instance, to_instance, ass = _find_association_links(from_instance,
-                                                              to_instance,
-                                                              rel_id,
-                                                              phrase)
-                                                              
-    post_process = _deferred_association_operation(from_instance, ass.source,
-                                                   unrelate)
+    from_instance, to_instance, link = _find_link(from_instance, to_instance,
+                                                  rel_id, phrase)
+    post_process = _deferred_link_operation(from_instance, link, unrelate)
 
     updated = False
-    from_names = set(ass.source.ids) & from_instance.__d__ - from_instance.__i__
-    for from_name in from_names:
+    for from_name, _ in link.key_map:
         if _is_null(from_instance, from_name):
             raise ModelException('instances not related')
         
