@@ -330,9 +330,6 @@ class BaseObject(object):
     A common base object for all instances created in a metamodel. Accesses 
     to attributes, e.g. getattr/setattr, on these objects are case insensitive.
     '''
-    __i__ = set() # set of identifying attributes
-    __d__ = set() # set of derived attributes
-    
     def __init__(self):
         self.__metaclass__.cache.clear()
         
@@ -371,6 +368,8 @@ class MetaClass(object):
     metamodel = None
     kind = None
     attributes = None
+    referential_attributes = None
+    identifying_attributes = None
     links = None
     indices = None
     clazz = None
@@ -381,12 +380,14 @@ class MetaClass(object):
         self.metamodel = metamodel
         self.kind = kind
         self.attributes = list()
+        self.referential_attributes = set()
+        self.identifying_attributes = set()
         self.indices = dict()
         self.links = dict()
         self.instances = list()
         self.cache = dict()
-        self.clazz = type(kind, (BaseObject,), dict(__i__=set(), __d__=set(),
-                                                    __metaclass__=self))
+        self.clazz = type(kind, (BaseObject,), dict(__metaclass__=self))
+        
     def __call__(self, *args, **kwargs):
         return self.new(*args, **kwargs)
         
@@ -394,14 +395,6 @@ class MetaClass(object):
     def attribute_names(self):
         return [name for name, _ in self.attributes]
     
-    @property
-    def referential_attributes(self):
-        return self.clazz.__d__
-    
-    @property
-    def identifying_attributes(self):
-        return self.clazz.__i__
-        
     def add_link(self, metaclass, rel_id, phrase, key_map, reverse=False):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
@@ -727,17 +720,11 @@ class MetaModel(object):
         source_metaclass.add_link(target_metaclass, rel_id, target.phrase, key_map)
         target_metaclass.add_link(source_metaclass, rel_id, source.phrase, key_map, reverse=True)
         
+        source_metaclass.referential_attributes |= set(source.ids)
+        target_metaclass.identifying_attributes |= set(target.ids)
+        
         ass = Association(rel_id, source, target)
         self.associations.append(ass)
-        
-        source_kind = source.kind.upper()
-        target_kind = target.kind.upper()
-        
-        Source = self.find_class(source_kind)
-        Target = self.find_class(target_kind)
-
-        Source.__d__ |= set(ass.source.ids)
-        Target.__i__ |= set(ass.target.ids)
         
         return ass
         
