@@ -1,5 +1,5 @@
 # encoding: utf-8
-# Copyright (C) 2015 John Törnblom
+# Copyright (C) 2016 John Törnblom
 
 from itertools import chain
 from functools import partial
@@ -1068,7 +1068,7 @@ def delete(instance):
     if not isinstance(instance, BaseObject):
         raise ModelException("not an xtuml instance")
             
-    metaclass = instance.__metaclass__.delete(instance)
+    instance.__metaclass__.delete(instance)
 
 
 class WhereEqual(dict):
@@ -1083,7 +1083,7 @@ class WhereEqual(dict):
 
 def where_eq(**kwargs):
     '''
-    Return a where-clause function which filters out instances based on named 
+    Return a where-clause which filters out instances based on named 
     keywords.
     
     Usage example:
