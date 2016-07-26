@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class ModelException(Exception):
-    pass
+    '''
+    Base class for all pyxtuml-specific exceptions 
+    '''
 
 
 class UnknownClassException(ModelException):
@@ -35,16 +37,6 @@ class UnknownAssociationException(ModelException):
             msg = "%s->%s[%s]" % (from_kind, to_kind, repr(rel_id))
 
         ModelException.__init__(self, msg)
-
-
-def navigation(handle, kind, rel_id, phrase):
-    kind = kind.upper()
-    if isinstance(rel_id, int):
-        rel_id = 'R%d' % rel_id
-
-    for inst in iter(handle):
-        for result in inst.__metaclass__.navigate(inst, kind, rel_id, phrase):
-            yield result
 
 
 class NavChain(object):
@@ -73,9 +65,19 @@ class NavChain(object):
         self._kind = None
         
     def nav(self, kind, relid, phrase=''):
-        self.handle = navigation(self.handle, kind, relid, phrase)
+        self.handle = NavChain._nav(self.handle, kind, relid, phrase)
         return self
     
+    @staticmethod
+    def _nav(handle, kind, rel_id, phrase):
+        kind = kind.upper()
+        if isinstance(rel_id, int):
+            rel_id = 'R%d' % rel_id
+    
+        for inst in iter(handle):
+            for result in inst.__metaclass__.navigate(inst, kind, rel_id, phrase):
+                yield result
+            
     def __getattr__(self, name):
         self._kind = name
         return self
@@ -92,9 +94,9 @@ class NavChain(object):
 class NavOneChain(NavChain):
     
     def __call__(self, where_clause=None):
-        handle = self.handle or list()
+        handle = self.handle or iter([])
         if not where_clause:
-            where_clause = lambda sel: True
+            return next(handle, None)
         
         for inst in handle:
             if where_clause(inst):
