@@ -44,6 +44,7 @@ from .model import MetaClass
 from .model import MetaModel
 from .model import ModelException
 from .model import UnknownClassException
+from .model import UnknownAssociationException
 
 from .model import navigate_any
 from .model import navigate_one
