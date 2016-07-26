@@ -5,7 +5,6 @@ from itertools import chain
 from functools import partial
 
 import logging
-import uuid
 import collections
 
 try:
@@ -516,73 +515,6 @@ class MetaClass(object):
         return self.cache[index].execute()
 
 
-class IdGenerator(object):
-    '''
-    Base class for generating unique identifiers in a metamodel.
-    '''
-    
-    readfunc = None
-
-    def __init__(self):
-        '''
-        Initialize an id generator with a start value.
-        '''
-        self._current = self.readfunc()
-    
-    def peek(self):
-        '''
-        Peek at the current value without progressing to the next one.
-        '''
-        return self._current
-    
-    def next(self):
-        '''
-        Progress to the next identifier, and return the current one.
-        '''
-        val = self._current
-        self._current = self.readfunc()
-        return val
-    
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return self.next()
-
-
-class UUIDGenerator(IdGenerator):
-    '''
-    A uuid-based id generator for metamodels. 128-bit unique identifiers
-    are generated randomly when requested by a metamodel. 
-    
-    **Note:** This is the default id generator.
-    '''
-    def readfunc(self):
-        return uuid.uuid4().int
-
-
-class IntegerGenerator(IdGenerator):
-    '''
-    An integer-based id generator for metamodels. integers are generated
-    sequentially, starting from the number one. 
-    
-    Generally, the uuid-based id generator shall be used. In some cases such as 
-    testing however, having deterministic unique ids in a metamodel may be 
-    benifitial.
-    
-    Usage example:
-    
-    >>> l = xtuml.ModelLoader()
-    >>> l.filename_input("schema.sql")
-    >>> l.filename_input("data.sql")
-    >>> m = l.build_metamodel(xtuml.IntegerGenerator())
-    '''
-    
-    _current = 0
-    def readfunc(self):
-        return self._current + 1
-
-
 def _is_null(inst, name):
     value = getattr(inst, name)
     if value:
@@ -628,7 +560,7 @@ class MetaModel(object):
         Optionally, specify an id generator used to obtain unique identifiers.
         '''
         if id_generator is None:
-            id_generator = UUIDGenerator()
+            id_generator = xtuml.UUIDGenerator()
         
         self.metaclasses = dict()
         self.associations = list()

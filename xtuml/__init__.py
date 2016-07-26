@@ -27,10 +27,6 @@ from .model import AssociationLink
 from .model import SingleAssociationLink
 from .model import ManyAssociationLink
 
-from .model import IdGenerator
-from .model import UUIDGenerator
-from .model import IntegerGenerator
-
 from .model import QuerySet
 from .model import BaseObject
 from .model import MetaClass
@@ -50,6 +46,10 @@ from .model import sort_reflexive
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
+
+from .tools import IdGenerator
+from .tools import UUIDGenerator
+from .tools import IntegerGenerator
 
 from .tools import Walker
 from .tools import Visitor

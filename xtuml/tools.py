@@ -1,5 +1,71 @@
 # encoding: utf-8
-# Copyright (C) 2015 John Törnblom
+# Copyright (C) 2016 John Törnblom
+import uuid
+
+
+class IdGenerator(object):
+    '''
+    Base class for generating unique identifiers.
+    '''
+    
+    readfunc = None
+
+    def __init__(self):
+        '''
+        Initialize an id generator with a start value.
+        '''
+        self._current = self.readfunc()
+    
+    def peek(self):
+        '''
+        Peek at the current value without progressing to the next one.
+        '''
+        return self._current
+    
+    def next(self):
+        '''
+        Progress to the next identifier, and return the current one.
+        '''
+        val = self._current
+        self._current = self.readfunc()
+        return val
+    
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
+
+
+class UUIDGenerator(IdGenerator):
+    '''
+    A uuid-based id generator. 128-bit unique numbers are generated
+    randomly each time a new id is requested.
+    '''
+    def readfunc(self):
+        return uuid.uuid4().int
+
+
+class IntegerGenerator(IdGenerator):
+    '''
+    An integer-based id generator. Integers are generated sequentially,
+    starting from the number one. 
+    
+    Generally, the uuid-based id generator shall be used. In some cases such as
+    testing however, having deterministic unique ids may be benifitial.
+    
+    Usage example:
+    
+    >>> l = xtuml.ModelLoader()
+    >>> l.filename_input("schema.sql")
+    >>> l.filename_input("data.sql")
+    >>> m = l.build_metamodel(xtuml.IntegerGenerator())
+    '''
+    
+    _current = 0
+    def readfunc(self):
+        return self._current + 1
+
 
 class Visitor(object):
     '''
