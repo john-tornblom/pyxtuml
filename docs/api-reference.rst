@@ -65,6 +65,7 @@ Exceptions
 .. autoexception:: xtuml.ParsingException
 .. autoexception:: xtuml.ModelException
 .. autoexception:: xtuml.UnknownClassException
+.. autoexception:: xtuml.UnknownAssociationException
 
 
 bridgepoint
