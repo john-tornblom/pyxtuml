@@ -115,16 +115,21 @@ class Link(object):
     to_metaclass = None
     phrase = None
     key_map = None
+    conditional = None
+    many = None
     
-    def __init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map):
+    def __init__(self, from_metaclass, rel_id, to_metaclass, key_map, phrase='',
+                 conditional=False, many=False):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
         
         self.from_metaclass = from_metaclass
         self.rel_id = rel_id
         self.to_metaclass = to_metaclass
-        self.phrase = phrase
         self.key_map = key_map
+        self.phrase = phrase
+        self.conditional = conditional
+        self.many = many
         
     @property
     def kind(self):
@@ -132,7 +137,7 @@ class Link(object):
 
     def navigate(self, inst):
         kwargs = dict()
-        for key, mapped_key in self.key_map:
+        for key, mapped_key in self.key_map.items():
             kwargs[mapped_key] = getattr(inst, key)
 
         return self.to_metaclass.query(kwargs)
@@ -148,9 +153,11 @@ class Link(object):
 
 class ReversedLink(Link):
     
-    def __init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map):
-        key_map = [(key2, key1) for key1, key2 in key_map]
-        Link.__init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map)
+    def __init__(self, from_metaclass, rel_id, to_metaclass, key_map, phrase='',
+                 conditional=False, many=False):
+        Link.__init__(self, from_metaclass, rel_id, to_metaclass,
+                      dict(zip(key_map.values(), key_map.keys())),
+                      phrase, conditional, many)
 
 
 class Association(object):
@@ -326,18 +333,21 @@ class MetaClass(object):
     def attribute_names(self):
         return [name for name, _ in self.attributes]
     
-    def add_link(self, metaclass, rel_id, phrase, key_map, reverse=False):
+    def add_link(self, metaclass, rel_id, key_map, phrase, conditional=False,
+                 many=False, reverse=False):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
         
         if reverse:
-            link = ReversedLink(self, rel_id, metaclass, phrase, key_map)
+            link = ReversedLink(self, rel_id, metaclass, key_map, phrase, conditional, many)
+            self.identifying_attributes |= set(link.key_map.keys())
         else:
-            link = Link(self, rel_id, metaclass, phrase, key_map)
+            link = Link(self, rel_id, metaclass, key_map, phrase, conditional, many)
+            self.referential_attributes |= set(link.key_map.keys())
             
         key = (metaclass.kind, rel_id, phrase)
         self.links[key] = link
-        
+
         return link
         
     def find_link(self, kind, rel_id, phrase):
@@ -555,12 +565,9 @@ class MetaModel(object):
         source_metaclass = self.find_metaclass(source.kind)
         target_metaclass = self.find_metaclass(target.kind)
         
-        key_map = list(zip(source.ids, target.ids))
-        source_metaclass.add_link(target_metaclass, rel_id, target.phrase, key_map)
-        target_metaclass.add_link(source_metaclass, rel_id, source.phrase, key_map, reverse=True)
-        
-        source_metaclass.referential_attributes |= set(source.ids)
-        target_metaclass.identifying_attributes |= set(target.ids)
+        key_map = dict(zip(source.ids, target.ids))
+        source_metaclass.add_link(target_metaclass, rel_id, key_map, target.phrase)
+        target_metaclass.add_link(source_metaclass, rel_id, key_map, source.phrase, reverse=True)
         
         ass = Association(rel_id, source, target)
         self.associations.append(ass)
@@ -789,12 +796,12 @@ def _deferred_link_operation(inst, link, op):
     l = list()
     
     metaclass = inst.__metaclass__
-    keys = set([key for key, _ in link.key_map])
+    keys = set(link.key_map.keys())
     for link in metaclass.links.values():
         if not isinstance(link, ReversedLink):
             continue
         
-        derived_keys = set([key for key, _ in link.key_map])
+        derived_keys = set(link.key_map.values())
         if not (keys & derived_keys):
             continue
         
@@ -856,7 +863,7 @@ def relate(from_instance, to_instance, rel_id, phrase=''):
     post_process = _deferred_link_operation(from_instance, link, relate)
     updated = False
     
-    for from_name, to_name in link.key_map:
+    for from_name, to_name in link.key_map.items():
         if _is_null(to_instance, to_name):
             raise ModelException('undefined referential attribute %s' % to_name)
         
@@ -896,7 +903,7 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     post_process = _deferred_link_operation(from_instance, link, unrelate)
 
     updated = False
-    for from_name, _ in link.key_map:
+    for from_name in link.key_map:
         if _is_null(from_instance, from_name):
             raise ModelException('instances not related')
         
