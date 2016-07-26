@@ -111,13 +111,18 @@ class NavManyChain(NavChain):
 
 
 class Link(object):
+    from_metaclass = None
+    rel_id = None
+    to_metaclass = None
+    phrase = None
+    key_map = None
     
     def __init__(self, from_metaclass, rel_id, to_metaclass, phrase, key_map):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
         
-        self.rel_id = rel_id
         self.from_metaclass = from_metaclass
+        self.rel_id = rel_id
         self.to_metaclass = to_metaclass
         self.phrase = phrase
         self.key_map = key_map
