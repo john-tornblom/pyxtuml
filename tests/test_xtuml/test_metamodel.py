@@ -404,55 +404,6 @@ class TestModel(unittest.TestCase):
         
         inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
         self.assertEqual(inst, s_bparm)
-    
-    def test_concistency_of_empty_model(self):
-        self.assertTrue(self.metamodel.is_consistent())
-    
-    def test_consistency_of_non_empty_model(self):
-        m = self.metamodel
-        s_dt = m.select_one('S_DT', where(Name='string'))
-        s_bparm = m.new('S_BPARM', Name='My_Parameter')
-        s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
-        pe_pe = m.new('PE_PE', Visibility=True, type=5)
-        s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
-        
-        
-        self.assertFalse(xtuml.check_association_integrity(m, 22))
-        self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
-        self.assertTrue(xtuml.check_association_integrity(m, 22))
-        
-        self.assertFalse(xtuml.check_association_integrity(m, 21))
-        self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
-        self.assertTrue(xtuml.check_association_integrity(m, 21))
-        
-        self.assertFalse(xtuml.check_association_integrity(m, 20))
-        self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
-        self.assertTrue(xtuml.check_association_integrity(m, 20))
-        
-        self.assertFalse(xtuml.check_association_integrity(m, 8001))
-        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
-        self.assertTrue(xtuml.check_association_integrity(m, 8001))
-        
-        self.assertFalse(xtuml.check_association_integrity(m, 19))
-        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
-        self.assertTrue(xtuml.check_association_integrity(m, 19))
-        
-        # the old, unused association R8 is still present in ooaofooa, and thus
-        # consistency check fails on S_EE.
-        #self.assertTrue(m.is_consistent())
-        
-    def test_uniqueness_constraint(self):
-        m = self.metamodel
-        self.assertTrue(m.is_consistent())
-        
-        s_dt = m.select_one('S_DT', where(Name='string'))
-        m.clone(s_dt)
-        
-        self.assertFalse(m.is_consistent())
-        self.assertTrue(xtuml.check_uniqueness_constraint(m, 'PE_PE'))
-        
-        xtuml.delete(s_dt)
-        self.assertTrue(m.is_consistent())
 
 
 class TestDefineAssociations(unittest.TestCase):
@@ -600,82 +551,26 @@ class TestQuerySet(unittest.TestCase):
     '''
     Test suite for the class xtuml.QuerySet
     '''
-    
-    def test_equal_operator(self):
-        q1 = xtuml.QuerySet()
-        q2 = xtuml.QuerySet()
+    def test_first(self):
+        q = xtuml.QuerySet([1, 2, 3])
+        self.assertEqual(q.first, 1)
         
-        self.assertEqual(q1, q2)
-        
-        q1 = xtuml.QuerySet([1])
-        q2 = xtuml.QuerySet([1])
-        
-        self.assertEqual(q1, q2)
-        
-        q1 = xtuml.QuerySet([1, 2, 3])
-        q2 = xtuml.QuerySet([1, 2, 3])
-        
-        self.assertEqual(q1, q2)
-        self.assertEqual(q1, [1, 2, 3])
-        
-    def test_not_equal_operator(self):
-        q1 = xtuml.QuerySet()
-        q2 = xtuml.QuerySet([1])
-        self.assertNotEqual(q1, q2)
-        self.assertNotEqual(q2, q1)
-        
-        q1 = xtuml.QuerySet([1, 2, 3])
-        q2 = xtuml.QuerySet([1, 3])
-        self.assertNotEqual(q1, q2)
-        self.assertNotEqual(q2, q1)
-        
-        q1 = xtuml.QuerySet([1, 2, 3])
-        q2 = xtuml.QuerySet([1, 3, 2])
-        self.assertNotEqual(q1, q2)
-        
-    def test_pop_empty(self):
         q = xtuml.QuerySet()
-        self.assertRaises(KeyError, q.pop)
-
-    def test_pop_last(self):
-        q1 = xtuml.QuerySet([1, 2])
-        q2 = xtuml.QuerySet([1])
-        self.assertNotEqual(q1, q2)
-
-        q1.pop()
-        self.assertEqual(q1, q2)
+        self.assertIsNone(q.first)
         
-    def test_pop_first(self):
-        q1 = xtuml.QuerySet([2, 1])
-        q2 = xtuml.QuerySet([1])
-        self.assertNotEqual(q1, q2)
-
-        q1.pop(last=False)
-        self.assertEqual(q1, q2)
-
-class TestIdGenerator(unittest.TestCase):
-    '''
-    Test suite for the IdGenerator classes
-    '''
-
-    def test_next_pattern(self):
-        i = xtuml.IntegerGenerator()
-        self.assertEqual(i.peek(), 1)
-        self.assertEqual(i.next(), 1)
-        self.assertEqual(i.next(), 2)
-        self.assertEqual(i.peek(), 3)
-        self.assertEqual(i.peek(), 3)
-
-    def test_generator_pattern(self):
-        i = xtuml.IntegerGenerator()
-        count = 1
-        for v in i:
-            self.assertEqual(v, count)
-            count += 1
-            if count == 10:
-                break
-
-
+    def test_last(self):
+        q = xtuml.QuerySet([1, 2, 3])
+        self.assertEqual(q.last, 3)
+        
+        q = xtuml.QuerySet()
+        self.assertIsNone(q.last)
+        
+    def test_one_item(self):
+        q = xtuml.QuerySet([2])
+        self.assertEqual(q.first, 2)
+        self.assertEqual(q.last, 2)
+        
+        
 if __name__ == "__main__":
     unittest.main()
 

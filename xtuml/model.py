@@ -1,7 +1,6 @@
 # encoding: utf-8
 # Copyright (C) 2016 John Törnblom
 
-from itertools import chain
 from functools import partial
 
 import logging

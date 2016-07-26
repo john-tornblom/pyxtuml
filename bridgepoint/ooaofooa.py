@@ -4018,24 +4018,14 @@ class ModelLoader(xtuml.ModelLoader):
             return mk_component(mm, c_c, derived_attributes)
 
 
-# Backwards compatabillity with older versions of pyxtuml
-Loader = ModelLoader
-
-
-def empty_model():
-    '''
-    Load and return an empty metamodel expressed in ooaofooa.
-    '''
-    loader = Loader()
-    return loader.build_metamodel()
-
-
-def load_metamodel(resource):
+def load_metamodel(resource=None):
     '''
     Load and return a metamodel expressed in ooaofooa from a *resource*.
     The resource may be either a filename, a path, or a list of filenames
     and/or paths.
     '''
+    resource = resource or list()
+        
     if isinstance(resource, str):
         resource = [resource]
         
@@ -4045,4 +4035,8 @@ def load_metamodel(resource):
     
     return loader.build_metamodel()
 
+
+# Backwards compatabillity with older versions of pyxtuml
+Loader = ModelLoader
+empty_model = load_metamodel
 
