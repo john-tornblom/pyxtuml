@@ -55,20 +55,7 @@ class TestAssociation(unittest.TestCase):
         self.assertTrue(l.is_many)
         self.assertTrue(l.is_conditional)
         
-        
-class TestNavChain(unittest.TestCase):
-    '''
-    Test suite for the class xtuml.NavChain
-    '''
-    
-    def test_navigate_none(self):
-        self.assertIsNone(xtuml.navigate_one(None)())
-        self.assertEqual(len(xtuml.navigate_many(None)()), 0)
-
-    def test_navigate_invalid_handle(self):
-        self.assertRaises(xtuml.ModelException, xtuml.navigate_one, 50)
-
-        
+                
 class TestModel(unittest.TestCase):
     '''
     Test suite for the class xtuml.MetaModel
@@ -106,25 +93,6 @@ class TestModel(unittest.TestCase):
         m = self.metamodel
         inst = m.select_any('S_DT', where(Name='void'))
         self.assertEqual(inst.Name, 'void')
-        
-    def test_navigate_one(self):
-        m = self.metamodel
-        s_dt = m.select_any('S_DT',  where(Name='void'))
-        pe_pe = xtuml.navigate_one(s_dt).PE_PE[8001](lambda inst: True)
-        self.assertEqual(s_dt.DT_ID, pe_pe.Element_ID)
-        
-    def test_navigate_many(self):
-        m = self.metamodel
-        s_dt = m.select_many('S_DT')
-        pe_pe = xtuml.navigate_many(s_dt).PE_PE[8001](lambda inst: True)
-        self.assertEqual(len(s_dt), len(pe_pe))
-   
-    def test_navigate_suptype(self):
-        m = self.metamodel
-        s_dt = m.select_any('S_DT',  where(Name='void'))
-        s_cdt = xtuml.navigate_subtype(s_dt, 17)
-        self.assertTrue(s_cdt)
-        self.assertEqual(s_cdt.__class__.__name__, 'S_CDT')
         
     def test_empty(self):
         m = self.metamodel
