@@ -8,54 +8,6 @@ from bridgepoint import ooaofooa
 from xtuml import where_eq as where
 
 
-class TestAssociation(unittest.TestCase):
-    '''
-    Test suite for the class xtuml.AssociationLink
-    '''
-    
-    def test_association_constructor(self):
-        l1 = xtuml.AssociationLink('CLASS1', '1C', [], 'next')
-        l2 = xtuml.AssociationLink('CLASS1', '1C', [], 'prev')
-        ass = xtuml.Association(1, l1, l2)
-        self.assertEqual(ass.id, 'R1')
-        self.assertTrue(ass.is_reflexive)
-
-        l1 = xtuml.AssociationLink('CLASS1', '1C', [], 'next')
-        l2 = xtuml.AssociationLink('CLASS2', '1C', [], 'prev')
-        ass = xtuml.Association('R2', l1, l2)
-        self.assertEqual(ass.id, 'R2')
-        self.assertFalse(ass.is_reflexive)
-        
-    def test_association_link_constructor(self):
-        l = xtuml.AssociationLink('CLASS', '1', [], 'test')
-        self.assertFalse(l.is_many)
-        self.assertFalse(l.is_conditional)
-
-        l = xtuml.AssociationLink('CLASS', '1C', [], 'test')
-        self.assertFalse(l.is_many)
-        self.assertTrue(l.is_conditional)
-
-        l = xtuml.AssociationLink('CLASS', '1c', [], 'test')
-        self.assertFalse(l.is_many)
-        self.assertTrue(l.is_conditional)
-
-        l = xtuml.AssociationLink('CLASS', 'MC', [], 'test')
-        self.assertTrue(l.is_many)
-        self.assertTrue(l.is_conditional)
-
-        l = xtuml.AssociationLink('CLASS', 'mC', [], 'test')
-        self.assertTrue(l.is_many)
-        self.assertTrue(l.is_conditional)
-
-        l = xtuml.AssociationLink('CLASS', 'Mc', [], 'test')
-        self.assertTrue(l.is_many)
-        self.assertTrue(l.is_conditional)
-
-        l = xtuml.AssociationLink('CLASS', 'mc', [], 'test')
-        self.assertTrue(l.is_many)
-        self.assertTrue(l.is_conditional)
-        
-                
 class TestModel(unittest.TestCase):
     '''
     Test suite for the class xtuml.MetaModel
@@ -237,9 +189,17 @@ class TestDefineAssociations(unittest.TestCase):
                                           ('Next_Id', 'unique_id'),
                                           ('Name', 'string')])
         
-        endpint1 = xtuml.SingleAssociationLink('A', ids=['Id'], phrase='prev')
-        endpint2 = xtuml.SingleAssociationLink('A', ids=['Next_Id'], phrase='next')
-        self.metamodel.define_relation('R1', endpint1, endpint2)
+        self.metamodel.define_association(rel_id='R1', 
+                                          source_kind='A', 
+                                          source_keys=['Id'], 
+                                          source_many=False, 
+                                          source_conditional=False,
+                                          source_phrase='prev',
+                                          target_kind='A',
+                                          target_keys=['Next_Id'],
+                                          target_many=False,
+                                          target_conditional=False,
+                                          target_phrase='next')
         
         first = self.metamodel.new('A', Name="First")
         second = self.metamodel.new('A', Name="Second")
@@ -261,10 +221,17 @@ class TestDefineAssociations(unittest.TestCase):
     def test_one_to_many(self):
         self.metamodel.define_class('A', [('Id', 'unique_id')])
         self.metamodel.define_class('B', [('Id', 'unique_id'), ('A_Id', 'unique_id')])
-        a_endpint = xtuml.SingleAssociationLink('A', ids=['Id'])
-        b_endpint = xtuml.ManyAssociationLink('B', ids=['A_Id'])
-        
-        self.metamodel.define_relation(1, a_endpint, b_endpint)
+        self.metamodel.define_association(rel_id=1, 
+                                          source_kind='A', 
+                                          source_keys=['Id'], 
+                                          source_many=False, 
+                                          source_conditional=False,
+                                          source_phrase='',
+                                          target_kind='B',
+                                          target_keys=['A_Id'],
+                                          target_many=True,
+                                          target_conditional=False,
+                                          target_phrase='')
         
         a = self.metamodel.new('A')
         b = self.metamodel.new('B')

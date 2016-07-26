@@ -77,16 +77,16 @@ def serialize_instances(metamodel):
     return s
 
 
-def serialize_association_link(lnk):
+def serialize_link(link):
     '''
     Serialize an xtuml metamodel association link.
     '''
-    s = '%s %s (%s)' % (lnk.cardinality.upper(),
-                        lnk.kind,
-                        ', '.join(lnk.ids))
+    s = '%s %s (%s)' % (link.cardinality,
+                        link.from_metaclass.kind,
+                        ', '.join(link.key_map.keys()))
     
-    if lnk.phrase:
-        s += " PHRASE '%s'" % lnk.phrase
+    if link.phrase:
+        s += " PHRASE '%s'" % link.phrase
         
     return s
 
@@ -95,11 +95,11 @@ def serialize_association(ass):
     '''
     Serialize an xtuml metamodel association.
     '''
-    source = serialize_association_link(ass.source)
-    target = serialize_association_link(ass.target)
-    return 'CREATE ROP REF_ID %s FROM %s TO %s;\n' % (ass.id,
-                                                      source,
-                                                      target)
+    link = serialize_link(ass.link)
+    reversed_link = serialize_link(ass.reversed_link)
+    return 'CREATE ROP REF_ID %s FROM %s TO %s;\n' % (ass.rel_id,
+                                                      link,
+                                                      reversed_link)
 
 
 def serialize_class(Cls):
@@ -134,7 +134,7 @@ def serialize_schema(metamodel):
     for kind in sorted(metamodel.metaclasses.keys()):
         s += serialize_class(metamodel.metaclasses[kind].clazz)
     
-    for ass in sorted(metamodel.associations, key=lambda x: x.id):
+    for ass in sorted(metamodel.associations, key=lambda x: x.rel_id):
         s += serialize_association(ass)
     
     return s
@@ -165,8 +165,8 @@ def serialize(resource):
     elif isinstance(resource, xtuml.Association):
         return serialize_association(resource)
 
-    elif isinstance(resource, xtuml.AssociationLink):
-        return serialize_association_link(resource)
+    elif isinstance(resource, xtuml.Link):
+        return serialize_link(resource)
     
     elif isinstance(resource, xtuml.BaseObject):
         return serialize_instance(resource)
@@ -193,7 +193,7 @@ def persist_schema(metamodel, path):
             s = serialize_class(metamodel.metaclasses[kind].clazz)
             f.write(s)
             
-        for ass in sorted(metamodel.associations, key=lambda x: x.id):
+        for ass in sorted(metamodel.associations, key=lambda x: x.rel_id):
             s = serialize_association(ass)
             f.write(s)
 
@@ -231,7 +231,7 @@ def persist_database(metamodel, path):
                                                               attribute_names)
                 f.write(s)
                 
-        for ass in sorted(metamodel.associations, key=lambda x: x.id):
+        for ass in sorted(metamodel.associations, key=lambda x: x.rel_id):
             s = serialize_association(ass)
             f.write(s)
 

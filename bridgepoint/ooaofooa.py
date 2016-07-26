@@ -3752,20 +3752,6 @@ def is_global(pe_pe):
     return is_global(pe_pe)
 
 
-def mult_cond(mult, cond):
-    '''
-    Create the cardinality string used on xtuml associations.
-    '''
-    if mult:
-        s = 'M'
-    else:
-        s = '1'
-    if cond:
-        s += 'C'
-        
-    return s
-
-
 def get_data_type_name(s_dt):
     '''
     Convert a BridgePoint data type to a pyxtuml meta model type.
@@ -3862,22 +3848,25 @@ def mk_simple_association(m, inst):
     
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
-    
-    source_cardinality = mult_cond(r_form.Mult, r_form.Cond)
-    target_cardinality = mult_cond(r_part.Mult, r_part.Cond)
-    
     source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
-    
-    source = xtuml.AssociationLink(source_o_obj.Key_Lett, source_cardinality,
-                                   source_ids, r_part.Txt_Phrs)
 
-    target = xtuml.AssociationLink(target_o_obj.Key_Lett, target_cardinality,
-                                   target_ids, r_form.Txt_Phrs)
-    
-    if target.kind != source.kind:
-        target.phrase = source.phrase = ''
-        
-    m.define_association(r_rel.Numb, source, target)
+    if source_o_obj.Obj_ID != target_o_obj.Obj_ID:
+        source_phrase = target_phrase = ''
+    else:
+        source_phrase = r_part.Txt_Phrs
+        target_phrase = r_form.Txt_Phrs
+            
+    m.define_association(rel_id=r_rel.Numb, 
+                         source_kind=source_o_obj.Key_Lett,
+                         target_kind=target_o_obj.Key_Lett,
+                         source_keys=source_ids,
+                         target_keys=target_ids,
+                         source_conditional=r_form.Cond,
+                         target_conditional=r_part.Cond,
+                         source_phrase=source_phrase,
+                         target_phrase=target_phrase,
+                         source_many=r_form.Mult,
+                         target_many=r_part.Mult,)
 
 
 def mk_linked_association(m, inst):
@@ -3888,22 +3877,28 @@ def mk_linked_association(m, inst):
     r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     
-    def _mk_link(side1, side2):
+    def _mk_assoc(side1, side2):
         r_rto = one(side1).R_RTO[204]()
 
         target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
-        cardinality = mult_cond(side2.Mult, side2.Cond)
         source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
-    
-        source = xtuml.AssociationLink(source_o_obj.Key_Lett, cardinality,
-                                       source_ids, side1.Txt_Phrs)
-        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids,
-                                       side2.Txt_Phrs)
-
         if side1.Obj_ID != side2.Obj_ID:
-            target.phrase = source.phrase = ''
-        
-        m.define_association(r_rel.Numb, source, target)
+            source_phrase = target_phrase = ''
+        else:
+            source_phrase = side1.Txt_Phrs
+            target_phrase = side2.Txt_Phrs
+            
+        m.define_association(rel_id=r_rel.Numb, 
+                             source_kind=source_o_obj.Key_Lett,
+                             target_kind=target_o_obj.Key_Lett,
+                             source_keys=source_ids,
+                             target_keys=target_ids,
+                             source_conditional=side2.Cond,
+                             target_conditional=False,
+                             source_phrase=source_phrase,
+                             target_phrase=target_phrase,
+                             source_many=side2.Mult,
+                             target_many=False)
         
     r_aone = one(inst).R_AONE[209]()
     r_aoth = one(inst).R_AOTH[210]()
@@ -3912,8 +3907,8 @@ def mk_linked_association(m, inst):
         logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
         return
     
-    _mk_link(r_aone, r_aoth)
-    _mk_link(r_aoth, r_aone)
+    _mk_assoc(r_aone, r_aoth)
+    _mk_assoc(r_aoth, r_aone)
   
     
 def mk_subsuper_association(m, inst):
@@ -3933,12 +3928,18 @@ def mk_subsuper_association(m, inst):
 
         source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
         source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
-        
-        source = xtuml.AssociationLink(source_o_obj.Key_Lett, '1C', source_ids)
-        target = xtuml.AssociationLink(target_o_obj.Key_Lett, '1', target_ids)
-        
-        m.define_association(r_rel.Numb, source, target)
-
+        m.define_association(rel_id=r_rel.Numb, 
+                             source_kind=source_o_obj.Key_Lett,
+                             target_kind=target_o_obj.Key_Lett,
+                             source_keys=source_ids,
+                             target_keys=target_ids,
+                             source_conditional=True,
+                             target_conditional=False,
+                             source_phrase='',
+                             target_phrase='',
+                             source_many=False,
+                             target_many=False)
+                           
 
 def mk_derived_association(m, inst):
     '''
@@ -4018,7 +4019,7 @@ class ModelLoader(xtuml.ModelLoader):
             return mk_component(mm, c_c, derived_attributes)
 
 
-def load_metamodel(resource=None):
+def load_metamodel(resource=None, load_globals=True):
     '''
     Load and return a metamodel expressed in ooaofooa from a *resource*.
     The resource may be either a filename, a path, or a list of filenames
@@ -4029,7 +4030,7 @@ def load_metamodel(resource=None):
     if isinstance(resource, str):
         resource = [resource]
         
-    loader = Loader()
+    loader = Loader(load_globals)
     for filename in resource:
         loader.filename_input(filename)
     

@@ -13,34 +13,32 @@ import xtuml
 logger = logging.getLogger('consistency_check')
 
 
-def pretty_to_link(inst, from_link, to_link):
+def pretty_to_link(inst, link):
     '''
     Create a human-readable representation of a link on the 'TO'-side
     '''
     values = ''
     prefix = ''
     metaclass = inst.__metaclass__
-    
+
     for name, ty in metaclass.attributes:
-        if name in from_link.ids:
+        if name in link.key_map:
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
-            idx = from_link.ids.index(name)
-            name = to_link.ids[idx]
+            name = link.key_map[name]
             values += '%s%s=%s' % (prefix, name, value)
             prefix = ', '
                 
-    return '%s(%s)' % (to_link.kind, values)
+    return '%s(%s)' % (link.kind, values)
         
 
-def pretty_from_link(inst, from_link, to_link):
+def pretty_from_link(inst, link):
     '''
     Create a human-readable representation of a link on the 'FROM'-side
     '''
     values = ''
     prefix = ''
     metaclass = inst.__metaclass__
-    
     for name, ty in metaclass.attributes:
         if name in metaclass.identifying_attributes:
             value = getattr(inst, name)
@@ -48,7 +46,7 @@ def pretty_from_link(inst, from_link, to_link):
             values += '%s%s=%s' % (prefix, name, value)
             prefix = ', '
                 
-    return '%s(%s)' % (from_link.kind, values)
+    return '%s(%s)' % (metaclass.kind, values)
 
 
 def pretty_unique_identifier(inst, identifier):
@@ -110,24 +108,24 @@ def check_uniqueness_constraint(m, kind=None):
     return res
 
 
-def check_link_integrity(m, rel_id, from_link, to_link):
+def check_link_integrity(m, link):
     '''
     Check the model for integrity violations on an association in a particular direction.
     '''
     res = True
-    for inst in m.select_many(from_link.kind):
-        nav_chain = xtuml.navigate_many(inst)
-        q_set = nav_chain.nav(to_link.kind, rel_id, to_link.phrase)()
+    for inst in link.from_metaclass.select_many():
+        q_set = list(link.navigate(inst))
 
-        if(len(q_set) < 1 and not to_link.is_conditional) or (
-          (len(q_set) > 1 and not to_link.is_many)):
+        if(len(q_set) < 1 and not link.conditional) or (
+          (len(q_set) > 1 and not link.many)):
             res = False
             logger.warning('integrity violation in '
-                           '%s --(%s)--> %s' % (pretty_from_link(inst, from_link, to_link),
-                                                rel_id,
-                                                pretty_to_link(inst, from_link, to_link)))
+                           '%s --(%s)--> %s' % (pretty_from_link(inst, link),
+                                                link.rel_id,
+                                                pretty_to_link(inst, link)))
     
     return res
+
 
 
 def check_association_integrity(m, rel_id=None):
@@ -139,9 +137,9 @@ def check_association_integrity(m, rel_id=None):
             
     res = True
     for ass in m.associations:
-        if rel_id in [ass.id, None]:
-            res &= check_link_integrity(m, ass.id, ass.source, ass.target)
-            res &= check_link_integrity(m, ass.id, ass.target, ass.source)
+        if rel_id in [ass.rel_id, None]:
+            res &= check_link_integrity(m, ass.link)
+            res &= check_link_integrity(m, ass.reversed_link)
 
     return res
 

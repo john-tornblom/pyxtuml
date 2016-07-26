@@ -135,13 +135,25 @@ class Link(object):
     def kind(self):
         return self.to_metaclass.kind
 
+    @property
+    def cardinality(self):
+        if self.many:
+            s = 'M'
+        else:
+            s = '1'
+            
+        if self.conditional:
+            s += 'C'
+            
+        return s
+    
     def navigate(self, inst):
         kwargs = dict()
         for key, mapped_key in self.key_map.items():
             kwargs[mapped_key] = getattr(inst, key)
 
         return self.to_metaclass.query(kwargs)
-        
+    
     def __repr__(self):
         if self.phrase:
             return "%s->%s[%s, %s]" % (self.kind, self.to_metaclass.kind, 
@@ -164,61 +176,20 @@ class Association(object):
     '''
     An association connects two classes to each other via two association links.
     '''
+    rel_id = None
+    link = None
+    reversed_link = None
     
-    def __init__(self, relid, source, target):
-        if isinstance(relid, int):
-            relid = 'R%d' % relid
-        self.id = relid
-        self.source = source
-        self.target = target    
-
+    def __init__(self, rel_id, link, reversed_link):
+        self.rel_id = rel_id
+        self.link = link
+        self.reversed_link = reversed_link
+        
     @property
     def is_reflexive(self):
-        return self.source.kind.upper() == self.target.kind.upper()
+        return self.link.kind == self.reversed_link.kind
 
-    
-class AssociationLink(object):
-    '''
-    An association link represent an end point in an association.
-    '''
-    
-    def __init__(self, kind, cardinality, ids, phrase=''):
-        self.cardinality = cardinality
-        self.kind = kind
-        self.phrase = phrase
-        self.ids = ids
-
-    @property
-    def is_many(self):
-        return self.cardinality.upper() in ['M', 'MC']
-
-    @property
-    def is_conditional(self):
-        return 'C' in self.cardinality.upper()
-
-
-class SingleAssociationLink(AssociationLink):
-    '''
-    An association link that identifies an end point with cardinality 0..1 or 1.
-    '''
-    
-    def __init__(self, kind, conditional=False, ids=[], phrase=''):
-        if conditional: cardinality = '1C'
-        else:           cardinality = '1'
-        AssociationLink.__init__(self, kind, cardinality, ids, phrase)
-
-
-class ManyAssociationLink(AssociationLink):
-    '''
-    An association link that identifies an end point with cardinality * or 1..*.
-    '''
-    
-    def __init__(self, kind, conditional=False, ids=[], phrase=''):
-        if conditional: cardinality = 'MC'
-        else:           cardinality = 'M'
-        AssociationLink.__init__(self, kind, cardinality, ids, phrase)
         
-
 class QuerySet(xtuml.OrderedSet):
     '''
     An ordered set which holds instances that match queries from a metamodel.
@@ -333,8 +304,7 @@ class MetaClass(object):
     def attribute_names(self):
         return [name for name, _ in self.attributes]
     
-    def add_link(self, metaclass, rel_id, key_map, phrase, conditional=False,
-                 many=False, reverse=False):
+    def add_link(self, metaclass, rel_id, key_map, phrase, conditional, many, reverse=False):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
         
@@ -550,28 +520,32 @@ class MetaModel(object):
             setattr(clone, name, value)
             
         return clone
+            
+    def define_association(self, rel_id, source_kind, source_keys, source_many,
+                           source_conditional, source_phrase, target_kind, 
+                           target_keys, target_many, target_conditional, 
+                           target_phrase):
+        '''
+        Define and return an association between two classes.
+        '''
+        if isinstance(rel_id, int):
+            rel_id = 'R%d' % rel_id
+            
+        source_metaclass = self.find_metaclass(source_kind)
+        target_metaclass = self.find_metaclass(target_kind)
+        key_map = dict(zip(source_keys, target_keys))
         
-    def define_relation(self, rel_id, source, target):
-        '''
-        This method is deprecated. Use *define_association* instead.
-        '''
-        return self.define_association(rel_id, source, target)
-    
-    def define_association(self, rel_id, source, target):
-        '''
-        Define and return an association between *source* to *target* named 
-        *rel_id*.
-        '''
-        source_metaclass = self.find_metaclass(source.kind)
-        target_metaclass = self.find_metaclass(target.kind)
+        link1 = source_metaclass.add_link(target_metaclass, rel_id, key_map,
+                                          many=target_many, phrase=target_phrase,
+                                          conditional=target_conditional)
         
-        key_map = dict(zip(source.ids, target.ids))
-        source_metaclass.add_link(target_metaclass, rel_id, key_map, target.phrase)
-        target_metaclass.add_link(source_metaclass, rel_id, key_map, source.phrase, reverse=True)
+        link2 = target_metaclass.add_link(source_metaclass, rel_id, key_map,
+                                          many=source_many, phrase=source_phrase,
+                                          conditional=source_conditional, reverse=True)
         
-        ass = Association(rel_id, source, target)
+        ass = Association(rel_id, link1, link2)
         self.associations.append(ass)
-        
+
         return ass
         
     def define_unique_identifier(self, kind, name, *named_attributes):

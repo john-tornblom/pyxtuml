@@ -34,9 +34,8 @@ from .persist import serialize_value
 from .persist import serialize
 
 from .model import Association
-from .model import AssociationLink
-from .model import SingleAssociationLink
-from .model import ManyAssociationLink
+from .model import Link
+from .model import ReversedLink
 
 from .model import QuerySet
 from .model import BaseObject
