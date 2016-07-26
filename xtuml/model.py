@@ -442,33 +442,6 @@ class MetaClass(object):
             
         return self.cache[index].execute()
 
-
-def _is_null(inst, name):
-    value = getattr(inst, name)
-    if value:
-        return False
-    
-    elif value is None:
-        return True
-
-    name = name.upper()
-    for attr_name, attr_ty in inst.__metaclass__.attributes:
-        if attr_name.upper() != name:
-            continue
-
-        attr_ty = attr_ty.upper()
-        if attr_ty == 'UNIQUE_ID':
-            # UUID(int=0) is reserved for null
-            return value == 0
-
-        elif attr_ty == 'STRING':
-            # empty string is reserved for null
-            return len(value) == 0
-
-        else:
-            #null-values for integer, boolean and real are not supported
-            return False
-
         
 class MetaModel(object):
     '''
@@ -833,7 +806,34 @@ def _deferred_link_operation(inst, link, op):
 
     return l
 
+
+def _is_null(inst, name):
+    value = getattr(inst, name)
+    if value:
+        return False
     
+    elif value is None:
+        return True
+
+    name = name.upper()
+    for attr_name, attr_ty in inst.__metaclass__.attributes:
+        if attr_name.upper() != name:
+            continue
+
+        attr_ty = attr_ty.upper()
+        if attr_ty == 'UNIQUE_ID':
+            # UUID(int=0) is reserved for null
+            return value == 0
+
+        elif attr_ty == 'STRING':
+            # empty string is reserved for null
+            return len(value) == 0
+
+        else:
+            #null-values for integer, boolean and real are not supported
+            return False
+
+
 def relate(from_instance, to_instance, rel_id, phrase=''):
     '''
     Relate *from_instance* to *to_instance* across *rel_id*. For refelxive
