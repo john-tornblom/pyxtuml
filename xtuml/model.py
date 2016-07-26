@@ -339,6 +339,8 @@ class MetaClass(object):
         key = (metaclass.kind, rel_id, phrase)
         self.links[key] = link
         
+        return link
+        
     def find_link(self, kind, rel_id, phrase):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
@@ -618,20 +620,8 @@ class MetaModel(object):
         if not xtuml.check_association_integrity(self):
             return False
         
+        
         return xtuml.check_uniqueness_constraint(self)
-    
-    def _select_endpoint(self, inst, source, target, kwargs):
-        metaclass = self.find_metaclass(target.kind)
-        keys = chain(target.ids, kwargs.keys())
-        values = chain([getattr(inst, name) for name in source.ids],
-                       kwargs.values())
-        kwargs = dict(zip(keys, values))
-
-        return metaclass.query(kwargs)
-
-    def _formalized_query(self, source, target):
-        return lambda inst, **kwargs: self._select_endpoint(inst, source,
-                                                            target, kwargs)
     
 
 def navigate_one(instance):
