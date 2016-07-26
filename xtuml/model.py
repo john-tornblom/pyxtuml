@@ -749,6 +749,9 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
 
     
 def _find_link(inst1, inst2, rel_id, phrase):
+    '''
+    Find links which correspond to the given arguments.
+    '''
     metaclass1 = inst1.__metaclass__
     metaclass2 = inst2.__metaclass__
 
@@ -807,8 +810,12 @@ def _deferred_link_operation(inst, link, op):
     return l
 
 
-def _is_null(inst, name):
-    value = getattr(inst, name)
+def _is_null(instance, name):
+    '''
+    Determine if an attribute of an *instance* with a specific *name* 
+    is null.
+    '''
+    value = getattr(instance, name)
     if value:
         return False
     
@@ -816,7 +823,7 @@ def _is_null(inst, name):
         return True
 
     name = name.upper()
-    for attr_name, attr_ty in inst.__metaclass__.attributes:
+    for attr_name, attr_ty in instance.__metaclass__.attributes:
         if attr_name.upper() != name:
             continue
 
