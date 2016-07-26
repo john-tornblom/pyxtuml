@@ -212,14 +212,6 @@ class TestModel(unittest.TestCase):
         self.assertRaises(xtuml.UnknownClassException, self.metamodel.select_many,
                           'MY_CLASS')
         
-    def test_relate(self):
-        s_edt = self.metamodel.new('S_EDT')
-        s_dt = self.metamodel.new('S_DT')
-        pe_pe = self.metamodel.new('PE_PE')
-        self.assertTrue(xtuml.relate(s_dt, pe_pe, 8001))
-        self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
-        self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
-
     def test_delete(self):
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
         xtuml.delete(inst)
@@ -259,28 +251,6 @@ class TestModel(unittest.TestCase):
     
     def test_delete_unknown_instance(self):
         self.assertRaises(xtuml.ModelException, xtuml.delete, self)
-        
-    def test_relate_reflexive_one_to_other(self):
-        inst1 = self.metamodel.new('ACT_SMT')
-        inst2 = self.metamodel.new('ACT_SMT')
-        act_blk = self.metamodel.new('ACT_BLK')
-
-        self.assertTrue(xtuml.relate(inst1, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst2, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
-        self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
-        self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
-        
-    def test_relate_reflexive_other_to_one(self):
-        inst1 = self.metamodel.new('ACT_SMT')
-        inst2 = self.metamodel.new('ACT_SMT')
-        act_blk = self.metamodel.new('ACT_BLK')
-
-        self.assertTrue(xtuml.relate(inst1, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst2, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst2, inst1, 661, 'succeeds'))
-        self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
-        self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
     def test_sort_reflexive(self):
         act_blk = self.metamodel.new('ACT_BLK')
@@ -325,85 +295,6 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(inst_set), 4)
         for inst1, inst2 in zip(inst_set, [p1, p2, p3, p4]):
             self.assertEqual(inst1, inst2)
-
-    def test_relate_reflexive_without_phrase(self):
-        inst1 = self.metamodel.new('ACT_SMT')
-        inst2 = self.metamodel.new('ACT_SMT')
-        
-        self.assertRaises(xtuml.ModelException, xtuml.relate,
-                          inst1, inst2, 661, '<invalid phrase>')
-        
-    def test_relate_inverted_order(self):
-        s_edt = self.metamodel.new('S_EDT')
-        s_dt = self.metamodel.new('S_DT')
-        pe_pe = self.metamodel.new('PE_PE')
-        self.assertTrue(xtuml.relate(pe_pe, s_dt, 8001))
-        self.assertTrue(xtuml.relate(s_edt, s_dt, 17))
-        self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
-    
-    def test_relate_invalid_relid(self):
-        s_edt = self.metamodel.new('S_EDT')
-        s_dt = self.metamodel.new('S_DT')
-        self.assertRaises(xtuml.ModelException, xtuml.relate, s_edt, s_dt, 0)
-        
-    def test_unrelate(self):
-        inst1 = self.metamodel.new('ACT_SMT')
-        inst2 = self.metamodel.new('ACT_SMT')
-        act_blk = self.metamodel.new('ACT_BLK')
-
-        self.assertTrue(xtuml.relate(inst1, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst2, act_blk, 602))
-        
-        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
-        self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
-        self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
-        
-        self.assertTrue(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
-        self.assertIsNone(xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
-        self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
-            
-    def test_relate_in_wrong_order(self):
-        s_ee = self.metamodel.new('S_EE')
-        pe_pe = self.metamodel.new('PE_PE')
-        EE_ID = s_ee.EE_ID
-        Element_ID = pe_pe.Element_ID
-        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
-        self.assertNotEqual(EE_ID, s_ee.EE_ID)
-        self.assertEqual(Element_ID, pe_pe.Element_ID)
-
-    def test_relate_top_down(self):
-        m = self.metamodel
-        s_dt = m.select_one('S_DT', where(Name='string'))
-        s_bparm = m.new('S_BPARM', Name='My_Parameter')
-        s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
-        pe_pe = m.new('PE_PE', Visibility=True, type=5)
-        s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
-
-        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
-        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
-        self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
-        self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
-        self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
-            
-        inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
-        self.assertEqual(inst, s_bparm)
-        
-    def test_relate_bottom_up(self):
-        m = self.metamodel
-        s_dt = m.select_one('S_DT', where(Name='string'))
-        s_bparm = m.new('S_BPARM', Name='My_Parameter')
-        s_ee = m.new('S_EE', Name='My_External_Entity', Key_Lett='My_External_Entity')
-        pe_pe = m.new('PE_PE', Visibility=True, type=5)
-        s_brg = m.new('S_BRG', Name='My_Bridge_Operation')
-        
-        self.assertTrue(xtuml.relate(s_bparm, s_dt, 22))
-        self.assertTrue(xtuml.relate(s_bparm, s_brg, 21))
-        self.assertTrue(xtuml.relate(s_brg, s_dt, 20))
-        self.assertTrue(xtuml.relate(s_ee, pe_pe, 8001))
-        self.assertTrue(xtuml.relate(s_brg, s_ee, 19))
-        
-        inst = xtuml.navigate_any(pe_pe).S_EE[8001].S_BRG[19].S_BPARM[21]()
-        self.assertEqual(inst, s_bparm)
 
 
 class TestDefineAssociations(unittest.TestCase):
