@@ -699,8 +699,10 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
     reflexive association. The first instance in the resulting ordered set is
     **not** associated to an instance across the given *phrase*.
     '''
-    if (not isinstance(set_of_instances, QuerySet) or 
-        not set_of_instances.first):
+    if not isinstance(set_of_instances, QuerySet):
+        raise ModelException('The collection to sort must be a QuerySet')
+    
+    if not set_of_instances.first:
         return QuerySet()
     
     if isinstance(rel_id, int):
