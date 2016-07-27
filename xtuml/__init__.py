@@ -33,33 +33,33 @@ from .persist import serialize_instance
 from .persist import serialize_value
 from .persist import serialize
 
-from .model import Association
-from .model import Link
-from .model import ReversedLink
+from xtuml.meta import Association
+from xtuml.meta import Link
+from xtuml.meta import ReversedLink
 
-from .model import QuerySet
-from .model import Class
-from .model import BaseObject
-from .model import MetaClass
-from .model import MetaModel
+from xtuml.meta import QuerySet
+from xtuml.meta import Class
+from xtuml.meta import BaseObject
+from xtuml.meta import MetaClass
+from xtuml.meta import MetaModel
 
-from .model import MetaException
-from .model import DeleteException
-from .model import RelateException
-from .model import UnelateException
-from .model import MetaModelException
-from .model import UnknownLinkException
-from .model import UnknownClassException
+from xtuml.meta import MetaException
+from xtuml.meta import DeleteException
+from xtuml.meta import RelateException
+from xtuml.meta import UnelateException
+from xtuml.meta import MetaModelException
+from xtuml.meta import UnknownLinkException
+from xtuml.meta import UnknownClassException
 
-from .model import navigate_any
-from .model import navigate_one
-from .model import navigate_many
-from .model import navigate_subtype
-from .model import relate
-from .model import unrelate
-from .model import delete
-from .model import where_eq
-from .model import sort_reflexive
+from xtuml.meta import navigate_any
+from xtuml.meta import navigate_one
+from xtuml.meta import navigate_many
+from xtuml.meta import navigate_subtype
+from xtuml.meta import relate
+from xtuml.meta import unrelate
+from xtuml.meta import delete
+from xtuml.meta import where_eq
+from xtuml.meta import sort_reflexive
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
