@@ -159,7 +159,7 @@ def serialize(resource):
     if isinstance(resource, xtuml.MetaModel):
         return serialize_database(resource)
 
-    elif isinstance(resource, type) and issubclass(resource, xtuml.BaseObject):
+    elif isinstance(resource, type) and issubclass(resource, xtuml.Class):
         return serialize_class(resource)
     
     elif isinstance(resource, xtuml.Association):
@@ -168,7 +168,7 @@ def serialize(resource):
     elif isinstance(resource, xtuml.Link):
         return serialize_link(resource)
     
-    elif isinstance(resource, xtuml.BaseObject):
+    elif isinstance(resource, xtuml.Class):
         return serialize_instance(resource)
 
 
