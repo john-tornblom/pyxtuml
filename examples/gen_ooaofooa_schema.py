@@ -7,7 +7,6 @@ import logging
 import re
 import xtuml
 
-from xtuml import navigate_one as one
 from xtuml import navigate_many as many
 from bridgepoint import ooaofooa
 
