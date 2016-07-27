@@ -38,12 +38,18 @@ from .model import Link
 from .model import ReversedLink
 
 from .model import QuerySet
+from .model import Class
 from .model import BaseObject
 from .model import MetaClass
 from .model import MetaModel
-from .model import ModelException
+
+from .model import MetaException
+from .model import DeleteException
+from .model import RelateException
+from .model import UnelateException
+from .model import MetaModelException
+from .model import UnknownLinkException
 from .model import UnknownClassException
-from .model import UnknownAssociationException
 
 from .model import navigate_any
 from .model import navigate_one
@@ -57,5 +63,7 @@ from .model import sort_reflexive
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
+
+
 
 

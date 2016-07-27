@@ -79,7 +79,7 @@ class TestModel(unittest.TestCase):
         m = self.metamodel
         
         q = m.select_any('S_DT')
-        self.assertIsInstance(q, xtuml.BaseObject)
+        self.assertIsInstance(q, xtuml.Class)
 
     def test_query_order(self):
         m = self.metamodel
@@ -113,7 +113,7 @@ class TestModel(unittest.TestCase):
         
     def test_unknown_type(self):
         self.metamodel.define_class('A', [('Id', '<invalid type>')])
-        self.assertRaises(xtuml.ModelException, self.metamodel.new, 'A')
+        self.assertRaises(xtuml.MetaException, self.metamodel.new, 'A')
         
     def test_undefined_class(self):
         self.assertRaises(xtuml.UnknownClassException, self.metamodel.new, 
@@ -121,7 +121,7 @@ class TestModel(unittest.TestCase):
 
     def test_redefined_class(self):
         self.metamodel.define_class('MY_CLASS', [])
-        self.assertRaises(xtuml.ModelException, self.metamodel.define_class, 
+        self.assertRaises(xtuml.MetaModelException, self.metamodel.define_class, 
                           'MY_CLASS', [])
 
     def test_select_any_undefined(self):
@@ -142,7 +142,7 @@ class TestModel(unittest.TestCase):
     def test_delete_twise(self):
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
         xtuml.delete(inst)
-        self.assertRaises(xtuml.ModelException, xtuml.delete, inst)
+        self.assertRaises(xtuml.DeleteException, xtuml.delete, inst)
 
     def test_clone(self):
         s_ee = self.metamodel.new('S_EE', Name='Test', Descrip='test', Key_Lett='TEST')
@@ -170,7 +170,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(pe_pe_clone.type, pe_pe.type)
     
     def test_delete_unknown_instance(self):
-        self.assertRaises(xtuml.ModelException, xtuml.delete, self)
+        self.assertRaises(xtuml.DeleteException, xtuml.delete, self)
 
 
 class TestDefineAssociations(unittest.TestCase):
@@ -240,9 +240,9 @@ class TestDefineAssociations(unittest.TestCase):
         self.assertEqual(a, xtuml.navigate_one(b).A[1]())
 
 
-class TestBaseObject(unittest.TestCase):
+class TestClass(unittest.TestCase):
     '''
-    Test suite for the class xtuml.BaseObject
+    Test suite for the class xtuml.Class
     '''
     My_Class = xtuml.MetaClass('My_Class')
 

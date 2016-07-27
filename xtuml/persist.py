@@ -238,3 +238,4 @@ def persist_database(metamodel, path):
         for inst in metamodel.instances:
             s = serialize_instance(inst)
             f.write(s)
+

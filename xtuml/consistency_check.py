@@ -66,6 +66,7 @@ def pretty_unique_identifier(inst, identifier):
                     
     return '%s(%s)' % (identifier, values)
 
+
 def check_uniqueness_constraint(m, kind=None):
     '''
     Check the model for uniqueness constraint violations.

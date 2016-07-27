@@ -37,7 +37,7 @@ class TestNavigation(unittest.TestCase):
         self.assertEqual(len(xtuml.navigate_many(None)()), 0)
 
     def test_navigate_invalid_handle(self):
-        self.assertRaises(xtuml.ModelException, xtuml.navigate_one, 50)
+        self.assertRaises(xtuml.MetaException, xtuml.navigate_one, 50)
 
         
 if __name__ == "__main__":

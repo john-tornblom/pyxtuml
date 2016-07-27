@@ -49,7 +49,7 @@ class TestRelateUnrelate(unittest.TestCase):
         inst1 = self.m.new('ACT_SMT')
         inst2 = self.m.new('ACT_SMT')
         
-        self.assertRaises(xtuml.ModelException, xtuml.relate,
+        self.assertRaises(xtuml.RelateException, xtuml.relate,
                           inst1, inst2, 661, '<invalid phrase>')
         
     def test_relate_inverted_order(self):
@@ -63,7 +63,7 @@ class TestRelateUnrelate(unittest.TestCase):
     def test_relate_invalid_relid(self):
         s_edt = self.m.new('S_EDT')
         s_dt = self.m.new('S_DT')
-        self.assertRaises(xtuml.ModelException, xtuml.relate, s_edt, s_dt, 0)
+        self.assertRaises(xtuml.UnknownLinkException, xtuml.relate, s_edt, s_dt, 0)
         
     def test_unrelate(self):
         inst1 = self.m.new('ACT_SMT')

@@ -38,7 +38,7 @@ class TestSortReflexive(unittest.TestCase):
             self.assertEqual(inst.LineNumber, 9 - idx)
 
     def test_invalid_arguments(self):
-        self.assertRaises(xtuml.ModelException, xtuml.sort_reflexive, [], 1, '')
+        self.assertRaises(xtuml.MetaException, xtuml.sort_reflexive, [], 1, '')
     
     def test_empty_set(self):
         inst_set = self.m.select_many('S_BPARM')
@@ -50,7 +50,7 @@ class TestSortReflexive(unittest.TestCase):
             self.m.new('S_BPARM')
             
         inst_set = self.m.select_many('S_BPARM')
-        self.assertRaises(xtuml.UnknownAssociationException, 
+        self.assertRaises(xtuml.UnknownLinkException, 
                           xtuml.sort_reflexive,
                           inst_set, 55, '<invalid phrase>')
 
