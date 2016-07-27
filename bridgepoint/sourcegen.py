@@ -6,6 +6,7 @@ import logging
 from xtuml import navigate_one as one
 from xtuml import navigate_any as any
 from xtuml import navigate_many as many
+from xtuml import navigate_subtype as subtype
 
 from xtuml.tools import Walker
 
@@ -90,17 +91,7 @@ class ActionTextGenWalker(Walker):
         self.buf_linebreak()
         
     def accept_ACT_SMT(self, inst):
-        children = ['ACT_FOR', 'ACT_WHL', 'ACT_IF', 'ACT_EL', 'ACT_E',
-                    'ACT_BRG', 'ACT_FNC', 'ACT_RET', 'ACT_TFM', 'ACT_AI',
-                    'ACT_DEL', 'ACT_CNV', 'ACT_CR', 'ACT_SEL', 'ACT_FIO',
-                    'ACT_FIW', 'ACT_URU', 'ACT_UNR', 'ACT_RU', 'ACT_REL',
-                    'ACT_CTL', 'ACT_BRK', 'ACT_CON', 'E_ESS', 'E_GPR',
-                    'ACT_IOP', 'ACT_SGN']
-        
-        for key_letter in children:
-            child = one(inst).nav(key_letter, 603)()
-            self.accept(child)
-            
+        self.accept(subtype(inst, 603))
         self.buf_linebreak(';')
         
     def accept_ACT_RET(self, inst):
@@ -319,14 +310,7 @@ class ActionTextGenWalker(Walker):
         self.buf(')')
         
     def accept_V_VAL(self, inst):
-        children = ['V_FNV', 'V_PVL', 'V_SLR', 'V_BRV', 'V_IRF', 'V_AVL',
-                    'V_LIN', 'V_LST', 'V_UNY', 'V_TRV', 'V_ISR', 'V_EDV',
-                    'V_TVL', 'V_LRL', 'V_LBO', 'V_BIN', 'V_LEN', 'V_MVL',
-                    'V_AER', 'V_ALV', 'V_MSV', 'V_SCV']
-        
-        for key_letter in children:
-            child = one(inst).nav(key_letter, 801)()
-            self.accept(child)
+        self.accept(subtype(inst, 801))
             
     def accept_V_TVL(self, inst):
         self.accept(one(inst).V_VAR[805]())
