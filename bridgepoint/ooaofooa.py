@@ -3757,8 +3757,8 @@ def get_data_type_name(s_dt):
     Convert a BridgePoint data type to a pyxtuml meta model type.
     '''
     s_cdt = one(s_dt).S_CDT[17]()
-    if s_cdt and s_cdt.core_typ in range(1, 6):
-        return s_dt.name
+    if s_cdt and s_cdt.Core_Typ in range(1, 6):
+        return s_dt.Name
     
     if one(s_dt).S_EDT[17]():
         return 'INTEGER'

@@ -228,7 +228,7 @@ class ActionTextGenWalker(Walker):
         self.buf('end while')
         
     def accept_ACT_IF(self, inst):
-        by_position = lambda inst: (one(inst).ACT_SMT[603]().lineNumber,
+        by_position = lambda inst: (one(inst).ACT_SMT[603]().LineNumber,
                                     one(inst).ACT_SMT[603]().StartPosition)
         
         self.buf('if ')

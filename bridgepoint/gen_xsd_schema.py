@@ -30,16 +30,16 @@ def get_type_name(s_dt):
     get the xsd name of a S_DT
     '''
     s_cdt = nav_one(s_dt).S_CDT[17]()
-    if s_cdt and s_cdt.core_typ in range(1, 6):
-        return s_dt.name
+    if s_cdt and s_cdt.Core_Typ in range(1, 6):
+        return s_dt.Name
     
     s_edt = nav_one(s_dt).S_EDT[17]()
     if s_edt:
-        return s_dt.name
+        return s_dt.Name
     
     s_udt = nav_one(s_dt).S_UDT[17]()
     if s_udt:
-        return s_dt.name
+        return s_dt.Name
 
 #    s_sdt = nav_one(s_dt).S_SDT[17]()
 #    if s_sdt:
