@@ -710,7 +710,7 @@ def navigate_subtype(supertype, rel_id):
 
 class WhereEqual(dict):
     '''
-    Helper class to create dictonary of values for queries using
+    Helper class to create a dictonary of values for queries using
     python keyword arguments to *where_eq()*
     '''
     def __call__(self, selected):
@@ -723,7 +723,7 @@ class WhereEqual(dict):
 
 def where_eq(**kwargs):
     '''
-    Return a where-clause which filters out instances based on named 
+    Return a where-clause that filters out instances based on named 
     keywords.
     
     Usage example:
@@ -788,7 +788,7 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
     
 def _find_link(inst1, inst2, rel_id, phrase):
     '''
-    Find links which correspond to the given arguments.
+    Find links that correspond to the given arguments.
     '''
     metaclass1 = inst1.__metaclass__
     metaclass2 = inst2.__metaclass__
@@ -824,8 +824,8 @@ def _find_link(inst1, inst2, rel_id, phrase):
 
 def _deferred_link_operation(inst, link, op):
     '''
-    Generate list of deferred operations which needs to be invoked after an 
-    update to identifying attributes on the association end point is made.
+    Generate a list of deferred operations that needs to be invoked after an
+    update is made to identifying attributes on the association *link*.
     '''
     l = list()
     
@@ -849,7 +849,7 @@ def _deferred_link_operation(inst, link, op):
 
 def relate(from_instance, to_instance, rel_id, phrase=''):
     '''
-    Relate *from_instance* to *to_instance* across *rel_id*. For refelxive
+    Relate *from_instance* to *to_instance* across *rel_id*. For reflexive
     association, a *phrase* indicating the direction must also be provided.
     
     The two instances are related to each other by copying the identifying 
@@ -893,8 +893,8 @@ def relate(from_instance, to_instance, rel_id, phrase=''):
 
 def unrelate(from_instance, to_instance, rel_id, phrase=''):
     '''
-    Unrelate *from_instance* from *to_instance* across *rel_id*. For refelxive
-    association, a *phrase* indicating the direction must also be provided.
+    Unrelate *from_instance* from *to_instance* across *rel_id*. For reflexive
+    associations, a *phrase* indicating the direction must also be provided.
     
     The two instances are unrelated from each other by reseting the identifying
     attributes on the FROM side of the association. Updated values which affect
@@ -1022,7 +1022,8 @@ class MetaModel(object):
                            target_keys, target_many, target_conditional, 
                            target_phrase):
         '''
-        Define and return an association.
+        Define and return an association from one kind of class (the source 
+        kind) to some other kind of class (the target kind).
         '''
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
@@ -1093,7 +1094,6 @@ class MetaModel(object):
         '''
         if not xtuml.check_association_integrity(self):
             return False
-        
         
         return xtuml.check_uniqueness_constraint(self)
 
