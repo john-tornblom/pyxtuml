@@ -15,7 +15,7 @@ from bridgepoint import ooaofooa
 logger = logging.getLogger('consistency_check')
 
 
-def main():
+def main(args):
     parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]",
                                    version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
@@ -37,7 +37,7 @@ def main():
     parser.add_option("-v", "--verbosity", dest='verbosity', action="count",
                       help="increase debug logging level", default=1)
     
-    (opts, args) = parser.parse_args()
+    (opts, args) = parser.parse_args(args)
     if len(args) == 0:
         parser.print_help()
         sys.exit(1)
@@ -69,9 +69,9 @@ def main():
     if not opts.kinds:
         error += xtuml.check_uniqueness_constraint(m)
     
-    sys.exit(error)
+    return error
     
-    
-if __name__ == '__main__':
-    main()
 
+if __name__ == '__main__':
+    num_errors = main(sys.argv[1:])
+    sys.exit(num_errors > 0)
