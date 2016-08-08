@@ -1092,8 +1092,8 @@ class MetaModel(object):
         '''
         Check the metamodel for integrity violations.
         '''
-        if not xtuml.check_association_integrity(self):
+        if xtuml.check_association_integrity(self):
             return False
         
-        return xtuml.check_uniqueness_constraint(self)
+        return xtuml.check_uniqueness_constraint(self) == 0
 

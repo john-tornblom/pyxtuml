@@ -76,7 +76,7 @@ def check_uniqueness_constraint(m, kind=None):
     else:
         metaclasses = [m.find_metaclass(kind)]
     
-    res = True
+    res = 0
     for metaclass in metaclasses:
         for inst in metaclass.select_many():
             
@@ -88,7 +88,7 @@ def check_uniqueness_constraint(m, kind=None):
                 isnull = value is None
                 isnull |= (ty == 'UNIQUE_ID' and not value)
                 if isnull:
-                    res = False
+                    res += 1 
                     logger.warning('%s.%s is part of an identifier and is null' 
                                    % (metaclass.kind, name))
             
@@ -101,7 +101,7 @@ def check_uniqueness_constraint(m, kind=None):
                 where_clause = xtuml.where_eq(**kwargs)
                 s = metaclass.select_many(where_clause)
                 if len(s) != 1:
-                    res = False
+                    res += 1
                     id_string = pretty_unique_identifier(inst, identifier)
                     logger.warning('uniqueness constraint violation in %s, %s' 
                                    % (metaclass.kind, id_string))
@@ -113,13 +113,13 @@ def check_link_integrity(m, link):
     '''
     Check the model for integrity violations on an association in a particular direction.
     '''
-    res = True
+    res = 0
     for inst in link.from_metaclass.select_many():
         q_set = list(link.navigate(inst))
 
         if(len(q_set) < 1 and not link.conditional) or (
           (len(q_set) > 1 and not link.many)):
-            res = False
+            res += 1
             logger.warning('integrity violation in '
                            '%s --(%s)--> %s' % (pretty_from_link(inst, link),
                                                 link.rel_id,
@@ -136,16 +136,16 @@ def check_association_integrity(m, rel_id=None):
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
             
-    res = True
+    res = 0
     for ass in m.associations:
         if rel_id in [ass.rel_id, None]:
-            res &= check_link_integrity(m, ass.link)
-            res &= check_link_integrity(m, ass.reversed_link)
+            res += check_link_integrity(m, ass.link)
+            res += check_link_integrity(m, ass.reversed_link)
 
     return res
 
 
-def main():
+def main(args):
     parser = optparse.OptionParser(usage="%prog [options] <sql_file> [another_sql_file...].",
                                    version=xtuml.version.complete_string,
                                    formatter=optparse.TitledHelpFormatter())
@@ -163,7 +163,7 @@ def main():
     parser.add_option("-v", "--verbosity", dest='verbosity', action="count",
                       help="increase debug logging level", default=1)
     
-    (opts, args) = parser.parse_args()
+    (opts, args) = parser.parse_args(args)
     if len(args) == 0:
         parser.print_help()
         sys.exit(1)
@@ -182,22 +182,22 @@ def main():
 
     m = loader.build_metamodel()
     
-    error = False
+    error = 0
     for rel_id in opts.rel_ids:
-        error |= xtuml.check_association_integrity(m, rel_id)
+        error += xtuml.check_association_integrity(m, rel_id)
     
     if not opts.rel_ids:
-        error |= xtuml.check_association_integrity(m)
+        error += xtuml.check_association_integrity(m)
 
     for kind in opts.kinds:
-        error |= xtuml.check_uniqueness_constraint(m, kind)
+        error += xtuml.check_uniqueness_constraint(m, kind)
     
     if not opts.kinds:
-        error |= xtuml.check_uniqueness_constraint(m)
+        error += xtuml.check_uniqueness_constraint(m)
         
     sys.exit(error)
     
     
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
 

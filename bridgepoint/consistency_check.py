@@ -56,18 +56,18 @@ def main():
 
     m = loader.build_metamodel()
     
-    error = False
+    error = 0
     for rel_id in opts.rel_ids:
-        error |= xtuml.check_association_integrity(m, rel_id)
+        error += xtuml.check_association_integrity(m, rel_id)
     
     if not opts.rel_ids:
-        error |= xtuml.check_association_integrity(m)
+        error += xtuml.check_association_integrity(m)
 
     for kind in opts.kinds:
-        error |= xtuml.check_uniqueness_constraint(m, kind)
+        error += xtuml.check_uniqueness_constraint(m, kind)
     
     if not opts.kinds:
-        error |= xtuml.check_uniqueness_constraint(m)
+        error += xtuml.check_uniqueness_constraint(m)
     
     sys.exit(error)
     
