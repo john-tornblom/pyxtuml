@@ -33,16 +33,21 @@ class BuildCommand(build_py):
 
 class TestCommand(Command):
     description = "Execute unit tests"
-    user_options = []
+    user_options = [('name=', None, 'Limit testing to a single test case or test method')]
 
     def initialize_options(self):
-        pass
+        self.name = None
     
     def finalize_options(self):
-        pass
+        if self.name and not self.name.startswith('tests.'):
+            self.name = 'tests.' + self.name
 
     def run(self):
-        suite = unittest.TestLoader().discover('tests')
+        if self.name:
+            suite = unittest.TestLoader().loadTestsFromName(self.name)
+        else:
+            suite = unittest.TestLoader().discover('tests')
+        
         runner = unittest.TextTestRunner(verbosity=2, buffer=True)
         exit_code = not runner.run(suite).wasSuccessful()
         sys.exit(exit_code)
