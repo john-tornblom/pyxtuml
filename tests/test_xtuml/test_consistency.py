@@ -78,11 +78,9 @@ class TestConcistencyCLI(unittest.TestCase):
     '''
     def main(self, *args):
         try:
-            xtuml.consistency_check.main(list(args))
+            return xtuml.consistency_check.main(list(args))
         except SystemExit as e:
             return e.code
-            
-        return 0
     
     def test_no_args(self):
         rc = self.main()

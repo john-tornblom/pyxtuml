@@ -195,9 +195,10 @@ def main(args):
     if not opts.kinds:
         error += xtuml.check_uniqueness_constraint(m)
         
-    sys.exit(error)
+    return error
     
     
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    num_errors = main(sys.argv[1:])
+    sys.exit(num_errors > 0)
 
