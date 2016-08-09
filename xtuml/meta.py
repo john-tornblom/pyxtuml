@@ -287,9 +287,6 @@ class Class(object):
     **Note**: Accesses to attributes, e.g. getattr/setattr, on these objects
     are case insensitive.
     '''
-    def __init__(self):
-        self.__metaclass__.cache.clear()
-        
     def __add__(self, other):
         assert isinstance(other, Class)
         return QuerySet([self, other])
@@ -408,7 +405,6 @@ class MetaClass(object):
         '''
         attr = (name, type_name)
         self.attributes.append(attr)
-        setattr(self.clazz, name, None)
         
     def insert_attribute(self, index, name, type_name):
         '''
@@ -417,7 +413,6 @@ class MetaClass(object):
         '''
         attr = (name, type_name)
         self.attributes.insert(index, attr)
-        setattr(self.clazz, name, None)
         
     def delete_attribute(self, name):
         '''
@@ -458,6 +453,7 @@ class MetaClass(object):
         '''
         Create and return a new instance.
         '''
+        self.cache.clear()
         inst = self.clazz()
         
         # set all attributes with an initial default value
