@@ -217,14 +217,14 @@ class Query(object):
     A *Query* retrive instances from a metaclass by matching instance
     attributes against a dictonary of values provided upon initialisation.
     '''
-    metaclass = None
+    storage = None
     result = None
     evaluation = None
     
-    def __init__(self, metaclass, kwargs):
+    def __init__(self, storage, kwargs):
         self.result = collections.deque()
         self.items = collections.deque(kwargs.items())
-        self.metaclass = metaclass
+        self.storage = storage
         self.evaluation = self.evaluate()
         
     def evaluate(self):
@@ -234,7 +234,7 @@ class Query(object):
         **Note**: if the instance population is modified during evaluation,
         an exception is thrown.
         '''
-        for inst in iter(self.metaclass.instances):
+        for inst in iter(self.storage):
             for name, value in iter(self.items):
                 if getattr(inst, name) != value or _is_null(inst, name):
                     break
@@ -337,7 +337,7 @@ class MetaClass(object):
     links = None
     indices = None
     clazz = None
-    instances = None
+    storage = None
     cache = None
     
     def __init__(self, kind, metamodel=None):
@@ -348,7 +348,7 @@ class MetaClass(object):
         self.identifying_attributes = set()
         self.indices = dict()
         self.links = dict()
-        self.instances = list()
+        self.storage = list()
         self.cache = dict()
         self.clazz = type(kind, (Class,), dict(__metaclass__=self))
         
@@ -473,7 +473,7 @@ class MetaClass(object):
         for name, value in kwargs.items():
             setattr(inst, name, value)
             
-        self.instances.append(inst)
+        self.storage.append(inst)
         
         return inst
 
@@ -496,8 +496,8 @@ class MetaClass(object):
         Delete an *instance* from the instance pool. If the *instance* is not
         part of the metaclass, a *MetaException* is thrown.
         '''
-        if instance in self.instances:
-            self.instances.remove(instance)
+        if instance in self.storage:
+            self.storage.remove(instance)
             self.cache.clear()
         else:
             raise DeleteException("Instance not found in the instance pool")
@@ -510,7 +510,7 @@ class MetaClass(object):
         if isinstance(where_clause, dict):
             s = self.query(where_clause)
         else:
-            s = iter(filter(where_clause, self.instances))
+            s = iter(filter(where_clause, self.storage))
             
         return next(s, None)
 
@@ -522,7 +522,7 @@ class MetaClass(object):
         if isinstance(where_clause, dict):
             s = self.query(where_clause)
         else:
-            s = filter(where_clause, self.instances)
+            s = filter(where_clause, self.storage)
         
         return QuerySet(s)
 
@@ -545,7 +545,7 @@ class MetaClass(object):
         '''
         index = frozenset(list(dictonary_of_values.items()))
         if index not in self.cache:
-            self.cache[index] = Query(self, dictonary_of_values)
+            self.cache[index] = Query(self.storage, dictonary_of_values)
             
         return self.cache[index].execute()
 
@@ -956,7 +956,7 @@ class MetaModel(object):
         Obtain a sequence of all instances in the metamodel.
         '''
         for metaclass in self.metaclasses.values():
-            for inst in metaclass.instances:
+            for inst in metaclass.storage:
                 yield inst
     
     def define_class(self, kind, attributes, doc=''):
