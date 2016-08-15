@@ -23,6 +23,14 @@ class TestRelateUnrelate(unittest.TestCase):
         self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
 
+    def test_relate_when_already_related(self):
+        act_smt = self.m.new('ACT_SMT')
+        act_blk1 = self.m.new('ACT_BLK')
+        act_blk2 = self.m.new('ACT_BLK')
+
+        self.assertTrue(xtuml.relate(act_smt, act_blk1, 602))
+        self.assertRaises(xtuml.RelateException, xtuml.relate, act_smt, act_blk2, 602)
+        
     def test_relate_reflexive_one_to_other(self):
         inst1 = self.m.new('ACT_SMT')
         inst2 = self.m.new('ACT_SMT')
