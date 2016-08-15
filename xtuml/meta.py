@@ -40,7 +40,7 @@ class RelateException(MetaException):
     '''
 
 
-class UnelateException(MetaException):
+class UnrelateException(MetaException):
     '''
     An exception that may be thrown during unrelate operations.
     '''
@@ -910,7 +910,7 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     updated = False
     for from_name in link.key_map:
         if _is_null(from_instance, from_name):
-            raise UnelateException('instances are not related')
+            raise UnrelateException('instances are not related')
         
         updated = True
         setattr(from_instance, from_name, None)

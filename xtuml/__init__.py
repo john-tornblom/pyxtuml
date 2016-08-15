@@ -46,7 +46,7 @@ from xtuml.meta import MetaModel
 from xtuml.meta import MetaException
 from xtuml.meta import DeleteException
 from xtuml.meta import RelateException
-from xtuml.meta import UnelateException
+from xtuml.meta import UnrelateException
 from xtuml.meta import MetaModelException
 from xtuml.meta import UnknownLinkException
 from xtuml.meta import UnknownClassException
