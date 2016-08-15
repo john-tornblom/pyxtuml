@@ -193,10 +193,10 @@ class Link(object):
     
     def __repr__(self):
         if self.phrase:
-            return "%s->%s[%s, %s]" % (self.kind, self.to_metaclass.kind, 
+            return "%s->%s[%s, %s]" % (self.from_metaclass.kind, self.kind, 
                                        repr(self.rel_id), repr(self.phrase))
         else:
-            return "%s->%s[%s]" % (self.kind, self.to_metaclass.kind, 
+            return "%s->%s[%s]" % (self.from_metaclass.kind, self.kind, 
                                    repr(self.rel_id))
 
 
