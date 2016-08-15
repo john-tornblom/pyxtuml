@@ -72,8 +72,16 @@ class TestSortReflexive(unittest.TestCase):
         for inst1, inst2 in zip(inst_set, [p1, p2, p3, p4]):
             self.assertEqual(inst1, inst2)
 
-    
+    def test_unknown_link(self):
+        p1 = self.m.new('S_BPARM', Name='p1')
+        p2 = self.m.new('S_BPARM', Name='p2')
         
+        self.assertTrue(xtuml.relate(p1, p2, 55, 'precedes'))
+        
+        inst_set = self.m.select_many('S_BPARM')
+        self.assertRaises(xtuml.UnknownLinkException,
+                          xtuml.sort_reflexive, inst_set, 5, 'precedes')
+    
 if __name__ == "__main__":
     unittest.main()
 
