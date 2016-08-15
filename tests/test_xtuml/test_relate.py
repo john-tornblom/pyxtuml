@@ -80,7 +80,18 @@ class TestRelateUnrelate(unittest.TestCase):
         self.assertTrue(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
         self.assertIsNone(xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
-            
+    
+    def test_unrelate_none(self):
+        inst = self.m.new('ACT_SMT')
+        self.assertFalse(xtuml.relate(None, inst, 602))
+        self.assertFalse(xtuml.relate(inst, None, 602))
+    
+    def test_unrelate_when_not_related(self):
+        act_smt = self.m.new('ACT_SMT')
+        act_blk = self.m.new('ACT_BLK')
+
+        self.assertRaises(xtuml.UnrelateException, xtuml.unrelate, act_smt, act_blk, 602)
+        
     def test_relate_in_wrong_order(self):
         s_ee = self.m.new('S_EE')
         pe_pe = self.m.new('PE_PE')
