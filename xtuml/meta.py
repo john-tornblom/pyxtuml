@@ -765,9 +765,8 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
         other_phrase = link.phrase
         break
     else:
-        raise UnknownLinkException(metaclass.kind, rel_id, phrase)
+        raise UnknownLinkException(metaclass.kind, metaclass.kind, rel_id, phrase)
     
-
     first_filt = lambda sel: not navigate_one(sel).nav(metaclass.kind, rel_id, phrase)()
     first_instances = list(filter(first_filt, set_of_instances))
     if not first_instances:
