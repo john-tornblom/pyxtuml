@@ -100,7 +100,7 @@ def check_uniqueness_constraint(m, kind=None):
                 
                 where_clause = xtuml.where_eq(**kwargs)
                 s = metaclass.select_many(where_clause)
-                if len(s) != 1:
+                if len(s) > 1:
                     res += 1
                     id_string = pretty_unique_identifier(inst, identifier)
                     logger.warning('uniqueness constraint violation in %s, %s' 

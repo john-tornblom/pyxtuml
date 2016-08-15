@@ -53,6 +53,12 @@ class TestConcistency(unittest.TestCase):
         # consistency check fails on S_EE.
         #self.assertTrue(m.is_consistent())
         
+    def test_unique_identifier_with_null(self):
+        m = self.metamodel
+        act_blk = m.new('ACT_BLK')
+        act_blk.Block_ID = None
+        self.assertEqual(1, xtuml.check_uniqueness_constraint(m, 'ACT_BLK'))
+        
     def test_uniqueness_constraint(self):
         m = self.metamodel
         self.assertTrue(m.is_consistent())
