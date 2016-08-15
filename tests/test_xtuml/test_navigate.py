@@ -34,6 +34,7 @@ class TestNavigation(unittest.TestCase):
 
     def test_navigate_none(self):
         self.assertIsNone(xtuml.navigate_one(None)())
+        self.assertIsNone(xtuml.navigate_subtype(None, 0))
         self.assertEqual(len(xtuml.navigate_many(None)()), 0)
 
     def test_navigate_invalid_handle(self):
