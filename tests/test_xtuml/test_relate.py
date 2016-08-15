@@ -91,8 +91,8 @@ class TestRelateUnrelate(unittest.TestCase):
     
     def test_unrelate_none(self):
         inst = self.m.new('ACT_SMT')
-        self.assertFalse(xtuml.relate(None, inst, 602))
-        self.assertFalse(xtuml.relate(inst, None, 602))
+        self.assertFalse(xtuml.unrelate(None, inst, 602))
+        self.assertFalse(xtuml.unrelate(inst, None, 602))
     
     def test_unrelate_when_not_related(self):
         act_smt = self.m.new('ACT_SMT')
