@@ -77,6 +77,9 @@ def deserialize_value(ty, value):
 
 
 class ParsingException(Exception):
+    '''
+    An exception that may be thrown while loading (and parsing) a metamodel.
+    '''
     pass
 
 

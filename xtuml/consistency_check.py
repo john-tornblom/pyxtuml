@@ -39,6 +39,7 @@ def pretty_from_link(inst, link):
     values = ''
     prefix = ''
     metaclass = inst.__metaclass__
+    
     for name, ty in metaclass.attributes:
         if name in link.key_map:
             value = getattr(inst, name)

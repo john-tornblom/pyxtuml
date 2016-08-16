@@ -61,7 +61,7 @@ class UnknownLinkException(MetaException):
 
 class MetaModelException(MetaException):
     '''
-    Base class for all exceptions thrown by the MetaModel class.
+    Base class for exceptions thrown by the MetaModel class.
     '''
 
 
