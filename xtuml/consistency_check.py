@@ -40,7 +40,7 @@ def pretty_from_link(inst, link):
     prefix = ''
     metaclass = inst.__metaclass__
     for name, ty in metaclass.attributes:
-        if name in metaclass.identifying_attributes:
+        if name in link.key_map:
             value = getattr(inst, name)
             value = xtuml.serialize_value(value, ty)
             values += '%s%s=%s' % (prefix, name, value)
