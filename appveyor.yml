@@ -21,7 +21,6 @@ test_script:
   - "%PYTHON%/python setup.py test"
 
 after_test:
-  - "%PYTHON%/python -m sphinx -b latexpdf docs dist/pyxtuml.pdf"
   - "%PYTHON%/python -m sphinx -b man docs dist"
   
 artifacts:
