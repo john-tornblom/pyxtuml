@@ -4,6 +4,7 @@
 import unittest
 import os
 import tempfile
+import atexit
 
 import xtuml
     
@@ -108,7 +109,7 @@ class TestPersist(unittest.TestCase):
             with open(filename) as f:
                 self.assertEqual(s, f.read())
         finally:
-            os.remove(filename)
+            atexit.register(os.remove, filename)
         
         loader = xtuml.ModelLoader()
         loader.input(schema)
@@ -145,7 +146,7 @@ class TestPersist(unittest.TestCase):
             with open(filename) as f:
                 self.assertEqual(s, f.read())
         finally:
-            os.remove(filename)
+            atexit.register(os.remove, filename)
 
     def test_persist_database(self):
         schema = '''
@@ -172,7 +173,7 @@ class TestPersist(unittest.TestCase):
             with open(filename) as f:
                 self.assertEqual(s, f.read())
         finally:
-            os.remove(filename)
+            atexit.register(os.remove, filename)
 
     def test_serialize_schema(self):
         schema = '''
