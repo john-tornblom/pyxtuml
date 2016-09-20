@@ -382,7 +382,7 @@ class MetaClass(object):
             link = Link(self, rel_id, metaclass, key_map, phrase, conditional, many)
             self.referential_attributes |= set(link.key_map.keys())
             
-        key = (metaclass.kind, rel_id, phrase)
+        key = (metaclass.kind.upper(), rel_id, phrase)
         self.links[key] = link
 
         return link
@@ -395,7 +395,7 @@ class MetaClass(object):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
             
-        key = (kind, rel_id, phrase)
+        key = (kind.upper(), rel_id, phrase)
         return self.links.get(key, None)
         
     def append_attribute(self, name, type_name):
@@ -531,7 +531,7 @@ class MetaClass(object):
         Navigate across a link with some *rel_id* and *phrase* that yields
         instances of some *kind*.
         '''
-        key = (kind, rel_id, phrase)
+        key = (kind.upper(), rel_id, phrase)
         if key in self.links:
             link = self.links[key]
             return link.navigate(inst)
@@ -581,7 +581,6 @@ class NavChain(object):
     
     @staticmethod
     def _nav(handle, kind, rel_id, phrase):
-        kind = kind.upper()
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
     

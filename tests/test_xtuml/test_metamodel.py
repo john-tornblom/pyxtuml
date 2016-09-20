@@ -93,8 +93,8 @@ class TestModel(unittest.TestCase):
             self.assertEqual(index != length - 1, inst != q.last)
 
     def test_case_sensitivity(self):
-        self.metamodel.define_class('Aa', [])
-        
+        self.metamodel.define_class('Aa', [('Id', 'unique_id')])
+
         self.metamodel.new('AA')
 
         self.assertTrue(self.metamodel.select_any('aA'))
@@ -110,6 +110,28 @@ class TestModel(unittest.TestCase):
         self.assertEqual(len(self.metamodel.select_many('AA')), 4)
         self.assertEqual(len(self.metamodel.select_many('Aa')), 4)
         self.assertEqual(len(self.metamodel.select_many('aa')), 4)
+        
+        metaclass = self.metamodel.find_metaclass('aa')
+        metaclass.append_attribute('Next_Id', 'unique_id')
+        
+        self.metamodel.define_association(rel_id='R1', 
+                                          source_kind='AA', 
+                                          source_keys=['ID'], 
+                                          source_many=False, 
+                                          source_conditional=False,
+                                          source_phrase='prev',
+                                          target_kind='aa',
+                                          target_keys=['next_id'],
+                                          target_many=False,
+                                          target_conditional=False,
+                                          target_phrase='next')
+                                          
+        next_id = None
+        for inst in self.metamodel.select_many('aa'):
+            inst.next_ID = next_id
+            next_id = inst.Id
+            
+        self.assertTrue(xtuml.navigate_one(inst).aa[1, 'prev'].AA[1, 'prev']())
         
     def test_unknown_type(self):
         self.metamodel.define_class('A', [('Id', '<invalid type>')])
