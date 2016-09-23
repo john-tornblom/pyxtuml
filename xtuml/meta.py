@@ -787,32 +787,23 @@ def _find_link(inst1, inst2, rel_id, phrase):
     metaclass1 = inst1.__metaclass__
     metaclass2 = inst2.__metaclass__
 
-    link = metaclass2.find_link(metaclass1.kind, rel_id, phrase)
-    if link and not isinstance(link, ReversedLink):
-        return inst2, inst1, link
-        
-    link = metaclass1.find_link(metaclass2.kind, rel_id, phrase)
-    if link and not isinstance(link, ReversedLink):
-        return inst1, inst2, link
-
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
         
-    for other_link in metaclass1.links.values():
-        if other_link == link:
-            continue
-        
-        if other_link.to_metaclass != metaclass1:
-            continue
-        
-        if other_link.rel_id != rel_id:
+    for ass in metaclass1.metamodel.associations:
+        if ass.rel_id != rel_id:
             continue
 
-        if other_link.phrase == phrase:
-            continue
+        if (ass.link.from_metaclass == metaclass1 and
+            ass.link.to_metaclass == metaclass2 and
+            ass.reversed_link.phrase == phrase):
+            return inst1, inst2, ass.link
 
-        return inst1, inst2, other_link
-        
+        if (ass.reversed_link.from_metaclass == metaclass1 and
+            ass.reversed_link.to_metaclass == metaclass2 and
+            ass.link.phrase == phrase):
+            return inst2, inst1, ass.link
+
     raise UnknownLinkException(metaclass1.kind, metaclass2.kind, rel_id, phrase)
                                           
 
