@@ -356,11 +356,6 @@ class TestPersist(unittest.TestCase):
         s2 = xtuml.serialize_association(R1)
         self.assertTrue(s1)
         self.assertEqual(s1, s2)
-        
-        s1 = xtuml.serialize(R1.link)
-        s2 = xtuml.persist.serialize_link(R1.link)
-        self.assertTrue(s1)
-        self.assertEqual(s1, s2)
 
         x = m.new('X', Boolean=True, Integer=4, String='str')
         
