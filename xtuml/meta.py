@@ -840,17 +840,16 @@ def relate(from_instance, to_instance, rel_id, phrase=''):
     The two instances are related to each other by copying the identifying 
     attributes from the instance on the TO side of a association to the instance
     n the FROM side. Updated values which affect existing associations are 
-    propagated.
+    propagated. A set of all affected instances will be returned.
     '''
+    affected_instances = set()
     if None in [from_instance, to_instance]:
-        return False
+        return affected_instances
         
     from_instance, to_instance, link = _find_link(from_instance, to_instance,
                                                   rel_id, phrase)
                                                       
     post_process = _deferred_link_operation(from_instance, link, relate)
-    updated = False
-    
     for from_name, to_name in link.key_map.items():
         if _is_null(to_instance, to_name):
             raise RelateException('undefined referential attribute %s' % to_name)
@@ -866,14 +865,14 @@ def relate(from_instance, to_instance, rel_id, phrase=''):
                                   ' (%s.%s=%s)' % (from_instance.__metaclass__.kind,
                                                    from_name, from_value))
         
-        updated = True
+        affected_instances.add(from_instance)
         setattr(from_instance, from_name, to_value)
 
-    if updated:
+    if affected_instances:
         for deferred_relate in post_process:
-            deferred_relate()
+            affected_instances |= deferred_relate()
 
-    return updated
+    return affected_instances
 
 
 def unrelate(from_instance, to_instance, rel_id, phrase=''):
@@ -883,28 +882,29 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     
     The two instances are unrelated from each other by reseting the identifying
     attributes on the FROM side of the association. Updated values which affect
-    existing associations are propagated.
+    existing associations are propagated. A set of all affected instances will
+    be returned.
     '''
+    affected_instances = set()
     if None in [from_instance, to_instance]:
-        return False
+        return affected_instances
     
     from_instance, to_instance, link = _find_link(from_instance, to_instance,
                                                   rel_id, phrase)
     post_process = _deferred_link_operation(from_instance, link, unrelate)
 
-    updated = False
     for from_name in link.key_map:
         if _is_null(from_instance, from_name):
             raise UnrelateException('instances are not related')
         
-        updated = True
+        affected_instances.add(from_instance)
         setattr(from_instance, from_name, None)
 
-    if updated:
+    if affected_instances:
         for deferred_unrelate in post_process:
-            deferred_unrelate()
+            affected_instances |= deferred_unrelate()
         
-    return updated
+    return affected_instances
 
 
 def delete(instance):
