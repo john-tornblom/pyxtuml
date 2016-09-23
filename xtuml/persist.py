@@ -77,29 +77,28 @@ def serialize_instances(metamodel):
     return s
 
 
-def serialize_link(link):
-    '''
-    Serialize an xtuml metamodel association link.
-    '''
-    s = '%s %s (%s)' % (link.cardinality,
-                        link.from_metaclass.kind,
-                        ', '.join(link.key_map.keys()))
-    
-    if link.phrase:
-        s += " PHRASE '%s'" % link.phrase
-        
-    return s
-
-
 def serialize_association(ass):
     '''
     Serialize an xtuml metamodel association.
     '''
-    link = serialize_link(ass.link)
-    reversed_link = serialize_link(ass.reversed_link)
+    s1 = '%s %s (%s)' % (ass.link.cardinality,
+                         ass.link.to_metaclass.kind,
+                         ', '.join(ass.reversed_link.key_map.keys()))
+
+    if ass.link.phrase:
+        s1 += " PHRASE '%s'" % ass.link.phrase
+
+    s2 = '%s %s (%s)' % (ass.reversed_link.cardinality,
+                         ass.reversed_link.to_metaclass.kind,
+                         ', '.join(ass.link.key_map.keys()))
+    
+    if ass.reversed_link.phrase:
+        s2 += " PHRASE '%s'" % ass.reversed_link.phrase
+
+
     return 'CREATE ROP REF_ID %s FROM %s TO %s;\n' % (ass.rel_id,
-                                                      link,
-                                                      reversed_link)
+                                                      s2,
+                                                      s1)
 
 
 def serialize_class(Cls):
@@ -165,9 +164,6 @@ def serialize(resource):
     elif isinstance(resource, xtuml.Association):
         return serialize_association(resource)
 
-    elif isinstance(resource, xtuml.Link):
-        return serialize_link(resource)
-    
     elif isinstance(resource, xtuml.Class):
         return serialize_instance(resource)
 
