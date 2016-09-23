@@ -38,8 +38,6 @@ class TestAssocClass(unittest.TestCase):
         l = xtuml.ModelLoader()
         l.input(s1)
         s2 = xtuml.serialize(l.build_metamodel())
-        print s1
-        print s2
         self.assertEqual(s1, s2)
         
     def test_relate_assoc_to_class_across_one(self):
@@ -122,8 +120,10 @@ class TestReflexiveClass(unittest.TestCase):
         ID UNIQUE_ID,
         Ref_ID UNIQUE_ID
     );
-    CREATE UNIQUE INDEX I1 ON Reflexive (ID);
-    CREATE ROP REF_ID R1 FROM 1C Reflexive (Ref_ID) PHRASE 'one' TO 1C Reflexive (ID) PHRASE 'other';
+
+    CREATE ROP REF_ID R1
+        FROM 1C Reflexive (Ref_ID) PHRASE 'one'
+        TO 1C Reflexive (ID) PHRASE 'other';
     '''
 
     def setUp(self):
