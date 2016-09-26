@@ -896,9 +896,10 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     for from_name in link.key_map:
         if _is_null(from_instance, from_name):
             raise UnrelateException('instances are not related')
-        
-        affected_instances.add(from_instance)
-        setattr(from_instance, from_name, None)
+
+        if not from_name in from_instance.__metaclass__.identifying_attributes:
+            affected_instances.add(from_instance)
+            setattr(from_instance, from_name, None)
 
     if affected_instances:
         for deferred_unrelate in post_process:
