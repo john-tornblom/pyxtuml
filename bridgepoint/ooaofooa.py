@@ -3824,7 +3824,13 @@ def mk_class(m, o_obj, derived_attributes=False):
 
     for o_id in many(o_obj).O_ID[104]():
         o_oida = many(o_id).O_OIDA[105]()
-        names = [o_attr.Name for o_attr in many(o_oida).O_ATTR[105]()]
+        o_attrs = many(o_oida).O_ATTR[105]()
+        if not derived_attributes and one(o_attrs).O_BATTR[106].O_DBATTR[107]():
+            logger.warning('Omitting unique identifier %s.I%d' %
+                           (o_obj.Key_Lett, o_id.Oid_ID + 1))
+            continue
+        
+        names = [o_attr.Name for o_attr in o_attrs]
         m.define_unique_identifier(o_obj.Key_Lett, o_id.Oid_ID + 1, *names)
     
     return Cls
