@@ -83,7 +83,7 @@ def serialize_association(ass):
     '''
     s1 = '%s %s (%s)' % (ass.link.cardinality,
                          ass.link.to_metaclass.kind,
-                         ', '.join(ass.reversed_link.key_map.keys()))
+                         ', '.join(ass.link.key_map.values()))
 
     if ass.link.phrase:
         s1 += " PHRASE '%s'" % ass.link.phrase
