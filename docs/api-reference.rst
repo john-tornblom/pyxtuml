@@ -82,7 +82,7 @@ Loading Models
 .. autofunction:: bridgepoint.load_metamodel
 
 .. autoclass:: bridgepoint.ModelLoader
-   :members: filename_input
+   :members: filename_input, build_component
 
 Model Transformation
 ^^^^^^^^^^^^^^^^^^^^

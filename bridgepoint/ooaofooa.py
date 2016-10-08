@@ -4015,6 +4015,15 @@ class ModelLoader(xtuml.ModelLoader):
             xtuml.ModelLoader.filename_input(self, path_or_filename)
 
     def build_component(self, name=None, derived_attributes=False):
+        '''
+        Instantiate and build a component from ooaofooa named *name* as a
+        pyxtuml model. Classes, associations, attributes and unique identifers,
+        i.e. O_OBJ, R_REL, O_ATTR in ooaofooa, are defined in the resulting
+        pyxtuml model.
+        
+        Optionally, control whether *derived attributes* shall be mapped into
+        the resulting pyxtuml model as attributes or not.
+        '''
         mm = self.build_metamodel()
         c_c = mm.select_any('C_C', where(Name=name))
         if c_c:
