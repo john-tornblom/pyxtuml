@@ -129,6 +129,22 @@ def check_link_integrity(m, link):
     return res
 
 
+def check_subtype_integrity(m, super_kind, rel_id):
+    '''
+    Check the model for integrity violations across a subtype association.
+    '''
+    if isinstance(rel_id, int):
+        rel_id = 'R%d' % rel_id
+
+    res = 0
+    for inst in m.select_many(super_kind):
+        if not xtuml.navigate_subtype(inst, rel_id):
+            res += 1
+            logger.warning('integrity violation across '
+                           '%s[%s]' % (super_kind, rel_id))
+        
+    return res
+
 
 def check_association_integrity(m, rel_id=None):
     '''

@@ -74,8 +74,12 @@ class TestConcistency(unittest.TestCase):
         xtuml.delete(s_dt)
         self.assertTrue(m.is_consistent())
 
-
-
+    def test_subtype_integrity(self):
+        for num in range(0, 5):
+            errors = xtuml.check_subtype_integrity(self.metamodel, 'PE_PE', 8001)
+            self.assertEqual(num, errors)
+            self.metamodel.new('PE_PE')
+        
 
 class TestConcistencyCLI(unittest.TestCase):
     '''

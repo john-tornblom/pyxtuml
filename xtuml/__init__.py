@@ -63,7 +63,7 @@ from xtuml.meta import sort_reflexive
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
-
+from .consistency_check import check_subtype_integrity
 
 
 
