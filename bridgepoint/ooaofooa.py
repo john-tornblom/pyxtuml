@@ -4023,6 +4023,9 @@ class ModelLoader(xtuml.ModelLoader):
         
         Optionally, control whether *derived attributes* shall be mapped into
         the resulting pyxtuml model as attributes or not.
+        
+        Futhermore, if no *name* is provided, the entire content of the ooaofooa
+        model is instantiated into the pyxtuml model.
         '''
         mm = self.build_metamodel()
         c_c = mm.select_any('C_C', where(Name=name))
