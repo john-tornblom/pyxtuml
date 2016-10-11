@@ -44,7 +44,7 @@ def main():
         loader.filename_input(filename)
     
     m = loader.build_metamodel()
-    c = loader.build_component()
+    c = loader.build_component(derived_attributes=True)
     
     for o_obj in m.select_many('O_OBJ'):
         for o_attr in many(o_obj).O_ATTR[102](o_attr_filter):
