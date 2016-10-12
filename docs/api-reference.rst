@@ -28,6 +28,11 @@ Metamodel Operations
 .. autofunction:: xtuml.where_eq
 .. autofunction:: xtuml.sort_reflexive
 
+.. autoclass:: xtuml.MetaClass
+   :members: clone, new, select_one, select_many, query, navigate, delete,
+	     attribute_names, append_attribute, insert_attribute, delete_attribute,
+	     referential_attributes, identifying_attributes
+
 .. autofunction:: xtuml.check_association_integrity
 .. autofunction:: xtuml.check_uniqueness_constraint
 
