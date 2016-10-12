@@ -51,8 +51,8 @@ def main():
             logger.info('Filtering %s.%s' % (o_obj.Key_Lett, o_attr.Name))
             metaclass = c.find_metaclass(o_obj.Key_Lett)
             metaclass.delete_attribute(o_attr.Name)
-            if o_obj.Key_Lett == 'ACT_ACT':
-                metaclass.insert_attribute(index=5, name='return_value', type_name='INTEGER')
+        if o_obj.Key_Lett == 'ACT_ACT':
+            metaclass.insert_attribute(index=5, name='return_value', type_name='INTEGER')
             
     xtuml.persist_schema(c, '/dev/stdout')
 
