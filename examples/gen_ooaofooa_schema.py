@@ -45,12 +45,14 @@ def main():
     
     m = loader.build_metamodel()
     c = loader.build_component(derived_attributes=True)
-    
+
     for o_obj in m.select_many('O_OBJ'):
         for o_attr in many(o_obj).O_ATTR[102](o_attr_filter):
             logger.info('Filtering %s.%s' % (o_obj.Key_Lett, o_attr.Name))
             metaclass = c.find_metaclass(o_obj.Key_Lett)
             metaclass.delete_attribute(o_attr.Name)
+        if o_obj.Key_Lett == 'ACT_ACT':
+            metaclass.insert_attribute(index=5, name='return_value', type_name='INTEGER')
             
     xtuml.persist_schema(c, '/dev/stdout')
 
