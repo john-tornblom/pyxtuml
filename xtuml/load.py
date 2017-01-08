@@ -99,6 +99,7 @@ class CreateClassStmt(object):
         
 
 class CreateAssociationStmt(object):
+
     def __init__(self, rel_id, source_kind, source_cardinality, source_keys, 
                  source_phrase, target_kind, target_cardinality, target_keys,
                 target_phrase):
