@@ -63,7 +63,7 @@ class UnrelateException(MetaException):
 
 class UnknownLinkException(MetaException):
     '''
-    An exception that may be thrown when an link is not found.
+    An exception that may be thrown when a link is not found.
     '''
     def __init__(self, from_kind, to_kind, rel_id, phrase):
         if phrase:
