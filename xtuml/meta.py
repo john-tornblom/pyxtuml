@@ -364,6 +364,15 @@ class MetaClass(object):
         Obtain an ordered list of all attribute names.
         '''
         return [name for name, _ in self.attributes]
+
+    def attribute_type(self, attribute_name):
+        '''
+        Obtain the type of an attribute.
+        '''
+        attribute_name = attribute_name.upper()
+        for name, ty in self.attributes:
+            if name.upper() == attribute_name:
+                return ty
     
     def add_link(self, metaclass, rel_id, key_map, phrase, conditional,
                  many, reverse=False):
