@@ -279,6 +279,33 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(y is not None)
 
     @load_docstring
+    def test_serialized_relate_stmt(self, m):
+        '''
+        CREATE TABLE X (Id UNIQUE_ID, Y_Id UNIQUE_ID);
+        CREATE UNIQUE INDEX I1 ON X (Id);
+
+        CREATE TABLE Y (Id UNIQUE_ID);
+        CREATE UNIQUE INDEX I1 ON Y (Id);
+
+        CREATE ROP REF_ID R1 FROM MC X (Y_Id)
+                             TO   1C Y (Id);
+
+        INSERT INTO X VALUES (1, 0);
+        INSERT INTO X VALUES (2, 0);
+        INSERT INTO X VALUES (3, 0);
+        INSERT INTO Y VALUES (4);
+        INSERT INTO Y VALUES (5);
+        INSERT INTO Y VALUES (6);
+
+        RELATE X I1(2) TO Y I1(5) ACROSS R1;
+        '''
+        x = m.select_any('X', xtuml.where_eq(Id=2))
+        self.assertEqual(x.Y_Id, 5)
+        
+        y = xtuml.navigate_one(x).Y[1]()
+        self.assertEqual(y.Id, 5)
+                
+    @load_docstring
     def test_empty_input(self, m):
         ''''''
         pass

@@ -112,8 +112,22 @@ class CreateAssociationStmt(object):
         self.target_cardinality = target_cardinality
         self.source_phrase = source_phrase
         self.target_phrase = target_phrase
-        
- 
+
+
+class RelateStmt(object):
+    
+    def __init__(self, from_kind, from_index, from_values,
+                 to_kind, to_index, to_values, rel_id, phrase):
+        self.from_kind = from_kind
+        self.to_kind = to_kind
+        self.from_index = from_index
+        self.to_index = to_index
+        self.from_values = from_values
+        self.to_values = to_values
+        self.rel_id = rel_id
+        self.phrase = phrase
+
+
 class CreateUniqueStmt(object):
     
     def __init__(self, kind, name, attributes):
@@ -143,6 +157,7 @@ class ModelLoader(object):
     >>> m2 = l.build_metamodel()
     '''
     reserved = (
+        'ACROSS',
         'CREATE',
         'FALSE',
         'FROM',
@@ -152,6 +167,7 @@ class ModelLoader(object):
         'ON',
         'PHRASE',
         'REF_ID',
+        'RELATE',
         'ROP',
         'TABLE',
         'TO',
@@ -350,6 +366,33 @@ class ModelLoader(object):
                 self._populate_instance_with_positional_arguments(metamodel,
                                                                   stmt)
                 
+    def populate_connections(self, metamodel):
+        '''
+        Populate a *metamodel* with connections between instances previously
+        encountered as relate/unrelate statements from input.
+        '''
+        def find_by_index(cls, index, values):
+            if index not in cls.indices:
+                raise ParsingException('The class %s does not contain' \
+                                       'an index named %s' % (cls.kind, index))
+
+            kwargs = dict()
+            for name, value in zip(cls.indices[index], values):
+                ty = cls.attribute_type(name)
+                kwargs[name] = deserialize_value(ty, value)
+
+            return next(cls.query(kwargs), None)
+            
+        for stmt in self.statements:
+            if isinstance(stmt, RelateStmt):
+                cls1 = metamodel.find_metaclass(stmt.from_kind)
+                cls2 = metamodel.find_metaclass(stmt.to_kind)
+
+                inst1 = find_by_index(cls1, stmt.from_index, stmt.from_values)
+                inst2 = find_by_index(cls2, stmt.to_index, stmt.to_values)
+                
+                xtuml.relate(inst1, inst2, stmt.rel_id, stmt.phrase)
+                
     def populate(self, metamodel):
         '''
         Populate a *metamodel* with entities previously encountered from input.
@@ -358,6 +401,7 @@ class ModelLoader(object):
         self.populate_associations(metamodel)
         self.populate_unique_identifiers(metamodel)
         self.populate_instances(metamodel)
+        self.populate_connections(metamodel)
         
     def build_metamodel(self, id_generator=None):
         '''
@@ -467,9 +511,10 @@ class ModelLoader(object):
     def p_statement(self, p):
         '''
         statement : create_table_statement SEMICOLON
-                  | insert_into_statement SEMICOLON
-                  | create_rop_statement SEMICOLON
                   | create_index_statement SEMICOLON
+                  | create_rop_statement SEMICOLON
+                  | insert_into_statement SEMICOLON
+                  | relate_statement SEMICOLON
         '''
         p[0] = p[1]
 
@@ -609,6 +654,19 @@ class ModelLoader(object):
         create_index_statement : CREATE UNIQUE INDEX identifier ON identifier LPAREN identifier_sequence RPAREN
         '''
         p[0] = CreateUniqueStmt(p[6], p[4], p[8])
+
+    def p_relate_statement(self, p):
+        '''relate_statement : RELATE instance_handle TO instance_handle ACROSS RELID'''
+        args = list()
+        args.extend(p[2])
+        args.extend(p[4])
+        args.append(p[6])
+        args.append('')
+        p[0] = RelateStmt(*args)
+
+    def p_instance_handle(self, p):
+        '''instance_handle : identifier identifier LPAREN value_sequence RPAREN'''
+        p[0] = (p[1], p[2], p[4])
 
     def p_error(self, p):
         if p:
