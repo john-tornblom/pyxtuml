@@ -1043,7 +1043,7 @@ class MetaModel(object):
             name = 'I%d' % name
         
         metaclass = self.find_metaclass(kind)
-        metaclass.indices[name] = set(named_attributes)
+        metaclass.indices[name] = tuple(named_attributes)
 
     def select_many(self, kind, where_clause=None):
         '''
