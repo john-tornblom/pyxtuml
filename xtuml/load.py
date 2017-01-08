@@ -90,6 +90,7 @@ class CreateInstanceStmt(object):
         self.values = values
         self.names = names
 
+
 class CreateClassStmt(object):
     
     def __init__(self, kind, attributes):
@@ -142,23 +143,24 @@ class ModelLoader(object):
     '''
     reserved = (
         'CREATE',
+        'FALSE',
+        'FROM',
+        'INDEX',
         'INSERT',
         'INTO',
-        'VALUES',
-        'TABLE',
-        'ROP',
-        'REF_ID',
-        'FROM',
-        'TO',
-        'PHRASE',
-        'UNIQUE',
-        'INDEX',
         'ON',
+        'PHRASE',
+        'REF_ID',
+        'ROP',
+        'TABLE',
+        'TO',
         'TRUE',
-        'FALSE'
+        'UNIQUE',
+        'VALUES'
     )
 
     tokens = reserved + (
+        'CARDINALITY',
         'COMMA',
         'FRACTION',
         'GUID',
@@ -169,8 +171,7 @@ class ModelLoader(object):
         'RPAREN',
         'RELID',
         'SEMICOLON',
-        'STRING',
-        'CARDINALITY',
+        'STRING'
     )
 
     # A string containing ignored characters (spaces and tabs).
