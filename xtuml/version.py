@@ -17,7 +17,7 @@
 # License along with pyxtuml. If not, see <http://www.gnu.org/licenses/>.
 
 name = 'pyxtuml'
-date = '2016-02-21'
+date = '2017-02-21'
 version = '0.9'
 release = '0.9.5'
 
