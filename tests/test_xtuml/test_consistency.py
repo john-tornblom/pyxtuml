@@ -72,9 +72,9 @@ class TestConcistency(unittest.TestCase):
         
     def test_unique_identifier_with_null(self):
         m = self.metamodel
-        act_blk = m.new('ACT_BLK')
-        act_blk.Block_ID = None
-        self.assertEqual(1, xtuml.check_uniqueness_constraint(m, 'ACT_BLK'))
+        pe_pe = m.new('PE_PE')
+        pe_pe.Element_ID = None
+        self.assertEqual(1, xtuml.check_uniqueness_constraint(m, 'PE_PE'))
         
     def test_uniqueness_constraint(self):
         m = self.metamodel
