@@ -18,7 +18,6 @@
 
 import os
 import unittest
-import xtuml
 import bridgepoint
 
 import xtuml.consistency_check
