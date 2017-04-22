@@ -53,13 +53,22 @@ class RelateException(MetaException):
     '''
     An exception that may be thrown during relate operations.
     '''
-
+    def __init__(self, from_instance, to_instance, rel_id, phrase):
+        msg = '%s or %s already related across %s' % (from_instance,
+                                                      to_instance,
+                                                      rel_id)
+        MetaException.__init__(self, msg)
+    
 
 class UnrelateException(MetaException):
     '''
     An exception that may be thrown during unrelate operations.
     '''
-
+    def __init__(self, from_instance, to_instance, rel_id, phrase):
+        msg = '%s and %s not related across %s' % (from_instance,
+                                                   to_instance,
+                                                   rel_id)
+        MetaException.__init__(self, msg)
 
 class UnknownLinkException(MetaException):
     '''
@@ -123,20 +132,66 @@ class Association(object):
     links.
     '''
     rel_id = None
-    link = None
-    reversed_link = None
+    source_keys = None
+    source_link = None
+    target_keys = None
+    target_link = None
     
-    def __init__(self, rel_id, link, reversed_link):
+    def __init__(self, rel_id,
+                 source_keys, source_link, 
+                 target_keys, target_link):
         self.rel_id = rel_id
-        self.link = link
-        self.reversed_link = reversed_link
+        self.source_link = source_link
+        self.target_link = target_link
+        self.source_keys = source_keys
+        self.target_keys = target_keys
         
     @property
     def is_reflexive(self):
-        return self.link.kind == self.reversed_link.kind
+        return self.source_link.kind == self.target_link.kind
 
+    def batch_relate(self):
+        source_class = self.source_link.to_metaclass
+        target_class = self.target_link.to_metaclass
+        
+        for inst1 in source_class.storage:
+            kwargs = dict()
+            for ref_key, primary_key in zip(self.source_keys, self.target_keys):
+                kwargs[primary_key] = getattr(inst1, ref_key)
 
-class Link(object):
+            for inst2 in target_class.query(kwargs):
+                self.source_link.connect(inst2, inst1, check=False)
+                self.target_link.connect(inst1, inst2, check=False)
+
+    def formalize(self): 
+        source_class = self.source_link.to_metaclass
+        target_class = self.target_link.to_metaclass
+        
+        self.source_link.key_map = dict(zip(self.source_keys, self.target_keys))
+        self.target_link.key_map = dict(zip(self.target_keys, self.source_keys))
+        
+        source_class.referential_attributes |= set(self.source_keys)
+        target_class.identifying_attributes |= set(self.target_keys)
+
+        def fget(inst, ref_name):
+            inst = next(iter(self.target_link.navigate(inst)), None)
+            return getattr(inst, ref_name, None)
+            
+        def fset(inst, ref_name, value):
+            inst = next(iter(self.target_link.navigate(inst)), None)
+            return setattr(inst, ref_name, value)
+        
+        for ref_key, primary_key in zip(self.source_keys, self.target_keys):
+            prop = property(partial(fget, ref_name=primary_key), 
+                            partial(fset, ref_name=primary_key))
+            
+            if not self.target_link.conditional:
+                setattr(source_class.clazz, ref_key, prop)
+                
+            elif not hasattr(source_class.clazz, ref_key):
+                setattr(source_class.clazz, ref_key, prop)
+  
+class Link(dict):
     '''
     A link connects one metaclass to another in a single direction. 
     
@@ -156,7 +211,7 @@ class Link(object):
     conditional = None
     many = None
     
-    def __init__(self, from_metaclass, rel_id, to_metaclass, key_map, phrase='',
+    def __init__(self, from_metaclass, rel_id, to_metaclass, phrase='',
                  conditional=False, many=False):
         if isinstance(rel_id, int):
             rel_id = 'R%d' % rel_id
@@ -164,7 +219,7 @@ class Link(object):
         self.from_metaclass = from_metaclass
         self.rel_id = rel_id
         self.to_metaclass = to_metaclass
-        self.key_map = key_map
+        self.key_map = dict()
         self.phrase = phrase
         self.conditional = conditional
         self.many = many
@@ -195,37 +250,44 @@ class Link(object):
         Obtain the resulting kind when the link is navigated.
         '''
         return self.to_metaclass.kind
-    
-    def navigate(self, instance):
-        '''
-        Navigate accross a link starting from an *instance*.
-        '''
-        kwargs = dict()
-        for key, mapped_key in self.key_map.items():
-            kwargs[mapped_key] = getattr(instance, key)
 
-        return self.to_metaclass.query(kwargs)
-    
-    def __repr__(self):
-        if self.phrase:
-            return "%s->%s[%s, %s]" % (self.from_metaclass.kind, self.kind, 
-                                       repr(self.rel_id), repr(self.phrase))
+    def connect(self, inst1, inst2, check=True):
+        if inst1 not in self:
+            self[inst1] = set()
+        
+        if inst2 in self[inst1]:
+            return True
+        
+        if self[inst1] and not self.many and check:
+            return False  
+
+        self[inst1].add(inst2)
+        return True
+        
+    def disconnect(self, inst1, inst2):
+        if inst1 not in self:
+            return False
+        
+        if inst2 not in self[inst1]: 
+            return False
+
+        self[inst1].remove(inst2)
+        return True
+        
+    def navigate(self, inst):
+        if inst in self:
+            return self[inst]
         else:
-            return "%s->%s[%s]" % (self.from_metaclass.kind, self.kind, 
-                                   repr(self.rel_id))
-
-
-class ReversedLink(Link):
-    '''
-    A reversed (directed) link is identical to a regular link, but with the
-    *key_map* being inverted upon initialisation.
-    '''
-    def __init__(self, from_metaclass, rel_id, to_metaclass, key_map, phrase='',
-                 conditional=False, many=False):
-        Link.__init__(self, from_metaclass, rel_id, to_metaclass,
-                      dict(zip(key_map.values(), key_map.keys())),
-                      phrase, conditional, many)
-
+            return set()
+        
+    def query(self, dictonary_of_values):
+        '''
+        Query the link for instances with attributes that match a given
+        *dictonary of values*.
+        '''
+        q = Query(self, dictonary_of_values)
+        return q.execute()
+    
 
 class Query(object):
     '''
@@ -313,10 +375,14 @@ class Class(object):
 
     def __getattr__(self, name):
         uname = name.upper()
+        
         for attr, _ in self.__metaclass__.attributes:
-            if attr.upper() == uname:
+            if attr.upper() != uname :
+                continue
+            
+            if attr in self.__dict__:
                 return self.__dict__[attr]
-
+        
         return object.__getattribute__(self, name)
     
     def __setattr__(self, name, value):
@@ -329,8 +395,22 @@ class Class(object):
 
         self.__dict__[name] = value
         
+    def __delattr__(self, name):
+        uname = name.upper()
+        for name in self.__dict__:
+            if uname == name.upper():
+                break
+
+        del self.__dict__[name]
+    
     def __str__(self):
-        return str(self.__dict__)
+        values = list()
+        for attr, ty in self.__metaclass__.attributes:
+            value = getattr(self, attr)
+            value = xtuml.serialize_value(value, ty)
+            values.append('%s=%s' % (attr, value))
+        
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(values))
 
 
 # Backwards compatabillity with older versions of pyxtuml
@@ -389,29 +469,17 @@ class MetaClass(object):
             if name.upper() == attribute_name:
                 return ty
     
-    def add_link(self, metaclass, rel_id, key_map, phrase, conditional,
-                 many, reverse=False):
+    def add_link(self, metaclass, rel_id, phrase, conditional, many):
         '''
-        Add a new link from *self* to *metaclass*. Keys in the link are added
-        to the set of identifying or referential attributes depending on the
-        direction, i.e. if the link is reversed or not.
+        Add a new link from *self* to *metaclass*.
         '''
-        if isinstance(rel_id, int):
-            rel_id = 'R%d' % rel_id
-        
-        if reverse:
-            link = ReversedLink(self, rel_id, metaclass, key_map, phrase, conditional, many)
-            self.identifying_attributes |= set(link.key_map.keys())
-        else:
-            link = Link(self, rel_id, metaclass, key_map, phrase, conditional, many)
-            self.referential_attributes |= set(link.key_map.keys())
-            
+        link = Link(self, rel_id, metaclass, phrase, conditional, many)
         key = (metaclass.kind.upper(), rel_id, phrase)
         self.links[key] = link
 
         return link
         
-    def find_link(self, kind, rel_id, phrase):
+    def find_link(self, kind, rel_id, phrase=''):
         '''
         Find a link with a given *rel_id* and *phrase* that yeld instances of
         some *kind*.
@@ -421,7 +489,7 @@ class MetaClass(object):
             
         key = (kind.upper(), rel_id, phrase)
         return self.links.get(key, None)
-        
+    
     def append_attribute(self, name, type_name):
         '''
         Append an attribute with a given *name* and *type name* at the end of
@@ -479,26 +547,49 @@ class MetaClass(object):
         '''
         self.cache.clear()
         inst = self.clazz()
+        self.storage.append(inst)
         
         # set all attributes with an initial default value
+        referential_attributes = dict()
         for name, ty in self.attributes:
-            if name in self.referential_attributes:
-                value = None
-            else:
+            if name not in self.referential_attributes:
                 value = self.default_value(ty)
-            setattr(inst, name, value)
+                setattr(inst, name, value)
             
         # set all positional arguments
         for attr, value in zip(self.attributes, args):
             name, ty = attr
-            setattr(inst, name, value)
+            if name not in self.referential_attributes:
+                setattr(inst, name, value)
+            else:
+                referential_attributes[name] = value
             
         # set all named arguments
         for name, value in kwargs.items():
-            setattr(inst, name, value)
-            
-        self.storage.append(inst)
+            if name not in self.referential_attributes:
+                setattr(inst, name, value)
+            else:
+                referential_attributes[name] = value
         
+        # batch relate referential attributes 
+        for link in self.links.values():
+            if set(link.key_map.values()) - set(referential_attributes.keys()):
+                continue
+             
+            kwargs = dict()
+            for key, value in link.key_map.items():
+                kwargs[key] = referential_attributes[value]
+            
+            if not kwargs:
+                continue
+            
+            for other_inst in link.to_metaclass.query(kwargs):
+                relate(other_inst, inst, link.rel_id, link.phrase)
+        
+        for name, value in referential_attributes.items():
+            if getattr(inst, name) != value:
+                logger.warning('unable to assign %s to %s', name, inst)
+                
         return inst
 
     def clone(self, instance):
@@ -508,12 +599,12 @@ class MetaClass(object):
         **Note:** the clone and the original instance **does not** have to be
         part of the same metaclass. 
         '''
-        clone = self.new()
+        args = list()
         for name, _ in instance.__metaclass__.attributes:
             value = getattr(instance, name)
-            setattr(clone, name, value)
+            args.append(value)
             
-        return clone
+        return self.new(*args)
     
     def delete(self, instance):
         '''
@@ -572,7 +663,7 @@ class MetaClass(object):
             self.cache[index] = Query(self.storage, dictonary_of_values)
             
         return self.cache[index].execute()
-
+    
         
 class NavChain(object):
     '''
@@ -818,42 +909,17 @@ def _find_link(inst1, inst2, rel_id, phrase):
         if ass.rel_id != rel_id:
             continue
 
-        if (ass.link.from_metaclass == metaclass1 and
-            ass.link.to_metaclass == metaclass2 and
-            ass.reversed_link.phrase == phrase):
-            return inst1, inst2, ass.link
+        if (ass.source_link.from_metaclass == metaclass1 and
+            ass.source_link.to_metaclass == metaclass2 and
+            ass.target_link.phrase == phrase):
+            return inst1, inst2, ass
 
-        if (ass.reversed_link.from_metaclass == metaclass1 and
-            ass.reversed_link.to_metaclass == metaclass2 and
-            ass.link.phrase == phrase):
-            return inst2, inst1, ass.link
+        if (ass.target_link.from_metaclass == metaclass1 and
+            ass.target_link.to_metaclass == metaclass2 and
+            ass.source_link.phrase == phrase):
+            return inst2, inst1, ass
 
     raise UnknownLinkException(metaclass1.kind, metaclass2.kind, rel_id, phrase)
-                                          
-
-def _deferred_link_operation(inst, link, op):
-    '''
-    Generate a list of deferred operations that needs to be invoked after an
-    update is made to identifying attributes on the association *link*.
-    '''
-    l = list()
-    
-    metaclass = inst.__metaclass__
-    keys = set(link.key_map.keys())
-    for link in metaclass.links.values():
-        if not isinstance(link, ReversedLink):
-            continue
-        
-        derived_keys = set(link.key_map.values())
-        if not (keys & derived_keys):
-            continue
-        
-        nav = navigate_many(inst).nav(link.to_metaclass.kind, link.rel_id, link.phrase)
-        for from_inst in nav():
-            fn = partial(op, from_inst, inst, link.rel_id, link.phrase)
-            l.append(fn)
-
-    return l
 
 
 def relate(from_instance, to_instance, rel_id, phrase=''):
@@ -866,37 +932,17 @@ def relate(from_instance, to_instance, rel_id, phrase=''):
     n the FROM side. Updated values which affect existing associations are 
     propagated. A set of all affected instances will be returned.
     '''
-    affected_instances = set()
     if None in [from_instance, to_instance]:
-        return affected_instances
-        
-    from_instance, to_instance, link = _find_link(from_instance, to_instance,
-                                                  rel_id, phrase)
-                                                      
-    post_process = _deferred_link_operation(from_instance, link, relate)
-    for from_name, to_name in link.key_map.items():
-        if _is_null(to_instance, to_name):
-            raise RelateException('undefined referential attribute %s' % to_name)
-        
-        from_value = getattr(from_instance, from_name)
-        to_value = getattr(to_instance, to_name)
+        return False
 
-        if from_value == to_value:
-            continue
+    inst1, inst2, ass = _find_link(from_instance, to_instance, rel_id, phrase)
+    if not ass.source_link.connect(inst1, inst2):
+        raise RelateException(from_instance, to_instance, rel_id, phrase)
 
-        if not _is_null(from_instance, from_name):
-            raise RelateException('instance is already related'
-                                  ' (%s.%s=%s)' % (from_instance.__metaclass__.kind,
-                                                   from_name, from_value))
-        
-        affected_instances.add(from_instance)
-        setattr(from_instance, from_name, to_value)
-
-    if affected_instances:
-        for deferred_relate in post_process:
-            affected_instances |= deferred_relate()
-
-    return affected_instances
+    if not ass.target_link.connect(inst2, inst1):
+        raise RelateException(from_instance, to_instance, rel_id, phrase)
+    
+    return True
 
 
 def unrelate(from_instance, to_instance, rel_id, phrase=''):
@@ -909,27 +955,17 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     existing associations are propagated. A set of all affected instances will
     be returned.
     '''
-    affected_instances = set()
     if None in [from_instance, to_instance]:
-        return affected_instances
+        return False
     
-    from_instance, to_instance, link = _find_link(from_instance, to_instance,
-                                                  rel_id, phrase)
-    post_process = _deferred_link_operation(from_instance, link, unrelate)
+    inst1, inst2, ass = _find_link(from_instance, to_instance, rel_id, phrase)
+    if not ass.source_link.disconnect(inst1, inst2):
+        raise UnrelateException(from_instance, to_instance, rel_id, phrase)
 
-    for from_name in link.key_map:
-        if _is_null(from_instance, from_name):
-            raise UnrelateException('instances are not related')
-
-        if not from_name in from_instance.__metaclass__.identifying_attributes:
-            affected_instances.add(from_instance)
-            setattr(from_instance, from_name, None)
-
-    if affected_instances:
-        for deferred_unrelate in post_process:
-            affected_instances |= deferred_unrelate()
+    if not ass.target_link.disconnect(inst2, inst1):
+        raise UnrelateException(from_instance, to_instance, rel_id, phrase)
         
-    return affected_instances
+    return True
 
 
 def delete(instance):
@@ -1040,17 +1076,21 @@ class MetaModel(object):
             
         source_metaclass = self.find_metaclass(source_kind)
         target_metaclass = self.find_metaclass(target_kind)
-        key_map = dict(zip(source_keys, target_keys))
+
+        source_link = target_metaclass.add_link(source_metaclass, rel_id,
+                                                many=source_many,
+                                                phrase=source_phrase,
+                                                conditional=source_conditional)
+                
+        target_link = source_metaclass.add_link(target_metaclass, rel_id,
+                                                many=target_many,
+                                                phrase=target_phrase,
+                                                conditional=target_conditional)
         
-        link1 = source_metaclass.add_link(target_metaclass, rel_id, key_map,
-                                          many=target_many, phrase=target_phrase,
-                                          conditional=target_conditional)
+        ass = Association(rel_id,
+                          source_keys, source_link,
+                          target_keys, target_link)
         
-        link2 = target_metaclass.add_link(source_metaclass, rel_id, key_map,
-                                          many=source_many, phrase=source_phrase,
-                                          conditional=source_conditional, reverse=True)
-        
-        ass = Association(rel_id, link1, link2)
         self.associations.append(ass)
 
         return ass
@@ -1068,6 +1108,7 @@ class MetaModel(object):
         
         metaclass = self.find_metaclass(kind)
         metaclass.indices[name] = tuple(named_attributes)
+        metaclass.identifying_attributes |= set(named_attributes)
 
     def select_many(self, kind, where_clause=None):
         '''

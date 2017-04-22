@@ -108,7 +108,7 @@ class TestRelateUnrelate(unittest.TestCase):
         inst1 = self.m.new('PE_PE')
         inst2 = self.m.new('EP_PKG')
         self.assertTrue(xtuml.relate(inst1, inst2, 8001))
-        self.assertFalse(xtuml.unrelate(inst1, inst2, 8001))
+        self.assertTrue(xtuml.unrelate(inst1, inst2, 8001))
 
     def test_unrelate_none(self):
         inst = self.m.new('ACT_SMT')

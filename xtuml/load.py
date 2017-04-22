@@ -255,18 +255,20 @@ class ModelLoader(object):
         input.
         '''
         for stmt in self.statements:
-            if isinstance(stmt, CreateAssociationStmt):
-                metamodel.define_association(stmt.rel_id, 
-                                             stmt.source_kind, 
-                                             stmt.source_keys,
-                                             'M' in stmt.source_cardinality,
-                                             'C' in stmt.source_cardinality,
-                                             stmt.source_phrase,
-                                             stmt.target_kind, 
-                                             stmt.target_keys,
-                                             'M' in stmt.target_cardinality,
-                                             'C' in stmt.target_cardinality,
-                                             stmt.target_phrase)
+            if not isinstance(stmt, CreateAssociationStmt):
+                continue
+            
+            ass = metamodel.define_association(stmt.rel_id, 
+                                               stmt.source_kind,
+                                               stmt.source_keys,
+                                               'M' in stmt.source_cardinality,
+                                               'C' in stmt.source_cardinality,
+                                               stmt.source_phrase,
+                                               stmt.target_kind,
+                                               stmt.target_keys,
+                                               'M' in stmt.target_cardinality,
+                                               'C' in stmt.target_cardinality,
+                                               stmt.target_phrase)
 
     def populate_unique_identifiers(self, metamodel):
         '''
@@ -304,19 +306,16 @@ class ModelLoader(object):
                                                  names, stmt.values)
             
         metaclass = metamodel.find_metaclass(stmt.kind)
-        args = list()
-            
         if len(metaclass.attributes) != len(stmt.values):
             logger.warn('schema mismatch while loading an instance of %s',
                         stmt.kind)
                 
+        inst = metamodel.new(stmt.kind)
         for attr, value in zip(metaclass.attributes, stmt.values):
-            _, ty = attr
+            name, ty = attr
             value = deserialize_value(ty, value) 
-            args.append(value)
-            
-        metamodel.new(stmt.kind, *args)
-    
+            setattr(inst, name, value)
+        
     @staticmethod
     def _populate_instance_with_named_arguments(metamodel, stmt):
         '''
@@ -336,7 +335,7 @@ class ModelLoader(object):
             logger.warn('schema mismatch while loading an instance of %s',
                         stmt.kind)
             
-        args = list()
+        inst = metamodel.new(stmt.kind)
         for name, ty in metaclass.attributes:
             uname = name.upper()
             if uname in inst_unames:
@@ -344,10 +343,8 @@ class ModelLoader(object):
                 value = deserialize_value(ty, stmt.values[idx])
             else:
                 value = None
-                
-            args.append(value)
-                
-        metamodel.new(stmt.kind, *args)
+            
+            setattr(inst, name, value)    
 
     def populate_instances(self, metamodel):
         '''
@@ -369,9 +366,9 @@ class ModelLoader(object):
         Populate a *metamodel* with entities previously encountered from input.
         '''
         self.populate_classes(metamodel)
-        self.populate_associations(metamodel)
         self.populate_unique_identifiers(metamodel)
         self.populate_instances(metamodel)
+        self.populate_associations(metamodel)
         
     def build_metamodel(self, id_generator=None):
         '''
@@ -381,6 +378,10 @@ class ModelLoader(object):
         
         self.populate(m)
         
+        for ass in m.associations:
+            ass.batch_relate()
+            ass.formalize()
+            
         return m
 
     def t_comment(self, t):
