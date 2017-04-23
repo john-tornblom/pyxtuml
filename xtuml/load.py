@@ -380,11 +380,8 @@ class ModelLoader(object):
         m = xtuml.MetaModel(id_generator)
         
         self.populate(m)
+        m.batch_relate()
         
-        for ass in m.associations:
-            ass.batch_relate()
-            ass.formalize()
-            
         return m
 
     def t_comment(self, t):

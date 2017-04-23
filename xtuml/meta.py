@@ -1157,3 +1157,7 @@ class MetaModel(object):
         
         return xtuml.check_uniqueness_constraint(self) == 0
 
+    def batch_relate(self):
+        for ass in self.associations:
+            ass.batch_relate()
+            ass.formalize()
