@@ -427,7 +427,7 @@ class Class(object):
         return '%s(%s)' % (self.__class__.__name__, ', '.join(values))
 
 
-# Backwards compatabillity with older versions of pyxtuml
+# Backwards compatibility with older versions of pyxtuml
 BaseObject = Class
 
 
@@ -495,7 +495,7 @@ class MetaClass(object):
         
     def find_link(self, kind, rel_id, phrase=''):
         '''
-        Find a link with a given *rel_id* and *phrase* that yeld instances of
+        Find a link with a given *rel_id* and *phrase* that yield instances of
         some *kind*.
         '''
         if isinstance(rel_id, int):
@@ -1150,7 +1150,7 @@ class MetaModel(object):
         metaclass = self.find_metaclass(kind)
         return metaclass.select_one(where_clause)
     
-    # Backwards compatabillity with older versions of pyxtuml
+    # Backwards compatibility with older versions of pyxtuml
     select_any = select_one
 
     def is_consistent(self):
