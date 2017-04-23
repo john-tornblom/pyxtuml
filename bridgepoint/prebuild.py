@@ -1414,11 +1414,11 @@ class ActionPrebuilder(xtuml.tools.Walker):
     
     def accept_ParameterNode(self, node):
         v_val = self.accept(node.expression)
-        return self.new('V_PAR',
-                        Value_ID=v_val.Value_ID,
-                        Invocation_Value_ID=v_val.Value_ID,
-                        Name=node.name)
+        v_par = self.new('V_PAR', Name=node.name)
+        relate(v_val, v_par, 800)
         
+        return v_par
+    
     def accept_GeneratePortEventNode(self, node):
         port_filt = lambda sel: (sel.Name == node.port_name or 
                                  one(sel).C_IR[4016].C_I[4012](where(Name=node.port_name)))
