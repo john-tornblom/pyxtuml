@@ -38,7 +38,24 @@ class TestRelateUnrelate(unittest.TestCase):
         self.assertTrue(xtuml.relate(s_dt, pe_pe, 8001))
         self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
-
+        
+    def test_select_where_after_relate(self):
+        s_edt = self.m.new('S_EDT')
+        s_dt = self.m.new('S_DT')
+        pe_pe = self.m.new('PE_PE')
+        
+        self.assertFalse(self.m.select_any('S_DT', xtuml.where_eq(DT_ID=pe_pe.Element_ID)))
+        
+        self.assertTrue(xtuml.relate(s_dt, pe_pe, 8001))
+        self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
+        
+        self.assertTrue(self.m.select_any('S_DT', xtuml.where_eq(DT_ID=pe_pe.Element_ID)))
+        
+        self.assertTrue(xtuml.unrelate(s_dt, pe_pe, 8001))
+        self.assertTrue(xtuml.unrelate(s_dt, s_edt, 17))
+        
+        self.assertFalse(self.m.select_any('S_DT', xtuml.where_eq(DT_ID=pe_pe.Element_ID)))
+        
     def test_relate_when_already_related(self):
         act_smt = self.m.new('ACT_SMT')
         act_blk1 = self.m.new('ACT_BLK')
