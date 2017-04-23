@@ -34,6 +34,7 @@ class TestRelateUnrelate(unittest.TestCase):
         s_edt = self.m.new('S_EDT')
         s_dt = self.m.new('S_DT')
         pe_pe = self.m.new('PE_PE')
+        self.assertFalse(xtuml.navigate_one(s_dt).S_EDT[17]())
         self.assertTrue(xtuml.relate(s_dt, pe_pe, 8001))
         self.assertTrue(xtuml.relate(s_dt, s_edt, 17))
         self.assertEqual(s_edt, xtuml.navigate_one(s_dt).S_EDT[17]())
