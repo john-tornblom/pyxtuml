@@ -404,7 +404,6 @@ class Class(object):
         for attr, _ in self.__metaclass__.attributes:
             if attr.upper() == uname:
                 self.__dict__[attr] = value
-                self.__metaclass__.cache.clear()
                 return
 
         self.__dict__[name] = value
@@ -447,7 +446,6 @@ class MetaClass(object):
     indices = None
     clazz = None
     storage = None
-    cache = None
     
     def __init__(self, kind, metamodel=None):
         self.metamodel = metamodel
@@ -458,7 +456,6 @@ class MetaClass(object):
         self.indices = dict()
         self.links = dict()
         self.storage = list()
-        self.cache = dict()
         self.clazz = type(kind, (Class,), dict(__metaclass__=self))
         
     def __call__(self, *args, **kwargs):
@@ -559,7 +556,6 @@ class MetaClass(object):
         '''
         Create and return a new instance.
         '''
-        self.cache.clear()
         inst = self.clazz()
         self.storage.append(inst)
         
@@ -630,7 +626,6 @@ class MetaClass(object):
         '''
         if instance in self.storage:
             self.storage.remove(instance)
-            self.cache.clear()
         else:
             raise DeleteException("Instance not found in the instance pool")
 
@@ -675,11 +670,8 @@ class MetaClass(object):
         Query the instance pool for instances with attributes that match a given
         *dictonary of values*.
         '''
-        index = frozenset(list(dictonary_of_values.items()))
-        if index not in self.cache:
-            self.cache[index] = Query(self.storage, dictonary_of_values)
-            
-        return self.cache[index].execute()
+        q = Query(self.storage, dictonary_of_values)
+        return q.execute()
     
         
 class NavChain(object):
