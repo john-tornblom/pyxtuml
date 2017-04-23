@@ -81,7 +81,7 @@ class UnknownLinkException(MetaException):
         else:
             msg = "%s->%s[%s]" % (from_kind, to_kind, repr(rel_id))
 
-        MetaException.__init__(self, msg)
+        MetaException.__init__(self, 'Unknown link ' + msg)
 
 
 class MetaModelException(MetaException):
@@ -94,6 +94,8 @@ class UnknownClassException(MetaModelException):
     '''
     An exception that may be thrown when a metaclass is not found.
     '''
+    def __init__(self, kind):
+        MetaModelException.__init__(self, 'Unknown class %s' % kind)
 
 
 def _is_null(instance, name):
