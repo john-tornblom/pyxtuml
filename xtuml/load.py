@@ -73,7 +73,10 @@ def deserialize_value(ty, value):
             raise ParsingException("Unable to convert '%s' to a boolean" % value)
     
     elif uty == 'INTEGER': 
-        return int(value)
+        if '"' in value:
+            return uuid.UUID(value[1:-1]).int
+        else:
+            return int(value)
     
     elif uty == 'REAL': 
         return float(value)
