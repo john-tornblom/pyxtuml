@@ -585,6 +585,9 @@ class MetaClass(object):
             else:
                 referential_attributes[name] = value
         
+        if not referential_attributes:
+            return inst
+        
         # batch relate referential attributes 
         for link in self.links.values():
             if set(link.key_map.values()) - set(referential_attributes.keys()):
