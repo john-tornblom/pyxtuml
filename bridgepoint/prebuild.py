@@ -1360,17 +1360,17 @@ class ActionPrebuilder(xtuml.tools.Walker):
                          Statement_ID=act_smt.Statement_ID,
                          RequiredOp_Id=spr_ro.Id)
     
-            if spr_po:
+            elif spr_po:
                 self.new('ACT_IOP',
                          Statement_ID=act_smt.Statement_ID,
                          ProvidedOp_Id=spr_po.Id)
     
-            if spr_rs:
+            elif spr_rs:
                 self.new('ACT_SGN',
                          Statement_ID=act_smt.Statement_ID,
                          RequiredSig_Id=spr_rs.Id)
             
-            if spr_ps:
+            elif spr_ps:
                 self.new('ACT_IOP',
                          Statement_ID=act_smt.Statement_ID,
                          ProvidedSig_Id=spr_ps.Id)
