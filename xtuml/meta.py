@@ -70,6 +70,7 @@ class UnrelateException(MetaException):
                                                    rel_id)
         MetaException.__init__(self, msg)
 
+
 class UnknownLinkException(MetaException):
     '''
     An exception that may be thrown when a link is not found.
@@ -190,7 +191,8 @@ class Association(object):
                 
             elif not hasattr(source_class.clazz, ref_key):
                 setattr(source_class.clazz, ref_key, prop)
-  
+
+
 class Link(dict):
     '''
     A link connects one metaclass to another in a single direction. 
@@ -251,32 +253,44 @@ class Link(dict):
         '''
         return self.to_metaclass.kind
 
-    def connect(self, inst1, inst2, check=True):
-        if inst1 not in self:
-            self[inst1] = set()
+    def connect(self, instance, another_instance, check=True):
+        '''
+        Connect an *instance* to *another_instance*.
         
-        if inst2 in self[inst1]:
+        Optionally, disable any cardinality *check* that would prevent the two
+        instances from being connected.
+        '''
+        if instance not in self:
+            self[instance] = set()
+        
+        if another_instance in self[instance]:
             return True
         
-        if self[inst1] and not self.many and check:
+        if self[instance] and not self.many and check:
             return False  
 
-        self[inst1].add(inst2)
+        self[instance].add(another_instance)
         return True
         
-    def disconnect(self, inst1, inst2):
-        if inst1 not in self:
+    def disconnect(self, instance, another_instance):
+        '''
+        Disconnect an *instance* from *another_instance*
+        '''
+        if instance not in self:
             return False
         
-        if inst2 not in self[inst1]: 
+        if another_instance not in self[instance]: 
             return False
 
-        self[inst1].remove(inst2)
+        self[instance].remove(another_instance)
         return True
         
-    def navigate(self, inst):
-        if inst in self:
-            return self[inst]
+    def navigate(self, instance):
+        '''
+        Navigate from *instance* across the link.
+        '''
+        if instance in self:
+            return self[instance]
         else:
             return set()
         
