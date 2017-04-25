@@ -74,6 +74,9 @@ def main():
         logger.info('Filtering %s' % o_obj.Key_Lett)
         for r_rel in many(o_obj).R_OIR[201].R_REL[201]():
             logger.info('Filtering R%d' % r_rel.Numb)
+            for r_oir in many(r_rel).R_OIR[201]():
+                xtuml.unrelate(r_rel, r_oir, 201)
+                
             xtuml.delete(r_rel)
             
         xtuml.delete(o_obj)
