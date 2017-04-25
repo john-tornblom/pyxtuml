@@ -1162,4 +1162,7 @@ class MetaModel(object):
     def batch_relate(self):
         for ass in self.associations:
             ass.batch_relate()
+            
+        for ass in self.associations:
             ass.formalize()
+                                
