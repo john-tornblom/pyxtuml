@@ -176,24 +176,26 @@ class Association(object):
         source_class.referential_attributes |= set(self.source_keys)
         target_class.identifying_attributes |= set(self.target_keys)
 
-        def fget(inst, ref_name):
-            inst = next(iter(self.target_link.navigate(inst)), None)
-            return getattr(inst, ref_name, None)
+        def fget(inst, ref_name, alt_prop):
+            other_inst = self.target_link.navigate_one(inst)
+            if other_inst is None and alt_prop:
+                return alt_prop.fget(inst)
             
-        def fset(inst, ref_name, value):
-            inst = next(iter(self.target_link.navigate(inst)), None)
-            return setattr(inst, ref_name, value)
+            return getattr(other_inst, ref_name, None)
+            
+        def fset(inst, ref_name, value, alt_prop):
+            other_inst = self.target_link.navigate_one(inst)
+            if other_inst is None and alt_prop:
+                return alt_prop.fset(inst, value)
+            
+            return setattr(other_inst, ref_name, value)
         
         for ref_key, primary_key in zip(self.source_keys, self.target_keys):
-            prop = property(partial(fget, ref_name=primary_key), 
-                            partial(fset, ref_name=primary_key))
+            prop = getattr(source_class.clazz, ref_key, None)
+            prop = property(partial(fget, ref_name=primary_key, alt_prop=prop), 
+                            partial(fset, ref_name=primary_key, alt_prop=prop))
+            setattr(source_class.clazz, ref_key, prop)
             
-            if not self.target_link.conditional:
-                setattr(source_class.clazz, ref_key, prop)
-                
-            elif not hasattr(source_class.clazz, ref_key):
-                setattr(source_class.clazz, ref_key, prop)
-
 
 class Link(dict):
     '''
@@ -296,6 +298,12 @@ class Link(dict):
         else:
             return set()
         
+    def navigate_one(self, instance):
+        '''
+        Navigate from *instance* across the link.
+        '''
+        return next(iter(self.navigate(instance)), None)
+    
     def query(self, dictonary_of_values):
         '''
         Query the link for instances with attributes that match a given
