@@ -1173,4 +1173,8 @@ class MetaModel(object):
             
         for ass in self.associations:
             ass.formalize()
-                                
+
+        for inst in self.instances:
+            for attr in inst.__metaclass__.referential_attributes:
+                delattr(inst, attr)
+                
