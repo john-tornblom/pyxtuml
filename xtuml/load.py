@@ -261,17 +261,17 @@ class ModelLoader(object):
             if not isinstance(stmt, CreateAssociationStmt):
                 continue
             
-            ass = metamodel.define_association(stmt.rel_id, 
-                                               stmt.source_kind,
-                                               stmt.source_keys,
-                                               'M' in stmt.source_cardinality,
-                                               'C' in stmt.source_cardinality,
-                                               stmt.source_phrase,
-                                               stmt.target_kind,
-                                               stmt.target_keys,
-                                               'M' in stmt.target_cardinality,
-                                               'C' in stmt.target_cardinality,
-                                               stmt.target_phrase)
+            metamodel.define_association(stmt.rel_id, 
+                                         stmt.source_kind,
+                                         stmt.source_keys,
+                                         'M' in stmt.source_cardinality,
+                                         'C' in stmt.source_cardinality,
+                                         stmt.source_phrase,
+                                         stmt.target_kind,
+                                         stmt.target_keys,
+                                         'M' in stmt.target_cardinality,
+                                         'C' in stmt.target_cardinality,
+                                         stmt.target_phrase)
 
     def populate_unique_identifiers(self, metamodel):
         '''
