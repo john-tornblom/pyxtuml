@@ -364,6 +364,17 @@ class ModelLoader(object):
                 self._populate_instance_with_positional_arguments(metamodel,
                                                                   stmt)
                 
+    def populate_links(self, metamodel):
+        for ass in metamodel.associations:
+            ass.batch_relate()
+            
+        for ass in metamodel.associations:
+            ass.formalize()
+
+        for inst in metamodel.instances:
+            for attr in inst.__metaclass__.referential_attributes:
+                delattr(inst, attr)
+                
     def populate(self, metamodel):
         '''
         Populate a *metamodel* with entities previously encountered from input.
@@ -372,7 +383,8 @@ class ModelLoader(object):
         self.populate_unique_identifiers(metamodel)
         self.populate_instances(metamodel)
         self.populate_associations(metamodel)
-        
+        self.populate_links(metamodel)
+
     def build_metamodel(self, id_generator=None):
         '''
         Build and return a *xtuml.MetaModel* containing previously loaded input.
@@ -380,7 +392,6 @@ class ModelLoader(object):
         m = xtuml.MetaModel(id_generator)
         
         self.populate(m)
-        m.batch_relate()
         
         return m
 
