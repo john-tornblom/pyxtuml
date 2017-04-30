@@ -303,61 +303,6 @@ class Link(dict):
         Navigate from *instance* across the link.
         '''
         return next(iter(self.navigate(instance)), None)
-    
-    def query(self, dictonary_of_values):
-        '''
-        Query the link for instances with attributes that match a given
-        *dictonary of values*.
-        '''
-        q = Query(self, dictonary_of_values)
-        return q.execute()
-    
-
-class Query(object):
-    '''
-    A *Query* retrive instances from a metaclass by matching instance
-    attributes against a dictonary of values provided upon initialisation.
-    '''
-    storage = None
-    result = None
-    evaluation = None
-    
-    def __init__(self, storage, kwargs):
-        self.result = collections.deque()
-        self.items = collections.deque(kwargs.items())
-        self.storage = storage
-        self.evaluation = self.evaluate()
-        
-    def evaluate(self):
-        '''
-        Evaluate the query by iterating all instances in the metaclass.
-        
-        **Note**: if the instance population is modified during evaluation,
-        an exception is thrown.
-        '''
-        for inst in iter(self.storage):
-            for name, value in iter(self.items):
-                if getattr(inst, name) != value or _is_null(inst, name):
-                    break
-            else:
-                self.result.append(inst)
-                yield inst
-    
-        self.evaluation = None
-    
-    def execute(self):
-        '''
-        Execute the query. 
-        
-        **Note**: Each instance is evaluated for inclusion only once, even
-        if the query is executed multiple times. To re-evaluate the query,
-        create a new one.
-        '''
-        for inst in self.result:
-            yield inst
-            
-        while self.evaluation:
-            yield next(self.evaluation)
         
         
 class QuerySet(xtuml.OrderedSet):
@@ -680,10 +625,15 @@ class MetaClass(object):
         Query the instance pool for instances with attributes that match a given
         *dictonary of values*.
         '''
-        q = Query(self.storage, dictonary_of_values)
-        return q.execute()
+        items = collections.deque(dictonary_of_values.items())
+        for inst in iter(self.storage):
+            for name, value in iter(items):
+                if getattr(inst, name) != value or _is_null(inst, name):
+                    break
+            else:
+                yield inst
     
-        
+
 class NavChain(object):
     '''
     A navigation chain initializes a navigation from one or more instances.
