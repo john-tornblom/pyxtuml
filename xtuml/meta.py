@@ -156,12 +156,22 @@ class Association(object):
     def batch_relate(self):
         source_class = self.source_link.to_metaclass
         target_class = self.target_link.to_metaclass
+        key_map = tuple(zip(self.source_keys, self.target_keys))
         
         for inst1 in source_class.storage:
             kwargs = dict()
-            for ref_key, primary_key in zip(self.source_keys, self.target_keys):
+            skip_instance = False
+            
+            for ref_key, primary_key in key_map:
+                if _is_null(inst1, ref_key):
+                    skip_instance = True
+                    break
+                
                 kwargs[primary_key] = getattr(inst1, ref_key)
-
+            
+            if skip_instance:
+                continue
+            
             for inst2 in target_class.query(kwargs):
                 self.source_link.connect(inst2, inst1, check=False)
                 self.target_link.connect(inst1, inst2, check=False)
@@ -628,7 +638,7 @@ class MetaClass(object):
         items = collections.deque(dictonary_of_values.items())
         for inst in iter(self.storage):
             for name, value in iter(items):
-                if getattr(inst, name) != value or _is_null(inst, name):
+                if getattr(inst, name) != value:
                     break
             else:
                 yield inst
