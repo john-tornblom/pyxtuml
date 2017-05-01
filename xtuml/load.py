@@ -94,6 +94,37 @@ def deserialize_value(ty, value):
         raise ParsingException("Unknown type named '%s'" % ty)
 
 
+def _is_null(instance, name):
+    '''
+    Determine if an attribute of an *instance* with a specific *name* 
+    is null.
+    '''
+    value = getattr(instance, name)
+    if value:
+        return False
+    
+    elif value is None:
+        return True
+
+    name = name.upper()
+    for attr_name, attr_ty in instance.__metaclass__.attributes:
+        if attr_name.upper() != name:
+            continue
+
+        attr_ty = attr_ty.upper()
+        if attr_ty == 'UNIQUE_ID':
+            # UUID(int=0) is reserved for null
+            return value == 0
+
+        elif attr_ty == 'STRING':
+            # empty string is reserved for null
+            return len(value) == 0
+
+        else:
+            #null-values for integer, boolean and real are not supported
+            return False
+
+
 class ParsingException(Exception):
     '''
     An exception that may be thrown while loading (and parsing) a metamodel.
@@ -364,10 +395,47 @@ class ModelLoader(object):
                 self._populate_instance_with_positional_arguments(metamodel,
                                                                   stmt)
                 
-    def populate_links(self, metamodel):
+    def populate_connections(self, metamodel):
+        def compute_keys(inst):
+            for link in inst.__metaclass__.links.values():
+                kwargs = dict()
+                for attr in link.key_map.values():
+                    kwargs[attr] = getattr(inst, attr)
+                    
+                yield frozenset(tuple(kwargs.items()))
+        
+        lookup_table = dict()
+        for metaclass in metamodel.metaclasses.values():
+            lookup_table[metaclass] = dict()
+            for inst in metaclass.storage:
+                for key in compute_keys(inst):
+                    lookup_table[metaclass][key] = inst
+        
         for ass in metamodel.associations:
-            ass.batch_relate()
-            
+            source_class = ass.source_link.to_metaclass
+            target_class = ass.target_link.to_metaclass
+            key_map = tuple(zip(ass.source_keys, ass.target_keys))
+        
+            for inst in source_class.storage:
+                kwargs = dict()
+                skip_instance = False
+                
+                for ref_key, primary_key in key_map:
+                    if _is_null(inst, ref_key):
+                        skip_instance = True
+                        break
+                    
+                    kwargs[primary_key] = getattr(inst, ref_key)
+                
+                if skip_instance:
+                    continue
+                
+                key = frozenset(tuple(kwargs.items()))
+                if key in lookup_table[target_class]:
+                    other_inst = lookup_table[target_class][key]
+                    ass.source_link.connect(other_inst, inst, check=False)
+                    ass.target_link.connect(inst, other_inst, check=False)
+        
         for ass in metamodel.associations:
             ass.formalize()
 
@@ -383,7 +451,7 @@ class ModelLoader(object):
         self.populate_unique_identifiers(metamodel)
         self.populate_instances(metamodel)
         self.populate_associations(metamodel)
-        self.populate_links(metamodel)
+        self.populate_connections(metamodel)
 
     def build_metamodel(self, id_generator=None):
         '''
