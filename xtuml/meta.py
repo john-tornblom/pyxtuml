@@ -358,6 +358,8 @@ class Class(object):
             
             if attr in self.__dict__:
                 return self.__dict__[attr]
+            
+            return getattr(self, attr)
         
         return object.__getattribute__(self, name)
     
