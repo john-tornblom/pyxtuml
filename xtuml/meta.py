@@ -180,9 +180,6 @@ class Association(object):
         source_class = self.source_link.to_metaclass
         target_class = self.target_link.to_metaclass
         
-        self.source_link.key_map = dict(zip(self.source_keys, self.target_keys))
-        self.target_link.key_map = dict(zip(self.target_keys, self.source_keys))
-        
         source_class.referential_attributes |= set(self.source_keys)
         target_class.identifying_attributes |= set(self.target_keys)
 
@@ -1069,6 +1066,9 @@ class MetaModel(object):
         ass = Association(rel_id,
                           source_keys, source_link,
                           target_keys, target_link)
+        
+        source_link.key_map = dict(zip(source_keys, target_keys))
+        target_link.key_map = dict(zip(target_keys, source_keys))
         
         self.associations.append(ass)
 
