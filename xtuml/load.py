@@ -391,7 +391,7 @@ class ModelLoader(object):
                         continue
                     
                     if inst_key not in storage[target_class][link_key]:
-                        storage[target_class][link_key][inst_key] = set()
+                        storage[target_class][link_key][inst_key] = xtuml.OrderedSet()
 
                     storage[target_class][link_key][inst_key].add(other_inst)
 
