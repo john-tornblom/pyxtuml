@@ -276,7 +276,7 @@ class Link(dict):
         instances from being connected.
         '''
         if instance not in self:
-            self[instance] = set()
+            self[instance] = xtuml.OrderedSet()
         
         if another_instance in self[instance]:
             return True
