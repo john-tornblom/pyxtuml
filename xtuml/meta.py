@@ -381,25 +381,28 @@ class Class(object):
 
     def __getattr__(self, name):
         uname = name.upper()
-        
         for attr, _ in self.__metaclass__.attributes:
             if attr.upper() != uname :
                 continue
             
             if attr in self.__dict__:
                 return self.__dict__[attr]
-            
-            return getattr(self, attr)
+            else:
+                return object.__getattribute__(self, attr)
         
         return object.__getattribute__(self, name)
     
     def __setattr__(self, name, value):
         uname = name.upper()
         for attr, _ in self.__metaclass__.attributes:
-            if attr.upper() == uname:
-                self.__dict__[attr] = value
-                return
+            if attr.upper() != uname :
+                continue
 
+            if attr in self.__dict__:
+                self.__dict__[attr] = value
+            else:
+                return object.__setattr__(self, attr, value)
+        
         self.__dict__[name] = value
         
     def __delattr__(self, name):
