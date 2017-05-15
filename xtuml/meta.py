@@ -193,18 +193,24 @@ class Association(object):
                 return alt_prop.fget(inst)
             
             return getattr(other_inst, ref_name, None)
-            
-        def fset(inst, ref_name, value, alt_prop):
+
+        def fset(inst, value, name, ref_name, alt_prop):
+            kind = inst.__metaclass__.kind
+            raise MetaException('%s.%s is a referential attribute '\
+                                'and cannot be assigned directly'% (kind, name))
+        
             other_inst = self.target_link.navigate_one(inst)
             if other_inst is None and alt_prop:
                 return alt_prop.fset(inst, value)
-            
-            return setattr(other_inst, ref_name, value)
+
+            elif other_inst:
+                return setattr(other_inst, ref_name, value)
+
         
         for ref_key, primary_key in zip(self.source_keys, self.target_keys):
             prop = getattr(source_class.clazz, ref_key, None)
             prop = property(partial(fget, ref_name=primary_key, alt_prop=prop), 
-                            partial(fset, ref_name=primary_key, alt_prop=prop))
+                            partial(fset, name=ref_key, ref_name=primary_key, alt_prop=prop))
             setattr(source_class.clazz, ref_key, prop)
             
 
