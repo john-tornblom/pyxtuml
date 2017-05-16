@@ -70,7 +70,7 @@ def deserialize_value(ty, value):
         elif value.upper() == 'TRUE':
             return True
         else:
-            raise ParsingException("Unable to convert '%s' to a boolean" % value)
+            return None
     
     elif uty == 'INTEGER': 
         if '"' in value:
@@ -89,9 +89,6 @@ def deserialize_value(ty, value):
             return uuid.UUID(value[1:-1]).int
         else:
             return int(value)
-    
-    else:
-        raise ParsingException("Unknown type named '%s'" % ty)
 
     
 class ParsingException(Exception):
@@ -101,7 +98,13 @@ class ParsingException(Exception):
     pass
 
 
-class CreateInstanceStmt(object):
+class Stmt(object):
+    offset = None
+    lineno = None
+    filename = None
+
+
+class CreateInstanceStmt(Stmt):
     
     def __init__(self, kind, values, names):
         self.kind = kind
@@ -109,14 +112,14 @@ class CreateInstanceStmt(object):
         self.names = names
 
 
-class CreateClassStmt(object):
+class CreateClassStmt(Stmt):
     
     def __init__(self, kind, attributes):
         self.kind = kind
         self.attributes = attributes
         
 
-class CreateAssociationStmt(object):
+class CreateAssociationStmt(Stmt):
     def __init__(self, rel_id, source_kind, source_cardinality, source_keys, 
                  source_phrase, target_kind, target_cardinality, target_keys,
                 target_phrase):
@@ -131,7 +134,7 @@ class CreateAssociationStmt(object):
         self.target_phrase = target_phrase
         
  
-class CreateUniqueStmt(object):
+class CreateUniqueStmt(Stmt):
     
     def __init__(self, kind, name, attributes):
         self.kind = kind
@@ -227,7 +230,7 @@ class ModelLoader(object):
                         lextab="xtuml.__xtuml_lextab")
         lexer.filename = name
         logger.debug('parsing %s' % name)
-        s = self.parser.parse(lexer=lexer, input=data)
+        s = self.parser.parse(lexer=lexer, input=data, tracking=1)
         self.statements.extend(s)
 
     def filename_input(self, filename):
@@ -317,8 +320,15 @@ class ModelLoader(object):
         inst = metamodel.new(stmt.kind)
         for attr, value in zip(metaclass.attributes, stmt.values):
             name, ty = attr
-            value = deserialize_value(ty, value)
-            inst.__dict__[name] = value
+            py_value = deserialize_value(ty, value)
+            if py_value is None:
+                raise ParsingException("%s:%d:unable to deserialize "\
+                                       "%s to a %s" % (stmt.filename,
+                                                       stmt.lineno,
+                                                       value,
+                                                       ty))
+
+            inst.__dict__[name] = py_value
         
         return inst
     
@@ -347,6 +357,12 @@ class ModelLoader(object):
             if uname in inst_unames:
                 idx = inst_unames.index(uname)
                 value = deserialize_value(ty, stmt.values[idx])
+                if value is None:
+                    raise ParsingException("%s:%d:unable to deserialize "\
+                                           "%s to a %s" % (stmt.filename,
+                                                           stmt.lineno,
+                                                           value,
+                                                           ty))
             else:
                 value = None
             
@@ -535,6 +551,9 @@ class ModelLoader(object):
                   | create_index_statement SEMICOLON
         '''
         p[0] = p[1]
+        p[0].offset = p.lexpos(1)
+        p[0].lineno = p.lineno(1)
+        p[0].filename = p.lexer.filename
 
     def p_create_table_statement(self, p):
         '''create_table_statement : CREATE TABLE identifier LPAREN attribute_sequence RPAREN'''
