@@ -3322,7 +3322,7 @@ def mk_simple_association(m, inst):
                          source_phrase=source_phrase,
                          target_phrase=target_phrase,
                          source_many=r_form.Mult,
-                         target_many=r_part.Mult,)
+                         target_many=r_part.Mult)
 
 
 def mk_linked_association(m, inst):
