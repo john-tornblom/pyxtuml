@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with pyxtuml. If not, see <http://www.gnu.org/licenses/>.
 
+import collections
+import functools
 import os
 import logging
 import xtuml
@@ -24,6 +26,8 @@ from xtuml import navigate_one as one
 from xtuml import navigate_many as many
 from xtuml import navigate_subtype as subtype
 from xtuml import where_eq as where
+
+import interpret
 
 
 logger = logging.getLogger(__name__)
@@ -3159,6 +3163,45 @@ INSERT INTO S_UDT
 '''
 
 
+class LOG(object):
+    
+    @staticmethod
+    def LogInteger(message):
+        print('LogInteger: %d' % message)
+        
+    @staticmethod
+    def LogInfo(message):
+        print('LogInfo: %s' % message)
+        
+    @staticmethod
+    def LogFailure(message):
+        print('LogFailure: %s' % message)
+        
+    @staticmethod
+    def LogSuccess(message):
+        print('LogSuccess: %s' % message)
+        
+    
+class Domain(xtuml.MetaModel):
+    symbols = None
+    
+    def __init__(self, id_generator=None):
+        self.symbols = dict()
+        xtuml.MetaModel.__init__(self, id_generator)
+        
+    def add_symbol(self, name, handle):
+        self.symbols[name] = handle
+        
+    def find_symbol(self, name):
+        if name in self.symbols:
+            return self.symbols[name]
+        
+        try:
+            return self.find_class(name)
+        except:
+            raise Exception('Unknown symbol %s' % name)
+
+
 def is_contained_in(pe_pe, root):
     '''
     Determine if a PE_PE is contained within a EP_PKG or a C_C.
@@ -3248,7 +3291,54 @@ def get_related_attributes(r_rgo, r_rto):
         
     return l1, l2
 
-            
+
+def mk_enum(s_edt):
+    s_dt = one(s_edt).S_DT[17]()
+    enums = many(s_edt).S_ENUM[27]()
+    enums = [enum.Name for enum in enums]
+    Enum = collections.namedtuple(s_dt.Name, enums)
+    return Enum(*range(len(enums)))
+
+
+def mk_function(metamodel, s_sync):
+    action = s_sync.Action_Semantics_internal
+    return lambda **kwargs: interpret.run_function(metamodel, action, kwargs)
+    
+    
+def mk_constant(cnst_syc):
+    s_dt = one(cnst_syc).S_DT[1500]()
+    cnst_lsc = one(cnst_syc).CNST_LFSC[1502].CNST_LSC[1503]()
+    
+    if s_dt.Name == 'boolean':
+        return cnst_lsc.Value.lower() == 'true'
+    
+    if s_dt.Name == 'integer':
+        return int(cnst_lsc.Value)
+    
+    if s_dt.Name == 'real':
+        return float(cnst_lsc.Value)
+    
+    if s_dt.Name == 'string':
+        return str(cnst_lsc.Value)
+
+
+def mk_operation(metaclass, o_tfr):
+    action = o_tfr.Action_Semantics_internal
+
+    if o_tfr.Instance_Based:
+        return lambda self, **kwargs: interpret.run_operation(metaclass, action, kwargs, self)
+    else:
+        fn = lambda cls, **kwargs: interpret.run_operation(metaclass, action, kwargs, None)
+        return classmethod(fn)
+
+
+def mk_derived_attribute(metaclass, o_dbattr):
+    action = o_dbattr.Action_Semantics_internal
+    o_attr = one(o_dbattr).O_BATTR[107].O_ATTR[106]()
+    fget = functools.partial(interpret.run_derived_attribute, metaclass, action, o_attr.Name)
+    return property(fget)
+
+
 def mk_class(m, o_obj, derived_attributes=False):
     '''
     Create a pyxtuml class from a BridgePoint class.
@@ -3260,8 +3350,9 @@ def mk_class(m, o_obj, derived_attributes=False):
     while o_attr:
         ty = get_attribute_type(o_attr)
         if not derived_attributes and one(o_attr).O_BATTR[106].O_DBATTR[107]():
-            logger.warning('Omitting derived attribute %s.%s ' %
-                           (o_obj.Key_Lett, o_attr.Name))
+            pass
+#            logger.warning('Omitting derived attribute %s.%s ' %
+#                           (o_obj.Key_Lett, o_attr.Name))
         elif not ty:
             logger.warning('Omitting unsupported attribute %s.%s ' %
                            (o_obj.Key_Lett, o_attr.Name))
@@ -3270,7 +3361,7 @@ def mk_class(m, o_obj, derived_attributes=False):
         
         o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
             
-    Cls = m.define_class(o_obj.Key_Lett, list(attributes), o_obj.Descrip)
+    metaclass = m.define_class(o_obj.Key_Lett, list(attributes), o_obj.Descrip)
 
     for o_id in many(o_obj).O_ID[104]():
         o_oida = many(o_id).O_OIDA[105]()
@@ -3283,7 +3374,16 @@ def mk_class(m, o_obj, derived_attributes=False):
         names = [o_attr.Name for o_attr in o_attrs]
         m.define_unique_identifier(o_obj.Key_Lett, o_id.Oid_ID + 1, *names)
     
-    return Cls
+    for o_tfr in many(o_obj).O_TFR[115]():
+        fn = mk_operation(metaclass, o_tfr)
+        setattr(metaclass.clazz, o_tfr.Name, fn)
+        
+    for o_dbattr in many(o_obj).O_ATTR[102].O_BATTR[106].O_DBATTR[107]():
+        o_attr = one(o_dbattr).O_BATTR[107].O_ATTR[106]()
+        fn = mk_derived_attribute(metaclass, o_dbattr)
+        setattr(metaclass.clazz, o_attr.Name, fn)
+            
+    return metaclass
 
 
 def mk_simple_association(m, inst):
@@ -3425,7 +3525,7 @@ def mk_component(bp_model, c_c=None, derived_attributes=False):
     Optionally, restrict to classes and associations contained in the
     component c_c.
     '''
-    target = xtuml.MetaModel()
+    target = Domain()
 
     c_c_filt = lambda sel: c_c is None or is_contained_in(sel, c_c)
     
@@ -3435,6 +3535,26 @@ def mk_component(bp_model, c_c=None, derived_attributes=False):
     for r_rel in bp_model.select_many('R_REL', c_c_filt):
         mk_association(target, r_rel)
         
+    for s_sync in bp_model.select_many('S_SYNC', c_c_filt):
+        fn = mk_function(target, s_sync)
+        target.add_symbol(s_sync.Name, fn)
+    
+    for s_dt in bp_model.select_many('S_DT', c_c_filt):
+        s_edt = one(s_dt).S_EDT[17]()
+        if s_edt:
+            enum = mk_enum(s_edt)
+            target.add_symbol(s_dt.Name, enum)
+        
+    for cnst_csp in bp_model.select_many('CNST_CSP', c_c_filt):
+        for cnst_syc in many(cnst_csp).CNST_SYC[1504]():
+            value = mk_constant(cnst_syc)
+            target.add_symbol(cnst_syc.Name, value)
+        
+    for ass in target.associations:
+        ass.formalize()
+    
+    target.add_symbol('LOG', LOG)
+    
     return target
 
 
@@ -3485,7 +3605,7 @@ class ModelLoader(xtuml.ModelLoader):
             raise Exception('Unable to find the component %s' % name)
         else:
             return mk_component(mm, c_c, derived_attributes)
-
+    
 
 def load_metamodel(resource=None, load_globals=True):
     '''
