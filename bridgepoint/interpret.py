@@ -25,7 +25,6 @@ import functools
 import xtuml
 
 from bridgepoint import oal
-from bridgepoint import ooaofooa
 
 from functools import partial
 
@@ -560,6 +559,7 @@ def main():
     }
     logging.basicConfig(level=levels.get(opts.verbosity, logging.DEBUG))
     
+    from bridgepoint import ooaofooa
     mm = ooaofooa.load_metamodel(args)
     domain = ooaofooa.mk_component(mm, derived_attributes=False)
     
