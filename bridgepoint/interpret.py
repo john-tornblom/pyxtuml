@@ -22,9 +22,10 @@ import logging
 import optparse
 import functools
 
-import oal
-import ooaofooa
 import xtuml
+
+from bridgepoint import oal
+from bridgepoint import ooaofooa
 
 from functools import partial
 
@@ -154,7 +155,9 @@ class ActionWalker(xtuml.Walker):
         
         try:
             self.accept(node.block)
-        except ReturnException, StopException:
+        except ReturnException:
+            pass
+        except StopException:
             pass
     
         self.symtab.leave_scope()

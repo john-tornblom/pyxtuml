@@ -27,7 +27,7 @@ from xtuml import navigate_many as many
 from xtuml import navigate_subtype as subtype
 from xtuml import where_eq as where
 
-import interpret
+from bridgepoint import interpret
 
 
 logger = logging.getLogger(__name__)
