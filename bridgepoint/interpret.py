@@ -25,6 +25,7 @@ import functools
 import xtuml
 
 from bridgepoint import oal
+from xtuml import where_eq as where
 
 from functools import partial
 
@@ -545,7 +546,11 @@ def main():
                       default=1, help="increase debug logging level")
     
     parser.add_option("-f", "--function", dest='function', action="store",
-                      metavar='NAME', help="invoke function named NAME")
+                      help="invoke function named NAME", metavar='NAME')
+    
+    parser.add_option("-c", "--component", dest='component', action="store",
+                      help="look for the function in a component named NAME",
+                      metavar='NAME', default=None)
     
     (opts, args) = parser.parse_args()
     if len(args) == 0 or not opts.function:
@@ -562,7 +567,8 @@ def main():
     
     from bridgepoint import ooaofooa
     mm = ooaofooa.load_metamodel(args)
-    domain = ooaofooa.mk_component(mm, derived_attributes=False)
+    c_c = mm.select_any('C_C', where(Name=opts.component))
+    domain = ooaofooa.mk_component(mm, c_c, derived_attributes=False)
     
     func = domain.find_symbol(opts.function)
     return func()
