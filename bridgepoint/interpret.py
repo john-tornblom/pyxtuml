@@ -109,9 +109,6 @@ class SymbolTable(object):
         
         return self.domain.find_symbol(name)
 
-    def __str__(self):
-        return str(list(itertools.chain(*self._scopes)))
-
 
 class ReturnException(Exception):
     pass
