@@ -83,7 +83,7 @@ class TestRelation(PrebuildFunctionTestCase):
         relate a to b across R2;
         '''
         act_rel = self.metamodel.select_one('ACT_REL')
-        self.assertIsNone(act_rel.relationship_phrase)
+        self.assertFalse(act_rel.relationship_phrase)
         
         act_smt = one(act_rel).ACT_SMT[603]()
         self.assertIsNotNone(act_smt)
@@ -128,7 +128,7 @@ class TestRelation(PrebuildFunctionTestCase):
         relate a to b across R2 using c;
         '''
         act_rel = self.metamodel.select_one('ACT_RU')
-        self.assertIsNone(act_rel.relationship_phrase)
+        self.assertFalse(act_rel.relationship_phrase)
         
         act_smt = one(act_rel).ACT_SMT[603]()
         self.assertIsNotNone(act_smt)
@@ -180,7 +180,7 @@ class TestRelation(PrebuildFunctionTestCase):
         unrelate a from b across R2;
         '''
         act_unr = self.metamodel.select_one('ACT_UNR')
-        self.assertIsNone(act_unr.relationship_phrase)
+        self.assertFalse(act_unr.relationship_phrase)
         
         act_smt = one(act_unr).ACT_SMT[603]()
         self.assertIsNotNone(act_smt)
@@ -227,7 +227,7 @@ class TestRelation(PrebuildFunctionTestCase):
         unrelate a from b across R2 using c;
         '''
         act_unr = self.metamodel.select_one('ACT_URU')
-        self.assertIsNone(act_unr.relationship_phrase)
+        self.assertFalse(act_unr.relationship_phrase)
         
         act_smt = one(act_unr).ACT_SMT[603]()
         self.assertIsNotNone(act_smt)

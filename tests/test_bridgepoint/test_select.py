@@ -140,7 +140,7 @@ class TestSelect(PrebuildFunctionTestCase):
         
         act_lnk = one(act_sr).ACT_LNK[637]()
         self.assertIsNotNone(act_lnk)
-        self.assertIsNone(act_lnk.Rel_Phrase)
+        self.assertFalse(act_lnk.Rel_Phrase)
         
         o_obj = one(act_lnk).O_OBJ[678]()
         self.assertEqual(o_obj.Key_Lett, 'A')
@@ -150,7 +150,7 @@ class TestSelect(PrebuildFunctionTestCase):
         
         act_lnk = one(act_lnk).ACT_LNK[604, 'succeeds']()
         self.assertIsNotNone(act_lnk)
-        self.assertIsNone(act_lnk.Rel_Phrase)
+        self.assertFalse(act_lnk.Rel_Phrase)
         
         o_obj = one(act_lnk).O_OBJ[678]()
         self.assertEqual(o_obj.Key_Lett, 'B')
@@ -201,7 +201,7 @@ class TestSelect(PrebuildFunctionTestCase):
         
         act_lnk = one(act_lnk).ACT_LNK[604, 'succeeds']()
         self.assertIsNotNone(act_lnk)
-        self.assertIsNone(act_lnk.Rel_Phrase)
+        self.assertFalse(act_lnk.Rel_Phrase)
         
         o_obj = one(act_lnk).O_OBJ[678]()
         self.assertEqual(o_obj.Key_Lett, 'B')
