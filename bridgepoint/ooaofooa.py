@@ -3296,7 +3296,7 @@ def mk_simple_association(m, inst):
     r_part = one(inst).R_PART[207]()
     
     if None in [r_form, r_part]:
-        logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
+        logger.warning('Omitting unformalized association R%s' % (r_rel.Numb))
         return
     
     r_rgo = one(r_form).R_RGO[205]()
