@@ -336,7 +336,8 @@ class ActionWalker(xtuml.Walker):
         
     def accept_FieldAccessNode(self, node):
         handle = self.accept(node.handle).fget()
-        return property(lambda: getattr(handle, node.name))
+        return property(fget=lambda: getattr(handle, node.name),
+                        fset=lambda value: setattr(handle, node.name, value))
     
     def accept_IndexAccessNode(self, node, default=None):
         index = self.accept(node.expression).fget()
