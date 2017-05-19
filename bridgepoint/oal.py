@@ -408,7 +408,7 @@ class RelateNode(Node):
         self.from_variable_name = from_variable_name
         self.to_variable_name = to_variable_name
         self.rel_id = rel_id
-        self.phrase = phrase
+        self.phrase = phrase or ''
     
 
 class RelateUsingNode(Node):
@@ -423,7 +423,7 @@ class RelateUsingNode(Node):
         self.to_variable_name = to_variable_name
         self.using_variable_name = using_variable_name
         self.rel_id = rel_id
-        self.phrase = phrase
+        self.phrase = phrase or ''
 
 
 class UnrelateNode(Node):
@@ -436,7 +436,7 @@ class UnrelateNode(Node):
         self.from_variable_name = from_variable_name
         self.to_variable_name = to_variable_name
         self.rel_id = rel_id
-        self.phrase = phrase
+        self.phrase = phrase or ''
 
 
 class UnrelateUsingNode(Node):
@@ -451,7 +451,7 @@ class UnrelateUsingNode(Node):
         self.to_variable_name = to_variable_name
         self.using_variable_name = using_variable_name
         self.rel_id = rel_id
-        self.phrase = phrase
+        self.phrase = phrase or ''
     
 
 class SelectRelatedNode(Node):
@@ -514,7 +514,7 @@ class NavigationStepNode(Node):
     def __init__(self, key_letter, rel_id, phrase):
         self.key_letter = key_letter
         self.rel_id = rel_id
-        self.phrase = phrase
+        self.phrase = phrase or ''
     
 
 class SelectFromNode(Node):
