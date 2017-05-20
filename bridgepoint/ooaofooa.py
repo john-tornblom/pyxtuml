@@ -3295,13 +3295,14 @@ def mk_simple_association(m, inst):
     r_form = one(inst).R_FORM[208]()
     r_part = one(inst).R_PART[207]()
     
-    if None in [r_form, r_part]:
-        logger.warning('Omitting unformalized association R%s' % (r_rel.Numb))
-        return
-    
     r_rgo = one(r_form).R_RGO[205]()
     r_rto = one(r_part).R_RTO[204]()
     
+    if not r_form:
+        logger.info('unformalized association R%s' % (r_rel.Numb))
+        r_form = one(inst).R_PART[207](lambda sel: sel != r_part)
+        r_rgo = one(r_form).R_RTO[204]()
+        
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
     source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
@@ -3359,10 +3360,6 @@ def mk_linked_association(m, inst):
     r_aone = one(inst).R_AONE[209]()
     r_aoth = one(inst).R_AOTH[210]()
     
-    if None in [r_rgo, r_aone, r_aoth]:
-        logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
-        return
-    
     _mk_assoc(r_aone, r_aoth)
     _mk_assoc(r_aoth, r_aone)
   
@@ -3374,10 +3371,6 @@ def mk_subsuper_association(m, inst):
     r_rel = one(inst).R_REL[206]()
     r_rto = one(inst).R_SUPER[212].R_RTO[204]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
-    
-    if not r_rto:
-        logger.info('Omitting unformalized association R%s' % (r_rel.Numb))
-        return
     
     for r_sub in many(inst).R_SUB[213]():
         r_rgo = one(r_sub).R_RGO[205]()
