@@ -995,6 +995,19 @@ def delete(instance):
     return instance.__metaclass__.delete(instance)
 
 
+def cardinality(instance_or_set):
+    '''
+    Get the cardinality of an *instance_or_set*.
+    '''
+    if not instance_or_set:
+        return 0
+    
+    if isinstance(instance_or_set, Class):
+        return 1
+    
+    return len(instance_or_set)
+
+
 class MetaModel(object):
     '''
     A metamodel contains metaclasses with associations between them.
