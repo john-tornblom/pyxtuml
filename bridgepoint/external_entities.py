@@ -1,5 +1,6 @@
 import datetime
 import sys
+import time
 
 
 class LOG(object):
@@ -28,17 +29,37 @@ class TIM(object):
         return datetime.datetime(year, month, day, hour, minute, second)
     
     @staticmethod
-    def get_day(date):
-        return date.day
+    def current_date():
+        return datetime.datetime.now()
+    
+    @staticmethod
+    def current_clock():
+        return time.time()
+    
+    @staticmethod
+    def get_year(date):
+        return date.year
     
     @staticmethod
     def get_month(date):
         return date.month
     
     @staticmethod
+    def get_day(date):
+        return date.day
+    
+    @staticmethod
     def get_hour(date):
         return date.hour
-
+    
+    @staticmethod
+    def get_minute(date):
+        return date.minute
+    
+    @staticmethod
+    def get_second(date):
+        return date.second
+    
     
 class ARCH(object):
     
