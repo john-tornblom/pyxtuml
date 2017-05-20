@@ -3302,7 +3302,9 @@ def mk_enum(s_edt):
 
 def mk_function(metamodel, s_sync):
     action = s_sync.Action_Semantics_internal
-    return lambda **kwargs: interpret.run_function(metamodel, action, kwargs)
+    label = s_sync.Name
+    return lambda **kwargs: interpret.run_function(metamodel, label, 
+                                                   action, kwargs)
     
     
 def mk_constant(cnst_syc):
@@ -3323,19 +3325,25 @@ def mk_constant(cnst_syc):
 
 
 def mk_operation(metaclass, o_tfr):
+    o_obj = one(o_tfr).O_OBJ[115]()
     action = o_tfr.Action_Semantics_internal
-
+    label = '%s::%s' % (o_obj.Name, o_tfr.Name)
+    run = interpret.run_operation
+    
     if o_tfr.Instance_Based:
-        return lambda self, **kwargs: interpret.run_operation(metaclass, action, kwargs, self)
+        return lambda self, **kwargs: run(metaclass, label, action, kwargs, self)
     else:
-        fn = lambda cls, **kwargs: interpret.run_operation(metaclass, action, kwargs, None)
+        fn = lambda cls, **kwargs: run(metaclass, label, action, kwargs, None)
         return classmethod(fn)
 
 
 def mk_derived_attribute(metaclass, o_dbattr):
-    action = o_dbattr.Action_Semantics_internal
     o_attr = one(o_dbattr).O_BATTR[107].O_ATTR[106]()
-    fget = functools.partial(interpret.run_derived_attribute, metaclass, action, o_attr.Name)
+    o_obj = one(o_attr).O_OBJ[102]()
+    action = o_dbattr.Action_Semantics_internal
+    label = '%s::%s' % (o_obj.Name, o_attr.Name)
+    fget = functools.partial(interpret.run_derived_attribute, metaclass, 
+                             label, action, o_attr.Name)
     return property(fget)
 
 

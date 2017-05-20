@@ -779,6 +779,7 @@ def set_positional_info(node, p):
     set positional information on a node
     '''
     node.position = Position()
+    node.position.label = p.lexer.label
     node.position.start_stream = p.lexpos(1)
     node.position.start_line = p.lineno(1)
     node.position.start_column = find_column(p.lexer.lexdata,
@@ -924,7 +925,7 @@ class OALParser(object):
                                 outputdir=os.path.dirname(__file__),
                                 tabmodule='bridgepoint.__oal_parsetab')
 
-    def text_input(self, text):
+    def text_input(self, text, label='<string>'):
         lexer = lex.lex(debuglog=logger,
                         errorlog=logger,
                         optimize=1,
@@ -932,6 +933,7 @@ class OALParser(object):
                         outputdir=os.path.dirname(__file__),
                         lextab="bridgepoint.__oal_lextab")
 
+        lexer.label = label
         return self.parser.parse(lexer=lexer,
                                  input=text,
                                  tracking=1)
@@ -1987,13 +1989,13 @@ class OALParser(object):
             raise ParseException("unknown parsing error")
 
 
-def parse(action_code):
+def parse(action_code, label='<string>'):
     '''
     Parse and construct an abstract syntax tree for text expressed in the
     Object Action Language (OAL).
     '''
     parser = OALParser()
-    return parser.text_input(action_code + '\n')
+    return parser.text_input(action_code + '\n', label)
 
 
 if __name__ == '__main__':

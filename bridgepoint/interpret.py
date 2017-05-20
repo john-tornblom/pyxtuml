@@ -30,6 +30,9 @@ from xtuml import where_eq as where
 from functools import partial
 
 
+logger = logging.getLogger(__name__)
+
+
 class SymtabException(Exception):
     pass
 
@@ -147,8 +150,19 @@ class ActionWalker(xtuml.Walker):
         self.symtab = SymbolTable(domain)
         xtuml.Walker.__init__(self)
     
+    def accept(self, node, **kwargs):
+        try:
+            return xtuml.Walker.accept(self, node, **kwargs)
+        except xtuml.MetaException as e:
+            logger.error('%s:%d:%s' % (node.position.label,
+                                       node.position.start_line,
+                                       e))
+            
     def default_accept(self, node, **kwargs):
-        sys.stderr.write(node.__class__.__name__ + '\n')
+        logger.error("%s:%d:%s '%s'" % (node.position.label,
+                                        node.position.start_line,
+                                       'unsupported statement',
+                                        node.character_stream.splitlines()[0]))
             
     def accept_BodyNode(self, node):
         self.symtab.enter_scope()
@@ -474,10 +488,10 @@ class OperationWalker(ActionWalker):
         return property(lambda: self.instance)
     
     
-def run_operation(metaclass, action, kwargs, inst):
+def run_operation(metaclass, label, action, kwargs, inst):
     w = OperationWalker(metaclass.metamodel, kwargs, inst)
     #w.visitors.append(NodePrintVisitor())
-    root = oal.parse(action)
+    root = oal.parse(action, label)
     w.accept(root)
     return w.return_value
 
@@ -506,10 +520,10 @@ class DerivedAttributeWalker(ActionWalker):
                             fset=functools.partial(setattr, inst, node.name))
 
 
-def run_derived_attribute(metaclass, action, attribute_name, inst):
+def run_derived_attribute(metaclass, label, action, attribute_name, inst):
     w = DerivedAttributeWalker(metaclass.metamodel, attribute_name, inst)
     #w.visitors.append(NodePrintVisitor())
-    root = oal.parse(action)
+    root = oal.parse(action, label)
     w.accept(root)
     return w.return_value
 
@@ -526,10 +540,10 @@ class FunctionWalker(ActionWalker):
         return property(lambda: value)
 
 
-def run_function(domain, action, kwargs):
+def run_function(domain, label, action, kwargs):
     w = FunctionWalker(domain, kwargs)
     #w.visitors.append(NodePrintVisitor())
-    root = oal.parse(action)
+    root = oal.parse(action, label)
     w.accept(root)
     return w.return_value
 
