@@ -73,6 +73,7 @@ from xtuml.meta import navigate_subtype
 from xtuml.meta import relate
 from xtuml.meta import unrelate
 from xtuml.meta import delete
+from xtuml.meta import cardinality
 from xtuml.meta import where_eq
 from xtuml.meta import sort_reflexive
 
