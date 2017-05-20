@@ -372,6 +372,7 @@ class ActionWalker(xtuml.Walker):
             '-':   lambda lhs, rhs: (lhs - rhs),
             '*':   lambda lhs, rhs: (lhs * rhs),
             '/':   lambda lhs, rhs: (lhs / rhs),
+            '%':   lambda lhs, rhs: (lhs % rhs),
             '<':   lambda lhs, rhs: (lhs < rhs),
             '<=':  lambda lhs, rhs: (lhs <= rhs),
             '>':   lambda lhs, rhs: (lhs > rhs),
@@ -391,9 +392,10 @@ class ActionWalker(xtuml.Walker):
     
     def accept_UnaryOperationNode(self, node):
         ops = {
-            '-':           lambda value:-value,
+            '-':           lambda value: -value,
+            '+':           lambda value: +value,
             'not':         lambda value: not value,
-            'cardinality': lambda value: len(value),
+            'cardinality': lambda value: xtuml.cardinality(value),
             'empty':       lambda value: not value,
             'not_empty':   lambda value: not not value,
         }
