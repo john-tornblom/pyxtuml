@@ -3163,6 +3163,10 @@ INSERT INTO S_UDT
 '''
 
 
+class OoaOfOoaException(Exception):
+    pass
+
+
 class LOG(object):
     
     @staticmethod
@@ -3199,7 +3203,7 @@ class Domain(xtuml.MetaModel):
         try:
             return self.find_class(name)
         except:
-            raise Exception('Unknown symbol %s' % name)
+            raise OoaOfOoaException('Unknown symbol %s' % name)
 
 
 def is_contained_in(pe_pe, root):
@@ -3293,6 +3297,9 @@ def get_related_attributes(r_rgo, r_rto):
 
 
 def mk_enum(s_edt):
+    '''
+    Create a named tuple from a BridgePoint enumeration.
+    '''
     s_dt = one(s_edt).S_DT[17]()
     enums = many(s_edt).S_ENUM[27]()
     enums = [enum.Name for enum in enums]
@@ -3301,6 +3308,9 @@ def mk_enum(s_edt):
 
 
 def mk_function(metamodel, s_sync):
+    '''
+    Create a python function from a BridgePoint function.
+    '''
     action = s_sync.Action_Semantics_internal
     label = s_sync.Name
     return lambda **kwargs: interpret.run_function(metamodel, label, 
@@ -3308,6 +3318,9 @@ def mk_function(metamodel, s_sync):
     
     
 def mk_constant(cnst_syc):
+    '''
+    Create a python value from a BridgePoint constant.
+    '''
     s_dt = one(cnst_syc).S_DT[1500]()
     cnst_lsc = one(cnst_syc).CNST_LFSC[1502].CNST_LSC[1503]()
     
@@ -3325,6 +3338,10 @@ def mk_constant(cnst_syc):
 
 
 def mk_operation(metaclass, o_tfr):
+    '''
+    Create a python function that interprets that action of a BridgePoint class
+    operation.
+    '''
     o_obj = one(o_tfr).O_OBJ[115]()
     action = o_tfr.Action_Semantics_internal
     label = '%s::%s' % (o_obj.Name, o_tfr.Name)
@@ -3338,6 +3355,10 @@ def mk_operation(metaclass, o_tfr):
 
 
 def mk_derived_attribute(metaclass, o_dbattr):
+    '''
+    Create a python property that interprets that action of a BridgePoint derived
+    attribute.
+    '''
     o_attr = one(o_dbattr).O_BATTR[107].O_ATTR[106]()
     o_obj = one(o_attr).O_OBJ[102]()
     action = o_dbattr.Action_Semantics_internal
@@ -3603,7 +3624,7 @@ class ModelLoader(xtuml.ModelLoader):
         if c_c:
             return mk_component(mm, c_c, derived_attributes)
         elif name:
-            raise Exception('Unable to find the component %s' % name)
+            raise OoaOfOoaException('Unable to find the component %s' % name)
         else:
             return mk_component(mm, c_c, derived_attributes)
     
