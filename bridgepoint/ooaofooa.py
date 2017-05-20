@@ -28,6 +28,7 @@ from xtuml import navigate_subtype as subtype
 from xtuml import where_eq as where
 
 from bridgepoint import interpret
+from bridgepoint import external_entities as builtin_ee
 
 
 logger = logging.getLogger(__name__)
@@ -3167,25 +3168,7 @@ class OoaOfOoaException(Exception):
     pass
 
 
-class LOG(object):
-    
-    @staticmethod
-    def LogInteger(message):
-        print('LogInteger: %d' % message)
-        
-    @staticmethod
-    def LogInfo(message):
-        print('LogInfo: %s' % message)
-        
-    @staticmethod
-    def LogFailure(message):
-        print('LogFailure: %s' % message)
-        
-    @staticmethod
-    def LogSuccess(message):
-        print('LogSuccess: %s' % message)
-        
-    
+
 class Domain(xtuml.MetaModel):
     symbols = None
     
@@ -3305,6 +3288,29 @@ def mk_enum(s_edt):
     enums = [enum.Name for enum in enums]
     Enum = collections.namedtuple(s_dt.Name, enums)
     return Enum(*range(len(enums)))
+
+
+def mk_bridge(metamodel, s_brg):
+    '''
+    Create a python function from a BridgePoint bridge.
+    '''
+    action = s_brg.Action_Semantics_internal
+    label = s_brg.Name
+    return lambda **kwargs: interpret.run_function(metamodel, label, 
+                                                   action, kwargs)
+
+
+def mk_external_entity(metamodel, s_ee):
+    bridges = many(s_ee).S_BRG[19]()
+    names = [brg.Name for brg in bridges]
+    EE = collections.namedtuple(s_ee.Key_Lett, names)
+
+    funcs = list()
+    for s_brg in many(s_ee).S_BRG[19]():
+        fn = mk_bridge(metamodel, s_brg)
+        funcs.append(fn)
+
+    return EE(*funcs)
 
 
 def mk_function(metamodel, s_sync):
@@ -3575,7 +3581,13 @@ def mk_component(bp_model, c_c=None, derived_attributes=False):
     for ass in target.associations:
         ass.formalize()
     
-    target.add_symbol('LOG', LOG)
+    for s_ee in bp_model.select_many('S_EE', c_c_filt):
+        if s_ee.Key_Lett in ['LOG', 'ARCH', 'TIM', 'NVS', 'PERSIST']:
+            target.add_symbol(s_ee.Key_Lett, getattr(builtin_ee, s_ee.Key_Lett))
+                              
+        else:
+            ee = mk_external_entity(target, s_ee)
+            target.add_symbol(s_ee.Key_Lett, ee)
     
     return target
 
