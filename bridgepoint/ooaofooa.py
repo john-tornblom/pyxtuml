@@ -31,6 +31,7 @@ from bridgepoint import interpret
 from bridgepoint import external_entities as builtin_ee
 from bridgepoint import schema
 
+
 logger = logging.getLogger(__name__)
 
 
