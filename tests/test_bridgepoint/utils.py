@@ -78,13 +78,11 @@ class CompareAST(unittest.TestCase):
             self.compare(x, y)
             
     def compare_GenerateInstanceEventNode(self, x, y):
-        self.assertEqual(x.variable_name, y.variable_name)
         for x, y in zip(x.children, y.children):
             self.compare(x, y)
             
     def compare_CreateInstanceEventNode(self, x, y):
         self.assertEqual(x.variable_name, y.variable_name)
-        self.assertEqual(x.to_variable_name, y.to_variable_name)
         for x, y in zip(x.children, y.children):
             self.compare(x, y)
           

@@ -1137,7 +1137,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
         return one(e_gsme).E_GES[703].E_ESS[701].ACT_SMT[603]()
     
     def accept_GenerateInstanceEventNode(self, node):
-        v_var = self.find_symbol(node, name=node.variable_name)
+        v_var = self.find_symbol(node, name=node.variable_access.variable_name)
         o_obj = one(v_var).V_INT[814].O_OBJ[818]()
         evt_filter = lambda sel: (sel.Drv_Lbl == node.event_specification.identifier or
                                   sel.Drv_Lbl == node.event_specification.identifier + '*')
@@ -1160,7 +1160,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
             v_var = one(v_trn).V_VAR[814]()
             relate(v_var, s_dt, 848)
         
-        v_var_to = self.find_symbol(node, name=node.to_variable_name)            
+        v_var_to = self.find_symbol(node, name=node.to_variable_access.variable_name)
         o_obj = one(v_var_to).V_INT[814].O_OBJ[818]()
         evt_filter = lambda sel: (sel.Drv_Lbl == node.event_specification.identifier or
                                   sel.Drv_Lbl == node.event_specification.identifier + '*')

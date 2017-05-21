@@ -179,15 +179,15 @@ class GenerateCreatorEventNode(Node):
 
 class GenerateInstanceEventNode(Node):
     event_specification = None
-    variable_name = None
+    variable_access = None
     
-    def __init__(self, event_specification, variable_name):
+    def __init__(self, event_specification, variable_access):
         self.event_specification = event_specification
-        self.variable_name = variable_name
+        self.variable_access = variable_access
         
     @property
     def children(self):
-        return (self.event_specification,)
+        return (self.event_specification, self.variable_access)
 
 
 class CreateClassEventNode(Node):
@@ -223,16 +223,16 @@ class CreateCreatorEventNode(Node):
 class CreateInstanceEventNode(Node):
     variable_name = None
     event_specification = None
-    to_variable_name = None
+    to_variable_access = None
     
-    def __init__(self, variable_name, event_specification, to_variable_name):
+    def __init__(self, variable_name, event_specification, to_variable_access):
         self.variable_name = variable_name
         self.event_specification = event_specification
-        self.to_variable_name = to_variable_name
+        self.to_variable_access = to_variable_access
         
     @property
     def children(self):
-        return (self.event_specification,)
+        return (self.event_specification, self.to_variable_access)
 
 
 class GeneratePreexistingNode(Node):
@@ -682,19 +682,23 @@ class BinaryOperationNode(Node):
         return (self.left, self.right)
 
 
-class SelfAccessNode(Node):
-    pass
-
-
-class SelectedAccessNode(Node):
-    pass
-
-
 class VariableAccessNode(Node):
     variable_name = None
     
     def __init__(self, variable_name):
         self.variable_name = variable_name
+
+
+class SelfAccessNode(VariableAccessNode):
+
+    def __init__(self, variable_name='self'):
+        VariableAccessNode.__init__(self, variable_name)
+
+
+class SelectedAccessNode(VariableAccessNode):
+
+    def __init__(self, variable_name='selected'):
+        VariableAccessNode.__init__(self, variable_name)
 
 
 class ParamAccessNode(Node):
@@ -1281,9 +1285,15 @@ class OALParser(object):
     
     @track_production
     def p_generate_instance_event_statement_1(self, p):
-        '''statement : GENERATE event_specification TO identifier'''
+        '''statement : GENERATE event_specification TO variable_access'''
         p[0] = GenerateInstanceEventNode(event_specification=p[2],
-                                         variable_name=p[4])
+                                         variable_access=p[4])
+        
+    @track_production
+    def p_generate_instance_event_statement_2(self, p):
+        '''statement : GENERATE event_specification TO self_access'''
+        p[0] = GenerateInstanceEventNode(event_specification=p[2],
+                                         variable_access=p[4])
         
     @track_production
     def p_create_class_event_statement(self, p):
@@ -1308,17 +1318,17 @@ class OALParser(object):
     
     @track_production
     def p_create_instance_event_statement_1(self, p):
-        '''statement : CREATE EVENT INSTANCE variable_name OF event_specification TO variable_name'''
+        '''statement : CREATE EVENT INSTANCE variable_name OF event_specification TO variable_access'''
         p[0] = CreateInstanceEventNode(variable_name=p[4],
                                        event_specification=p[6],
-                                       to_variable_name=p[8])
+                                       to_variable_access=p[8])
     
     @track_production
     def p_create_instance_event_statement_2(self, p):
-        '''statement : CREATE EVENT INSTANCE variable_name OF event_specification TO SELF'''
+        '''statement : CREATE EVENT INSTANCE variable_name OF event_specification TO self_access'''
         p[0] = CreateInstanceEventNode(variable_name=p[4],
                                        event_specification=p[6],
-                                       to_variable_name=p[8])
+                                       to_variable_access=p[8])
         
     @track_production
     def p_generate_preexisting_event_statement(self, p):
