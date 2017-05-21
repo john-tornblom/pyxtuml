@@ -47,6 +47,21 @@ class TestNavigation(unittest.TestCase):
         self.assertTrue(s_cdt)
         self.assertIsInstance(s_cdt, self.m.find_class('S_CDT'))
 
+    def test_navigate_assoc(self):
+        s_sys = self.m.new('S_SYS')
+        g_eis = self.m.new('G_EIS')
+        s_dt = self.m.select_any('S_DT', xtuml.where_eq(Name='void'))
+        pe_pe = xtuml.navigate_one(s_dt).PE_PE[8001]()
+        
+        self.assertTrue(xtuml.relate(g_eis, s_sys, 9100))
+        self.assertTrue(xtuml.relate(g_eis, pe_pe, 9100))
+        
+        self.assertTrue(xtuml.navigate_one(s_sys).G_EIS[9100].PE_PE[9100]())
+        self.assertTrue(xtuml.navigate_one(pe_pe).G_EIS[9100].S_SYS[9100]())
+        
+        inst = xtuml.navigate_one(pe_pe).S_SYS[9100]()
+        self.assertEqual(inst, s_sys)
+        
     def test_navigate_none(self):
         self.assertIsNone(xtuml.navigate_one(None)())
         self.assertIsNone(xtuml.navigate_subtype(None, 0))

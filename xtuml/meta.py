@@ -656,6 +656,18 @@ class MetaClass(object):
         
         return QuerySet(s)
 
+    def _find_assoc_links(self, kind, rel_id, phrase=''):
+        key = (kind.upper(), rel_id, phrase)
+        for link in self.links.values():
+            if link.rel_id != rel_id or link.phrase != phrase:
+                continue
+            
+            metaclass = self.metamodel.find_metaclass(link.kind)
+            if key in metaclass.links:
+                return link, metaclass.links[key]
+        
+        raise UnknownLinkException(self.kind, kind, rel_id, phrase)
+    
     def navigate(self, inst, kind, rel_id, phrase=''):
         '''
         Navigate across a link with some *rel_id* and *phrase* that yields
@@ -665,9 +677,14 @@ class MetaClass(object):
         if key in self.links:
             link = self.links[key]
             return link.navigate(inst)
-        else:
-            raise UnknownLinkException(self.kind, kind, rel_id, phrase)
-            
+        
+        link1, link2 = self._find_assoc_links(kind, rel_id, phrase)
+        inst_set = xtuml.OrderedSet()
+        for inst in link1.navigate(inst):
+            inst_set |= link2.navigate(inst)
+        
+        return inst_set
+    
     def query(self, dictonary_of_values):
         '''
         Query the instance pool for instances with attributes that match a given
