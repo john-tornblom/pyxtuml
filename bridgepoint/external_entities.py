@@ -74,6 +74,10 @@ class PERSIST(object):
     def commit():
         return 0
     
+    @staticmethod
+    def restore():
+        return 0
+    
 
 class NVS(object):
     
