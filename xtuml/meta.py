@@ -181,7 +181,11 @@ class Association(object):
                 self.source_link.connect(inst2, inst1, check=False)
                 self.target_link.connect(inst1, inst2, check=False)
 
-    def formalize(self): 
+    def formalize(self):
+        '''
+        Formalize the association and expose referential attributes
+        on instances.
+        '''
         source_class = self.source_link.to_metaclass
         target_class = self.target_link.to_metaclass
         
