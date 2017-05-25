@@ -115,7 +115,8 @@ def _is_null(instance, name):
         return True
 
     name = name.upper()
-    for attr_name, attr_ty in instance.__metaclass__.attributes:
+    metaclass = get_metaclass(instance)
+    for attr_name, attr_ty in metaclass.attributes:
         if attr_name.upper() != name:
             continue
 
@@ -195,17 +196,16 @@ class Association(object):
             return getattr(other_inst, ref_name, None)
 
         def fset(inst, value, name, ref_name, alt_prop):
-            kind = inst.__metaclass__.kind
+            kind = get_metaclass(inst).kind
             raise MetaException('%s.%s is a referential attribute '\
                                 'and cannot be assigned directly'% (kind, name))
         
-            other_inst = self.target_link.navigate_one(inst)
-            if other_inst is None and alt_prop:
-                return alt_prop.fset(inst, value)
-
-            elif other_inst:
-                return setattr(other_inst, ref_name, value)
-
+            #other_inst = self.target_link.navigate_one(inst)
+            #if other_inst is None and alt_prop:
+            #    return alt_prop.fset(inst, value)
+            #
+            #elif other_inst:
+            #    return setattr(other_inst, ref_name, value)
         
         for ref_key, primary_key in zip(self.source_keys, self.target_keys):
             prop = getattr(source_class.clazz, ref_key, None)
@@ -387,7 +387,7 @@ class Class(object):
 
     def __getattr__(self, name):
         uname = name.upper()
-        for attr, _ in self.__metaclass__.attributes:
+        for attr, _ in get_metaclass(self).attributes:
             if attr.upper() != uname :
                 continue
             
@@ -400,7 +400,7 @@ class Class(object):
     
     def __setattr__(self, name, value):
         uname = name.upper()
-        for attr, _ in self.__metaclass__.attributes:
+        for attr, _ in get_metaclass(self).attributes:
             if attr.upper() != uname :
                 continue
 
@@ -421,7 +421,7 @@ class Class(object):
     
     def __str__(self):
         values = list()
-        for attr, ty in self.__metaclass__.attributes:
+        for attr, ty in get_metaclass(self).attributes:
             value = getattr(self, attr)
             value = xtuml.serialize_value(value, ty)
             values.append('%s=%s' % (attr, value))
@@ -605,7 +605,7 @@ class MetaClass(object):
         part of the same metaclass. 
         '''
         args = list()
-        for name, _ in instance.__metaclass__.attributes:
+        for name, _ in get_metaclass(instance).attributes:
             value = getattr(instance, name)
             args.append(value)
             
@@ -723,7 +723,8 @@ class NavChain(object):
             rel_id = 'R%d' % rel_id
     
         for inst in iter(handle):
-            for result in inst.__metaclass__.navigate(inst, kind, rel_id, phrase):
+            metaclass = get_metaclass(inst)
+            for result in metaclass.navigate(inst, kind, rel_id, phrase):
                 yield result
             
     def __getattr__(self, kind):
@@ -832,7 +833,8 @@ def navigate_subtype(supertype, rel_id):
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
 
-    for kind, rel_id_candidate, _ in supertype.__metaclass__.links:
+    metaclass = get_metaclass(supertype)
+    for kind, rel_id_candidate, _ in metaclass.links:
         if rel_id != rel_id_candidate:
             continue
         
@@ -884,7 +886,7 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
         rel_id = 'R%d' % rel_id
     
     # Figure out the phrase in the other direction
-    metaclass = set_of_instances.first.__metaclass__
+    metaclass = get_metaclass(set_of_instances.first)
     for link in metaclass.links.values():
         if link.to_metaclass != metaclass:
             continue
@@ -922,8 +924,8 @@ def _find_link(inst1, inst2, rel_id, phrase):
     '''
     Find links that correspond to the given arguments.
     '''
-    metaclass1 = inst1.__metaclass__
-    metaclass2 = inst2.__metaclass__
+    metaclass1 = get_metaclass(inst1)
+    metaclass2 = get_metaclass(inst2)
 
     if isinstance(rel_id, int):
         rel_id = 'R%d' % rel_id
@@ -1001,7 +1003,7 @@ def get_metaclass(class_or_instance):
     elif issubclass(class_or_instance, Class):
         return class_or_instance.__metaclass__
     
-    raise DeleteException("the provided argument is not an xtuml class or instance")
+    raise MetaException("the provided argument is not an xtuml class or instance")
     
 
 def get_metamodel(class_or_instance):
@@ -1018,7 +1020,7 @@ def delete(instance):
     if not isinstance(instance, Class):
         raise DeleteException("the provided argument is not an xtuml instance")
             
-    return instance.__metaclass__.delete(instance)
+    return get_metaclass(instance).delete(instance)
 
 
 def cardinality(instance_or_set):
@@ -1116,7 +1118,8 @@ class MetaModel(object):
         **Note:** the clone and the original instance **does not** have to be
         part of the same metaclass. 
         '''
-        metaclass = self.find_metaclass(instance.__metaclass__.kind)
+        metaclass = get_metaclass(instance)
+        metaclass = self.find_metaclass(metaclass.kind)
         return metaclass.clone(instance)
             
     def define_association(self, rel_id, source_kind, source_keys, source_many,
