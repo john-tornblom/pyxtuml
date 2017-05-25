@@ -34,7 +34,7 @@ def pretty_to_link(inst, link):
     '''
     values = ''
     prefix = ''
-    metaclass = inst.__metaclass__
+    metaclass = xtuml.get_metaclass(inst)
 
     for name, ty in metaclass.attributes:
         if name in link.key_map:
@@ -53,7 +53,7 @@ def pretty_from_link(inst, link):
     '''
     values = ''
     prefix = ''
-    metaclass = inst.__metaclass__
+    metaclass = xtuml.get_metaclass(inst)
     
     for name, ty in metaclass.attributes:
         if name in link.key_map:
@@ -71,7 +71,7 @@ def pretty_unique_identifier(inst, identifier):
     '''
     values = ''
     prefix = ''
-    metaclass = inst.__metaclass__
+    metaclass = xtuml.get_metaclass(inst)
     
     for name, ty in metaclass.attributes:
         if name in metaclass.identifying_attributes:

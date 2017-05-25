@@ -422,7 +422,8 @@ class ModelLoader(object):
                     ass.target_link.connect(inst, other_inst, check=False)
 
         for inst in metamodel.instances:
-            for attr in inst.__metaclass__.referential_attributes:
+            metaclass = xtuml.get_metaclass(inst)
+            for attr in metaclass.referential_attributes:
                 if attr in inst.__dict__:
                     delattr(inst, attr)
 

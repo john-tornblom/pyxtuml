@@ -62,7 +62,7 @@ def serialize_instance(instance):
     Serialize an *instance* from a metamodel.
     '''
     attr_count = 0
-    metaclass = instance.__metaclass__
+    metaclass = xtuml.get_metaclass(instance)
     s = 'INSERT INTO %s VALUES (' % metaclass.kind
     for name, ty in metaclass.attributes:
         value = getattr(instance, name)
@@ -119,7 +119,7 @@ def serialize_class(Cls):
     '''
     Serialize an xtUML metamodel class.
     '''
-    metaclass = Cls.__metaclass__
+    metaclass = xtuml.get_metaclass(Cls)
     attributes = ['%s %s' % (name, ty.upper()) for name, ty in metaclass.attributes]
     
     s = 'CREATE TABLE %s (\n    ' % metaclass.kind
