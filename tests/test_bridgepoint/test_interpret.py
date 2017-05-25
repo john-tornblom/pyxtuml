@@ -2393,14 +2393,14 @@ create object instance assoc of Assoc;
 
 relate inst1 to inst2 across R1.''one'' using assoc;
 
-select one inst related by inst1->Assoc[R1.''other''];
+select one inst related by inst1->Assoc[R1.''one''];
 if empty inst
     return False;
 end if;
 
 unrelate inst1 from inst2 across R1.''one'' using assoc;
 
-select one inst related by inst1->Assoc[R1.''other''];
+select one inst related by inst1->Assoc[R1.''one''];
 
 return empty inst;
 

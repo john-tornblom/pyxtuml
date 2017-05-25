@@ -100,15 +100,15 @@ def serialize_association(ass):
                          ass.source_link.to_metaclass.kind,
                          ', '.join(ass.source_keys))
 
-    if ass.source_link.phrase:
-        s1 += " PHRASE '%s'" % ass.source_link.phrase
+    if ass.target_link.phrase:
+        s1 += " PHRASE '%s'" % ass.target_link.phrase
 
     s2 = '%s %s (%s)' % (ass.target_link.cardinality,
                          ass.target_link.to_metaclass.kind,
                          ', '.join(ass.target_keys))
     
-    if ass.target_link.phrase:
-        s2 += " PHRASE '%s'" % ass.target_link.phrase
+    if ass.source_link.phrase:
+        s2 += " PHRASE '%s'" % ass.source_link.phrase
 
     return 'CREATE ROP REF_ID %s FROM %s TO %s;\n' % (ass.rel_id,
                                                       s1,

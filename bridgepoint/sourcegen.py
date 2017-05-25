@@ -93,14 +93,14 @@ class ActionTextGenWalker(Walker):
         if self._lvl:
             self.buf_linebreak()
         
-        first_filter = lambda sel: (not one(sel).ACT_SMT[661, 'succeeds']() and
+        first_filter = lambda sel: (not one(sel).ACT_SMT[661, 'precedes']() and
                                     not one(sel).ACT_EL[603]() and
                                     not one(sel).ACT_E[603]())
         
         act_smt = one(inst).ACT_SMT[602](first_filter)
         while act_smt:
             self.accept(act_smt)
-            act_smt = one(act_smt).ACT_SMT[661, 'precedes']()
+            act_smt = one(act_smt).ACT_SMT[661, 'succeeds']()
             
         self._lvl -= 1
         self.buf_linebreak()
@@ -224,7 +224,7 @@ class ActionTextGenWalker(Walker):
         if inst.Rel_Phrase:
             self.buf('.', inst.Rel_Phrase)
         self.buf(']')
-        self.accept(one(inst).ACT_LNK[604, 'succeeds']())
+        self.accept(one(inst).ACT_LNK[604, 'precedes']())
         
     def accept_ACT_AI(self, inst):
         if one(inst).V_VAL[609].V_MSV[801]():
@@ -278,7 +278,7 @@ class ActionTextGenWalker(Walker):
         s_sync = one(inst).S_SYNC[675]()
         self.buf('::', s_sync.Name)
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[669](first_filter))
         self.buf(')')
         
@@ -287,7 +287,7 @@ class ActionTextGenWalker(Walker):
         s_ee = one(s_brg).S_EE[19]()
         self.buf('bridge ', s_ee.Key_Lett, '::', s_brg.Name)
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[628](first_filter))
         self.buf(')')
         
@@ -295,7 +295,7 @@ class ActionTextGenWalker(Walker):
         self.accept(one(inst).SPR_PO[680].SPR_PEP[4503]())
         self.accept(one(inst).SPR_RO[657].SPR_REP[4502]())
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[679](first_filter))
         self.buf(')')
         
@@ -303,7 +303,7 @@ class ActionTextGenWalker(Walker):
         self.accept(one(inst).SPR_PS[663].SPR_PEP[4503]())
         self.accept(one(inst).SPR_RS[660].SPR_REP[4502]())
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[662](first_filter))
         self.buf(')')
         
@@ -320,7 +320,7 @@ class ActionTextGenWalker(Walker):
             self.buf('.', o_tfr.Name)
             
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[627](first_filter))
         self.buf(')')
         
@@ -396,12 +396,12 @@ class ActionTextGenWalker(Walker):
         self.buf(')')
 
     def accept_V_PAR(self, inst):
-        if one(inst).V_PAR[816, 'precedes']() is not None:
+        if one(inst).V_PAR[816, 'succeeds']() is not None:
             self.buf(', ')
             
         self.buf(inst.Name, ': ')
         self.accept(one(inst).V_VAL[800]())
-        self.accept(one(inst).V_PAR[816, 'succeeds']())
+        self.accept(one(inst).V_PAR[816, 'precedes']())
 
     def accept_V_EDV(self, inst):
         self.buf('rcvd_evt.')
@@ -418,7 +418,7 @@ class ActionTextGenWalker(Walker):
         s_sync = one(inst).S_SYNC[827]()
         self.buf('::', s_sync.Name)
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[817](first_filter))
         self.buf(')')
         
@@ -427,7 +427,7 @@ class ActionTextGenWalker(Walker):
         s_ee = one(s_brg).S_EE[19]()
         self.buf('bridge ', s_ee.Key_Lett, '::', s_brg.Name)
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[810](first_filter))
         self.buf(')')
         
@@ -444,7 +444,7 @@ class ActionTextGenWalker(Walker):
             self.buf('.', o_tfr.Name)
             
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[811](first_filter))
         self.buf(')')
         
@@ -452,7 +452,7 @@ class ActionTextGenWalker(Walker):
         self.accept(one(inst).SPR_PEP[841]())
         self.accept(one(inst).SPR_REP[845]())
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[842](first_filter))
         self.buf(')')
         
@@ -475,7 +475,7 @@ class ActionTextGenWalker(Walker):
         self.accept(one(inst).E_GES[701]())
 
         self.buf('(')
-        first_filter = lambda sel: one(sel).V_PAR[816, 'precedes']() is None
+        first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[700](first_filter))
         self.buf(')')
         

@@ -71,7 +71,7 @@ class TestRelateUnrelate(unittest.TestCase):
 
         self.assertTrue(xtuml.relate(inst1, act_blk, 602))
         self.assertTrue(xtuml.relate(inst2, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
+        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'succeeds'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
@@ -82,7 +82,7 @@ class TestRelateUnrelate(unittest.TestCase):
 
         self.assertTrue(xtuml.relate(inst1, act_blk, 602))
         self.assertTrue(xtuml.relate(inst2, act_blk, 602))
-        self.assertTrue(xtuml.relate(inst2, inst1, 661, 'succeeds'))
+        self.assertTrue(xtuml.relate(inst2, inst1, 661, 'precedes'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
@@ -114,11 +114,11 @@ class TestRelateUnrelate(unittest.TestCase):
         self.assertTrue(xtuml.relate(inst1, act_blk, 602))
         self.assertTrue(xtuml.relate(inst2, act_blk, 602))
         
-        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'precedes'))
+        self.assertTrue(xtuml.relate(inst1, inst2, 661, 'succeeds'))
         self.assertEqual(inst2, xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
         self.assertEqual(inst1, xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         
-        self.assertTrue(xtuml.unrelate(inst1, inst2, 661, 'precedes'))
+        self.assertTrue(xtuml.unrelate(inst1, inst2, 661, 'succeeds'))
         self.assertIsNone(xtuml.navigate_one(inst2).ACT_SMT[661, 'precedes']())
         self.assertIsNone(xtuml.navigate_one(inst1).ACT_SMT[661, 'succeeds']())
 

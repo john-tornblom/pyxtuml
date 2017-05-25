@@ -248,7 +248,7 @@ def mk_class(m, o_obj, derived_attributes=False):
     '''
     Create a pyxtuml class from a BridgePoint class.
     '''
-    first_filter = lambda selected: not one(selected).O_ATTR[103, 'precedes']()
+    first_filter = lambda selected: not one(selected).O_ATTR[103, 'succeeds']()
     o_attr = one(o_obj).O_ATTR[102](first_filter)
     attributes = list()
         
@@ -264,7 +264,7 @@ def mk_class(m, o_obj, derived_attributes=False):
         else:
             attributes.append((o_attr.Name, ty))
         
-        o_attr = one(o_attr).O_ATTR[103, 'succeeds']()
+        o_attr = one(o_attr).O_ATTR[103, 'precedes']()
             
     metaclass = m.define_class(o_obj.Key_Lett, list(attributes), o_obj.Descrip)
 

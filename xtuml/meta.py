@@ -945,12 +945,12 @@ def _find_link(inst1, inst2, rel_id, phrase):
 
         if (ass.source_link.from_metaclass == metaclass1 and
             ass.source_link.to_metaclass == metaclass2 and
-            ass.target_link.phrase == phrase):
+            ass.source_link.phrase == phrase):
             return inst1, inst2, ass
 
         if (ass.target_link.from_metaclass == metaclass1 and
             ass.target_link.to_metaclass == metaclass2 and
-            ass.source_link.phrase == phrase):
+            ass.target_link.phrase == phrase):
             return inst2, inst1, ass
 
     raise UnknownLinkException(metaclass1.kind, metaclass2.kind, rel_id, phrase)
@@ -1126,12 +1126,12 @@ class MetaModel(object):
 
         source_link = target_metaclass.add_link(source_metaclass, rel_id,
                                                 many=source_many,
-                                                phrase=source_phrase,
+                                                phrase=target_phrase,
                                                 conditional=source_conditional)
                 
         target_link = source_metaclass.add_link(target_metaclass, rel_id,
                                                 many=target_many,
-                                                phrase=target_phrase,
+                                                phrase=source_phrase,
                                                 conditional=target_conditional)
         
         ass = Association(rel_id,

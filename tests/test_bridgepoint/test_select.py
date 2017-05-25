@@ -148,7 +148,7 @@ class TestSelect(PrebuildFunctionTestCase):
         r_rel = one(act_lnk).R_REL[681]()
         self.assertEqual(r_rel.Numb, 1)
         
-        act_lnk = one(act_lnk).ACT_LNK[604, 'succeeds']()
+        act_lnk = one(act_lnk).ACT_LNK[604, 'precedes']()
         self.assertIsNotNone(act_lnk)
         self.assertFalse(act_lnk.Rel_Phrase)
         
@@ -199,7 +199,7 @@ class TestSelect(PrebuildFunctionTestCase):
         r_rel = one(act_lnk).R_REL[681]()
         self.assertEqual(r_rel.Numb, 1)
         
-        act_lnk = one(act_lnk).ACT_LNK[604, 'succeeds']()
+        act_lnk = one(act_lnk).ACT_LNK[604, 'precedes']()
         self.assertIsNotNone(act_lnk)
         self.assertFalse(act_lnk.Rel_Phrase)
         

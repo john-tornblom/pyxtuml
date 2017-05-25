@@ -148,7 +148,7 @@ class TestModel(unittest.TestCase):
         ass.batch_relate()
         ass.formalize()
             
-        self.assertTrue(xtuml.navigate_one(inst).aa[1, 'prev'].AA[1, 'prev']())
+        self.assertTrue(xtuml.navigate_one(inst).aa[1, 'next'].AA[1, 'next']())
         
     def test_unknown_type(self):
         self.metamodel.define_class('A', [('Id', '<invalid type>')])
@@ -246,16 +246,16 @@ class TestDefineAssociations(unittest.TestCase):
 
         self.assertTrue(xtuml.relate(first, second, 1, 'prev'))
 
-        inst = xtuml.navigate_one(first).A[1, 'next']()
+        inst = xtuml.navigate_one(first).A[1, 'prev']()
         self.assertEqual(inst.Name, second.Name)
 
-        inst = xtuml.navigate_one(first).A[1, 'prev']()
+        inst = xtuml.navigate_one(first).A[1, 'next']()
         self.assertIsNone(inst)
         
-        inst = xtuml.navigate_one(second).A[1, 'prev']()
+        inst = xtuml.navigate_one(second).A[1, 'next']()
         self.assertEqual(inst.Name, first.Name)
         
-        inst = xtuml.navigate_one(second).A[1, 'next']()
+        inst = xtuml.navigate_one(second).A[1, 'prev']()
         self.assertIsNone(inst)
 
     def test_one_to_many(self):

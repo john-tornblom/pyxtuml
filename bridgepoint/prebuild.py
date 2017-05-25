@@ -383,7 +383,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
         
         while act_lnk:
             act_lnk_end = act_lnk
-            act_lnk = one(act_lnk).ACT_LNK[604, 'succeeds']()
+            act_lnk = one(act_lnk).ACT_LNK[604, 'precedes']()
             
         v_val = self.accept(node.handle)
         

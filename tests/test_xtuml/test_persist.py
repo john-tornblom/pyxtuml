@@ -220,7 +220,7 @@ class TestPersist(unittest.TestCase):
         x2 = m.new('X', Boolean=True, Integer=4, String='str')
         xtuml.relate(x1, x2, 1, 'succeeds')
 
-        self.assertTrue(xtuml.navigate_one(x1).X[1, 'precedes']())
+        self.assertTrue(xtuml.navigate_one(x1).X[1, 'succeeds']())
 
     def test_serialize_unique_identifiers(self):
         schema = '''

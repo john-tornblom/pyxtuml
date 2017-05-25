@@ -41,13 +41,13 @@ class TestSortReflexive(unittest.TestCase):
             prev = inst
             
         inst_set = xtuml.navigate_many(act_blk).ACT_SMT[602]()
-        inst_set = xtuml.sort_reflexive(inst_set, 661, 'precedes')
+        inst_set = xtuml.sort_reflexive(inst_set, 661, 'succeeds')
         self.assertEqual(len(inst_set), 10)
         for idx, inst in enumerate(inst_set):
             self.assertEqual(inst.LineNumber, idx)
         
         inst_set = xtuml.navigate_many(act_blk).ACT_SMT[602]()
-        inst_set = xtuml.sort_reflexive(inst_set, 661, 'succeeds')
+        inst_set = xtuml.sort_reflexive(inst_set, 661, 'precedes')
         self.assertEqual(len(inst_set), 10)
         for idx, inst in enumerate(inst_set):
             self.assertEqual(inst.LineNumber, 9 - idx)
@@ -81,7 +81,7 @@ class TestSortReflexive(unittest.TestCase):
         self.assertTrue(xtuml.relate(p4, p1, 55, 'precedes'))
         
         inst_set = self.m.select_many('S_BPARM')
-        inst_set = xtuml.sort_reflexive(inst_set, 55, 'precedes')
+        inst_set = xtuml.sort_reflexive(inst_set, 55, 'succeeds')
 
         self.assertEqual(len(inst_set), 4)
         for inst1, inst2 in zip(inst_set, [p1, p2, p3, p4]):

@@ -122,11 +122,11 @@ class TestAssocClass(unittest.TestCase):
         self.assertTrue(relate(assoc, cls1, 1, 'one'))
         self.assertTrue(relate(assoc, cls2, 1, 'other'))
         
-        self.assertTrue(one(cls1).Class[1, 'one']())
-        self.assertFalse(one(cls2).Class[1, 'one']())
+        self.assertTrue(one(cls1).Class[1, 'other']())
+        self.assertFalse(one(cls2).Class[1, 'other']())
         
-        self.assertFalse(one(cls1).Class[1, 'other']())
-        self.assertTrue(one(cls2).Class[1, 'other']())
+        self.assertFalse(one(cls1).Class[1, 'one']())
+        self.assertTrue(one(cls2).Class[1, 'one']())
 
     def test_relate_assoc_to_two_classes_incorrectly(self):
         cls1 = self.m.new('Class')
