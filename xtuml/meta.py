@@ -492,18 +492,7 @@ class MetaClass(object):
         self.links[key] = link
 
         return link
-        
-    def find_link(self, kind, rel_id, phrase=''):
-        '''
-        Find a link with a given *rel_id* and *phrase* that yield instances of
-        some *kind*.
-        '''
-        if isinstance(rel_id, int):
-            rel_id = 'R%d' % rel_id
             
-        key = (kind.upper(), rel_id, phrase)
-        return self.links.get(key, None)
-    
     def append_attribute(self, name, type_name):
         '''
         Append an attribute with a given *name* and *type name* at the end of
