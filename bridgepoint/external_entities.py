@@ -26,6 +26,10 @@ class LOG(object):
     @staticmethod
     def LogInteger(message):
         print('LogInteger: %d' % message)
+
+    @staticmethod
+    def LogReal(message, r):
+        print('LogReal: %f %s' % (r, message))
         
     @staticmethod
     def LogInfo(message):
