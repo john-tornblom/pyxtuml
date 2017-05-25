@@ -326,6 +326,10 @@ class Link(dict):
         return next(iter(self.navigate(instance)), None)
         
     def compute_lookup_key(self, from_instance):
+        '''
+        Compute the lookup key for an instance, i.e. a foreign key that
+        can be used to identify an instance at the end of the link.
+        '''
         kwargs = dict()
         for attr, other_attr in self.key_map.items():
             if _is_null(from_instance, attr):
@@ -339,6 +343,10 @@ class Link(dict):
         return frozenset(tuple(kwargs.items()))
 
     def compute_index_key(self, to_instance):
+        '''
+        Compute the index key that can be used to identify an instance
+        on the link.
+        '''
         kwargs = dict()
         for attr in self.key_map.values():
             if _is_null(to_instance, attr):
