@@ -47,8 +47,8 @@ Option           Description
 ===============  ===================================================
 --version        show program's version number and exit
 --help, -h       show this help message and exit
--r <number>      limit consistency check to one or more associations
--k <key letter>  limit check for uniqueness constraint violations to
+-r NUMBER        limit consistency check to one or more associations
+-k KEY_LETTER    limit check for uniqueness constraint violations to
                  one or more classes
 --globals, -g    add builtin global data types automatically, e.g.
                  boolean, integer and real
