@@ -55,6 +55,30 @@ Option           Description
 --verbosity, -v  increase debug logging level
 ===============  ===================================================
 
+Model Execution
+---------------
+pyxtuml is able to execute BridgePoint functions, derived attributes and class 
+operations (both class-based and instance-based). There is also support for the
+built-in external entities ARCH and LOG. Asynchronous execution is currently 
+not supported, i.e. events, signals and state machines.
+
+::
+
+   $ python -m bridgepoint.interpret [options] <model_path> [another_model_path...]
+
+
+**Available options**
+
+=========================  =========================================================
+Option                     Description
+=========================  =========================================================
+--version                  show program's version number and exit
+--help, -h                 show this help message and exit
+--function=NAME, -d NAME   invoke a function named NAME
+--component=NAME, -c NAME  look for the function to invoke in a component named NAME
+--verbosity, -v            increase debug logging level
+=========================  =========================================================
+
 SQL Schema Generator
 --------------------
 To create an sql schema from a BridgePoint model, the following command may be used:
