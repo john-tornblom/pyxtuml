@@ -16,7 +16,7 @@ Loading Metamodels
 Metamodel Operations
 ^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: xtuml.MetaModel
-   :members: clone, new, find_class, select_one, select_many
+   :members: clone, new, find_class, find_metaclass, select_one, select_many
 
 .. autofunction:: xtuml.navigate_one
 .. autofunction:: xtuml.navigate_any
@@ -28,11 +28,13 @@ Metamodel Operations
 .. autofunction:: xtuml.cardinality
 .. autofunction:: xtuml.where_eq
 .. autofunction:: xtuml.sort_reflexive
+.. autofunction:: xtuml.get_metamodel
+.. autofunction:: xtuml.get_metaclass
 
 .. autoclass:: xtuml.MetaClass
    :members: clone, new, select_one, select_many, query, navigate, delete,
 	     attribute_names, append_attribute, insert_attribute, delete_attribute,
-	     referential_attributes, identifying_attributes
+	     referential_attributes, identifying_attributes, attribute_type
 
 .. autofunction:: xtuml.check_association_integrity
 .. autofunction:: xtuml.check_uniqueness_constraint
