@@ -1002,6 +1002,26 @@ def unrelate(from_instance, to_instance, rel_id, phrase=''):
     return True
 
 
+def get_metaclass(class_or_instance):
+    '''
+    Get the metaclass for a *class_or_instance*.
+    '''
+    if isinstance(class_or_instance, Class):
+        return class_or_instance.__metaclass__
+    
+    elif issubclass(class_or_instance, Class):
+        return class_or_instance.__metaclass__
+    
+    raise DeleteException("the provided argument is not an xtuml class or instance")
+    
+
+def get_metamodel(class_or_instance):
+    '''
+    Get the metamodel in which a *class_or_instance* was created.
+    '''
+    return get_metaclass(class_or_instance).metamodel
+
+
 def delete(instance):
     '''
     Delete an *instance* from its metaclass instance pool.

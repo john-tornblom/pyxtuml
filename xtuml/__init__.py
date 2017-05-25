@@ -76,6 +76,8 @@ from xtuml.meta import delete
 from xtuml.meta import cardinality
 from xtuml.meta import where_eq
 from xtuml.meta import sort_reflexive
+from xtuml.meta import get_metaclass
+from xtuml.meta import get_metamodel
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
