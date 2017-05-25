@@ -23,8 +23,8 @@ Option           Description
 ===============  ===================================================
 --version        show program's version number and exit
 --help, -h       show this help message and exit
--r <number>      limit consistency check to one or more associations
--k <key letter>  limit check for uniqueness constraint violations to
+-r NUMBER        limit consistency check to one or more associations
+-k KEY_LETTER    limit check for uniqueness constraint violations to
                  one or more classes
 --verbosity, -v  increase debug logging level
 ===============  ===================================================
@@ -74,7 +74,7 @@ Option                     Description
 =========================  =========================================================
 --version                  show program's version number and exit
 --help, -h                 show this help message and exit
---function=NAME, -d NAME   invoke a function named NAME
+--function=NAME, -f NAME   invoke a function named NAME
 --component=NAME, -c NAME  look for the function to invoke in a component named NAME
 --verbosity, -v            increase debug logging level
 =========================  =========================================================
