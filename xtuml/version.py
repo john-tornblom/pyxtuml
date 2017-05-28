@@ -17,8 +17,8 @@
 # License along with pyxtuml. If not, see <http://www.gnu.org/licenses/>.
 
 name = 'pyxtuml'
-date = '2017-02-21'
+date = '2017-05-28'
 version = '0.9'
-release = '0.9.5'
+release = '0.9.6'
 
 complete_string = '%s v%s (%s)' % (name, release, date)
