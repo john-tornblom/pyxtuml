@@ -29,9 +29,6 @@ except ImportError:
     from distutils.core  import Command
     from distutils.command.build_py import build_py
 
-import xtuml
-from bridgepoint import oal
-
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -39,6 +36,9 @@ logging.basicConfig(level=logging.DEBUG)
 class BuildCommand(build_py):
     
     def run(self):
+        import xtuml
+        from bridgepoint import oal
+
         l = xtuml.ModelLoader()
         l.input('', name='<empty string>')
         l.build_metamodel()
