@@ -86,6 +86,7 @@ setup(name='pyxtuml',
       keywords='xtuml bridgepoint',
       packages=['xtuml', 'bridgepoint'],
       requires=['ply'],
+      install_requires=['ply'],
       cmdclass={'build_py': BuildCommand,
                 'test': TestCommand}
       )
