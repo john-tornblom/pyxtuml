@@ -19,6 +19,6 @@
 name = 'pyxtuml'
 date = '2017-05-28'
 version = '0.9'
-release = '0.9.6'
+release = '0.9.7'
 
 complete_string = '%s v%s (%s)' % (name, release, date)
