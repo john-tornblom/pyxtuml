@@ -19,6 +19,6 @@
 name = 'pyxtuml'
 date = '2017-05-28'
 version = '0.9'
-release = '0.9.8'
+release = '0.9.9'  # ensure that this is the same as in setup.py
 
 complete_string = '%s v%s (%s)' % (name, release, date)
