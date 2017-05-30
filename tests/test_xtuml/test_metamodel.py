@@ -173,7 +173,10 @@ class TestModel(unittest.TestCase):
         
     def test_delete(self):
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
+        self.assertTrue(xtuml.navigate_one(inst).PE_PE[8001]())
+        
         xtuml.delete(inst)
+        self.assertFalse(xtuml.navigate_one(inst).PE_PE[8001]())
         
         inst = self.metamodel.select_any('S_DT', where(Name='void'))
         self.assertFalse(inst)

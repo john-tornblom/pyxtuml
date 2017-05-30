@@ -625,14 +625,22 @@ class MetaClass(object):
     
     def delete(self, instance):
         '''
-        Delete an *instance* from the instance pool. If the *instance* is not
-        part of the metaclass, a *MetaException* is thrown.
+        Delete an *instance* from the instance pool and disconnect it from any
+        links it might be connected to. If the *instance* is not part of the
+        metaclass, a *MetaException* is thrown.
         '''
         if instance in self.storage:
             self.storage.remove(instance)
         else:
             raise DeleteException("Instance not found in the instance pool")
 
+        for link in self.links.values():
+            if instance not in link:
+                continue
+        
+            for other in link[instance]:
+                unrelate(instance, other, link.rel_id, link.phrase)
+        
     def select_one(self, where_clause=None):
         '''
         Select a single instance from the instance pool. Optionally, a
@@ -1027,7 +1035,8 @@ def get_metamodel(class_or_instance):
 
 def delete(instance):
     '''
-    Delete an *instance* from its metaclass instance pool.
+    Delete an *instance* from its metaclass instance pool and disconnect it from
+    any links it might be connected to.
     '''
     if not isinstance(instance, Class):
         raise DeleteException("the provided argument is not an xtuml instance")
