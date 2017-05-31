@@ -264,7 +264,7 @@ def main():
                       action="store", default=None)
     
     parser.add_option("-o", "--output", dest='output', metavar="PATH",
-                      help="save sql schema to PATH (required)",
+                      help="save sql model instances to PATH (required)",
                       action="store", default=None)
     
     parser.add_option("-v", "--verbosity", dest='verbosity', action="count",
