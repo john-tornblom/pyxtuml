@@ -531,6 +531,20 @@ def load_metamodel(resource=None, load_globals=True):
     return loader.build_metamodel()
 
 
+def remove_globals(m):
+    filt = lambda sel: (247728914420827907967735776184937480192 <= 
+                        sel.DT_ID <= 
+                        247728914420827907967735776184937480208)
+
+    for s_dt in m.select_many('S_DT', filt):
+        xtuml.delete(one(s_dt).PE_PE[8001]())
+        xtuml.delete(subtype(s_dt, 17))
+        xtuml.delete(s_dt)
+
+
+
+
+
 # Backwards compatabillity with older versions of pyxtuml
 Loader = ModelLoader
 empty_model = load_metamodel
