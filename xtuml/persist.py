@@ -182,23 +182,23 @@ def serialize(resource):
         return serialize_instance(resource)
 
 
-def persist_instances(metamodel, path):
+def persist_instances(metamodel, path, mode='w'):
     '''
     Persist all instances in a *metamodel* by serializing them and saving to a 
     *path* on disk.
     '''
-    with open(path, 'w') as f:
+    with open(path, mode) as f:
         for inst in metamodel.instances:
             s = serialize_instance(inst)
             f.write(s)
 
 
-def persist_schema(metamodel, path):
+def persist_schema(metamodel, path, mode='w'):
     '''
     Persist all class and association definitions in a *metamodel* by 
     serializing them and saving to a *path* on disk.
     '''
-    with open(path, 'w') as f:
+    with open(path, mode) as f:
         for kind in sorted(metamodel.metaclasses.keys()):
             s = serialize_class(metamodel.metaclasses[kind].clazz)
             f.write(s)
@@ -208,12 +208,12 @@ def persist_schema(metamodel, path):
             f.write(s)
 
 
-def persist_unique_identifiers(metamodel, path):
+def persist_unique_identifiers(metamodel, path, mode='w'):
     '''
     Persist all unique identifiers in a *metamodel* by serializing them and
     saving to a *path* on disk.
     '''
-    with open(path, 'w') as f:
+    with open(path, mode) as f:
         for metaclass in metamodel.metaclasses.values():
             for index_name, attribute_names in metaclass.indices.items():
                 attribute_names = ', '.join(attribute_names)
@@ -223,12 +223,12 @@ def persist_unique_identifiers(metamodel, path):
                 f.write(s)
 
 
-def persist_database(metamodel, path):
+def persist_database(metamodel, path, mode='w'):
     '''
     Persist all instances, class definitions and association definitions in a
     *metamodel* by serializing them and saving to a *path* on disk.
     '''
-    with open(path, 'w') as f:
+    with open(path, mode) as f:
         for kind in sorted(metamodel.metaclasses.keys()):
             metaclass = metamodel.metaclasses[kind]
             s = serialize_class(metaclass.clazz)
