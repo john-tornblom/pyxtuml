@@ -932,7 +932,8 @@ def sort_reflexive(set_of_instances, rel_id, phrase):
         for first in first_instances:
             inst = first
             while inst:
-                yield inst
+                if inst in set_of_instances:
+                    yield inst
                 inst = navigate_one(inst).nav(metaclass.kind, rel_id, other_phrase)()
                 if inst is first:
                     break
