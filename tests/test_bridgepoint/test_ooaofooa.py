@@ -31,7 +31,7 @@ class TestOoaOfOoa(unittest.TestCase):
         s = xtuml.serialize_instances(m)
         self.assertTrue(s)
         
-        ooaofooa.remove_globals(m)
+        ooaofooa.delete_globals(m)
         s = xtuml.serialize_instances(m)
         self.assertFalse(s)
         
