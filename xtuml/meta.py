@@ -623,17 +623,20 @@ class MetaClass(object):
             
         return self.new(*args)
     
-    def delete(self, instance):
+    def delete(self, instance, disconnect=True):
         '''
-        Delete an *instance* from the instance pool and disconnect it from any
-        links it might be connected to. If the *instance* is not part of the
-        metaclass, a *MetaException* is thrown.
+        Delete an *instance* from the instance pool and optionally *disconnect*
+        it from any links it might be connected to. If the *instance* is not
+        part of the metaclass, a *MetaException* is thrown.
         '''
         if instance in self.storage:
             self.storage.remove(instance)
         else:
             raise DeleteException("Instance not found in the instance pool")
 
+        if not disconnect:
+            return
+        
         for link in self.links.values():
             if instance not in link:
                 continue
@@ -1034,15 +1037,15 @@ def get_metamodel(class_or_instance):
     return get_metaclass(class_or_instance).metamodel
 
 
-def delete(instance):
+def delete(instance, disconnect=True):
     '''
-    Delete an *instance* from its metaclass instance pool and disconnect it from
-    any links it might be connected to.
+    Delete an *instance* from its metaclass instance pool and optionally
+    *disconnect* it from any links it might be connected to.
     '''
     if not isinstance(instance, Class):
         raise DeleteException("the provided argument is not an xtuml instance")
             
-    return get_metaclass(instance).delete(instance)
+    return get_metaclass(instance).delete(instance, disconnect)
 
 
 def cardinality(instance_or_set):
