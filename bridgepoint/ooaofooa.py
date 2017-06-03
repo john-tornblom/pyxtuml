@@ -532,6 +532,9 @@ def load_metamodel(resource=None, load_globals=True):
 
 
 def delete_globals(m, disconnect=False):
+    '''
+    Remove global instances, e.g. the core data type integer.
+    '''
     filt = lambda sel: (247728914420827907967735776184937480192 <= 
                         sel.DT_ID <= 
                         247728914420827907967735776184937480208)
@@ -542,10 +545,7 @@ def delete_globals(m, disconnect=False):
         xtuml.delete(s_dt, disconnect)
 
 
-
-
-
-# Backwards compatabillity with older versions of pyxtuml
+# Backwards compatibility with older versions of pyxtuml
 Loader = ModelLoader
 empty_model = load_metamodel
 
