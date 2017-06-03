@@ -49,39 +49,36 @@ from .persist import serialize_instance
 from .persist import serialize_value
 from .persist import serialize
 
-from xtuml.meta import Association
-from xtuml.meta import Link
+from .meta import Association
+from .meta import Link
 
-from xtuml.meta import QuerySet
-from xtuml.meta import Class
-from xtuml.meta import BaseObject
-from xtuml.meta import MetaClass
-from xtuml.meta import MetaModel
+from .meta import QuerySet
+from .meta import Class
+from .meta import BaseObject
+from .meta import MetaClass
+from .meta import MetaModel
 
-from xtuml.meta import MetaException
-from xtuml.meta import DeleteException
-from xtuml.meta import RelateException
-from xtuml.meta import UnrelateException
-from xtuml.meta import MetaModelException
-from xtuml.meta import UnknownLinkException
-from xtuml.meta import UnknownClassException
+from .meta import MetaException
+from .meta import DeleteException
+from .meta import RelateException
+from .meta import UnrelateException
+from .meta import MetaModelException
+from .meta import UnknownLinkException
+from .meta import UnknownClassException
 
-from xtuml.meta import navigate_any
-from xtuml.meta import navigate_one
-from xtuml.meta import navigate_many
-from xtuml.meta import navigate_subtype
-from xtuml.meta import relate
-from xtuml.meta import unrelate
-from xtuml.meta import delete
-from xtuml.meta import cardinality
-from xtuml.meta import where_eq
-from xtuml.meta import sort_reflexive
-from xtuml.meta import get_metaclass
-from xtuml.meta import get_metamodel
+from .meta import navigate_any
+from .meta import navigate_one
+from .meta import navigate_many
+from .meta import navigate_subtype
+from .meta import relate
+from .meta import unrelate
+from .meta import delete
+from .meta import cardinality
+from .meta import where_eq
+from .meta import sort_reflexive
+from .meta import get_metaclass
+from .meta import get_metamodel
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint
 from .consistency_check import check_subtype_integrity
-
-
-
