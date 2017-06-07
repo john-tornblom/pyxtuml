@@ -651,8 +651,10 @@ class MetaClass(object):
         '''
         if isinstance(where_clause, dict):
             s = self.query(where_clause)
-        else:
+        elif where_clause:
             s = iter(filter(where_clause, self.storage))
+        else:
+            s = iter(self.storage)
             
         return next(s, None)
 
@@ -663,9 +665,11 @@ class MetaClass(object):
         '''
         if isinstance(where_clause, dict):
             s = self.query(where_clause)
-        else:
+        elif where_clause:
             s = filter(where_clause, self.storage)
-        
+        else:
+            s = iter(self.storage)
+            
         return QuerySet(s)
 
     def _find_assoc_links(self, kind, rel_id, phrase=''):
@@ -778,7 +782,10 @@ class NavChain(object):
         >>> chain(lambda selected: selected.Name == 'test')
         '''
         handle = self.handle or list()
-        return QuerySet(filter(where_clause, handle))
+        if where_clause:
+            filter(where_clause, handle)
+            
+        return QuerySet(handle)
     
     
 class NavOneChain(NavChain):
