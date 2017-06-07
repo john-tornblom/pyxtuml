@@ -299,7 +299,7 @@ class Link(dict):
         
     def disconnect(self, instance, another_instance):
         '''
-        Disconnect an *instance* from *another_instance*
+        Disconnect an *instance* from *another_instance*.
         '''
         if instance not in self:
             return False
