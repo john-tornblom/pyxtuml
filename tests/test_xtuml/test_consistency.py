@@ -85,7 +85,7 @@ class TestConcistency(unittest.TestCase):
         pe_pe_clone = m.clone(pe_pe)
         
         self.assertFalse(m.is_consistent())
-        self.assertEqual(2, xtuml.check_uniqueness_constraint(m, 'PE_PE'))
+        self.assertEqual(1, xtuml.check_uniqueness_constraint(m, 'PE_PE'))
         
         xtuml.delete(pe_pe_clone)
         self.assertTrue(m.is_consistent())

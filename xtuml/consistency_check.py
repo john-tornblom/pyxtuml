@@ -94,8 +94,12 @@ def check_uniqueness_constraint(m, kind=None):
     
     res = 0
     for metaclass in metaclasses:
+        id_map = dict()
+        for identifier in metaclass.indices:
+            id_map[identifier] = dict()
+                
         for inst in metaclass.select_many():
-            
+            # Check for null-values
             for name, ty in metaclass.attributes:
                 if name not in metaclass.identifying_attributes:
                     continue
@@ -107,20 +111,21 @@ def check_uniqueness_constraint(m, kind=None):
                     res += 1 
                     logger.warning('%s.%s is part of an identifier and is null' 
                                    % (metaclass.kind, name))
-            
-            
+
+            # Check uniqueness
             for identifier in metaclass.indices:
                 kwargs = dict()
                 for name in metaclass.indices[identifier]:
                     kwargs[name] = getattr(inst, name)
-                
-                where_clause = xtuml.where_eq(**kwargs)
-                s = metaclass.select_many(where_clause)
-                if len(s) > 1:
+
+                index_key = frozenset(kwargs.items())
+                if index_key in id_map[identifier]:
                     res += 1
                     id_string = pretty_unique_identifier(inst, identifier)
                     logger.warning('uniqueness constraint violation in %s, %s' 
                                    % (metaclass.kind, id_string))
+
+                id_map[identifier][index_key] = inst
 
     return res
 
