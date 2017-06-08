@@ -1399,18 +1399,23 @@ class ActionPrebuilder(xtuml.tools.Walker):
         return v_val
 
     def accept_ParameterListNode(self, node, act_smt, v_val):
-        next_value_id = None
+        prev_v_par = None
         for child in reversed(node.children):
             v_par = self.accept(child)
-            v_par.Next_Value_ID = next_value_id
+            xtuml.relate(prev_v_par, v_par, 816, 'precedes')
+            xtuml.relate(v_par, one(v_val).V_BRV[801](), 810)
+            xtuml.relate(v_par, one(v_val).V_TRV[801](), 811)
+            xtuml.relate(v_par, one(v_val).V_FNV[801](), 817)
+            xtuml.relate(v_par, one(v_val).V_MSV[801](), 842)
+
+            xtuml.relate(v_par, one(act_smt).ACT_TFM[603](), 627)
+            xtuml.relate(v_par, one(act_smt).ACT_BRG[603](), 628)
+            xtuml.relate(v_par, one(act_smt).ACT_FNC[603](), 669)
+            xtuml.relate(v_par, one(act_smt).ACT_IOP[603](), 679)
+            xtuml.relate(v_par, one(act_smt).ACT_SGN[603](), 662)
+            xtuml.relate(v_par, one(act_smt).E_ESS[603](), 700)
             
-            if act_smt:
-                v_par.Statement_ID = act_smt.Statement_ID
-            
-            if v_val:
-                v_par.Invocation_Value_ID = v_val.Value_ID
-                
-            next_value_id = v_par.Value_ID
+            prev_v_par = v_par
     
     def accept_ParameterNode(self, node):
         v_val = self.accept(node.expression)
