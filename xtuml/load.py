@@ -210,12 +210,6 @@ class ModelLoader(object):
                                 module=self,
                                 outputdir=os.path.dirname(__file__),
                                 tabmodule='xtuml.__xtuml_parsetab')
-
-    def build_parser(self):
-        '''
-        This method is deprecated.
-        '''
-        pass
     
     def input(self, data, name='<string>'):
         '''
