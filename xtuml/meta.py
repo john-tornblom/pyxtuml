@@ -36,7 +36,6 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-
 class MetaException(Exception):
     '''
     Base class for all exceptions thrown by the xtuml.meta module.
