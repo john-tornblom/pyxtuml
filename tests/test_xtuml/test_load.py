@@ -194,7 +194,16 @@ class TestLoader(unittest.TestCase):
         '''
         val = m.select_any('X')
         self.assertEqual(0, val.Id)
-        
+
+    @load_docstring
+    def test_insert_integer_as_uuid(self, m):
+        '''
+        CREATE TABLE X (Id INTEGER);
+        INSERT INTO X VALUES ("00000000-0000-0000-0000-000000000000");
+        '''
+        val = m.select_any('X')
+        self.assertEqual(0, val.Id)
+
     @load_docstring
     def test_insert_positive_real(self, m):
         '''
