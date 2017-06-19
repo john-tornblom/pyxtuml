@@ -55,6 +55,12 @@ class TestModel(unittest.TestCase):
         q = m.select_many('S_EDT')
         self.assertIsInstance(q, xtuml.QuerySet)
         self.assertTrue(len(q) == 0)
+
+    def test_navigate_many_where(self):
+        m = self.metamodel
+        s_cdt = m.select_many('S_CDT')
+        c_dt = xtuml.navigate_many(s_cdt).S_DT[17](where(Name='integer'))
+        self.assertEqual(1, len(c_dt))
         
     def test_select_any_where(self):
         m = self.metamodel

@@ -782,7 +782,7 @@ class NavChain(object):
         '''
         handle = self.handle or list()
         if where_clause:
-            filter(where_clause, handle)
+            handle = filter(where_clause, handle)
             
         return QuerySet(handle)
     
