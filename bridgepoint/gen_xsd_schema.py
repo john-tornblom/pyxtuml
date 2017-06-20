@@ -249,7 +249,7 @@ def prettify(xml_string):
     return reparsed.toprettyxml(indent="    ")
 
 
-def main():
+def main(args):
     
     parser = optparse.OptionParser(usage="%prog [options] <model_path> [another_model_path...]",
                                    version=xtuml.version.complete_string,
@@ -268,7 +268,7 @@ def main():
     parser.add_option("-v", "--verbosity", dest='verbosity', action="count", 
                       help="increase debug logging level", default=2)
     
-    (opts, args) = parser.parse_args()
+    (opts, args) = parser.parse_args(args)
     if len(args) == 0 or None in [opts.component, opts.output]:
         parser.print_help()
         sys.exit(1)
@@ -297,5 +297,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
     
