@@ -68,6 +68,9 @@ class TestSchemaGen(unittest.TestCase):
         self.assertTrue(tree.findall(".//{%s}simpleType[@name='real']" % ns))
         self.assertTrue(tree.findall(".//{%s}simpleType[@name='string']" % ns))
         self.assertTrue(tree.findall(".//{%s}simpleType[@name='unique_id']" % ns))
+        self.assertTrue(tree.findall(".//{%s}simpleType[@name='My_Enum']" % ns))
+        self.assertTrue(tree.findall(".//{%s}enumeration[@value='E1']" % ns))
+        self.assertTrue(tree.findall(".//{%s}simpleType[@name='My_Integer']" % ns))
         self.assertTrue(tree.findall(".//{%s}element[@name='Comp']" % ns))
         self.assertTrue(tree.findall(".//{%s}attribute[@name='One_Id']" % ns))
 
