@@ -376,7 +376,7 @@ class ModelLoader(object):
             else:
                 fn = self._populate_instance_with_positional_arguments
             
-            inst = fn(metamodel, stmt)
+            fn(metamodel, stmt)
     
     def populate_connections(self, metamodel):
         '''
