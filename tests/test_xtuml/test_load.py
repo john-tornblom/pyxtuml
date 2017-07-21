@@ -177,6 +177,16 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(val.Id, "TE'ST")
 
     @load_docstring
+    def test_insert_escaped_single_quot(self, m):
+        """
+        CREATE TABLE X (Id STRING);
+        INSERT INTO X VALUES ('''');
+        """
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, "'")
+        
+    @load_docstring
     def test_insert_escaped_string_beginning(self, m):
         """
         CREATE TABLE X (Id STRING);

@@ -82,7 +82,7 @@ def deserialize_value(ty, value):
         return float(value)
     
     elif uty == 'STRING': 
-        return value.replace("''", "'")[1:-1]
+        return value[1:-1].replace("''", "'")
     
     elif uty == 'UNIQUE_ID': 
         if '"' in value:
