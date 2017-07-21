@@ -175,6 +175,26 @@ class TestLoader(unittest.TestCase):
         val = m.select_any('X')
         self.assertTrue(val is not None)
         self.assertEqual(val.Id, "TE'ST")
+
+    @load_docstring
+    def test_insert_escaped_string_beginning(self, m):
+        """
+        CREATE TABLE X (Id STRING);
+        INSERT INTO X VALUES ('''TEST');
+        """
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, "'TEST")
+
+    @load_docstring
+    def test_insert_escaped_string_end(self, m):
+        """
+        CREATE TABLE X (Id STRING);
+        INSERT INTO X VALUES ('TEST''');
+        """
+        val = m.select_any('X')
+        self.assertTrue(val is not None)
+        self.assertEqual(val.Id, "TEST'")
         
     @load_docstring
     def test_insert_null_uuid(self, m):
