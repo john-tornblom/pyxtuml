@@ -76,7 +76,7 @@ setup(name='pyxtuml',
       url='https://github.com/xtuml/pyxtuml',
       license='LGPLv3+',
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
           'Topic :: Software Development :: Code Generators',
           'Topic :: Software Development :: Compilers',
