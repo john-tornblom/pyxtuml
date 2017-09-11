@@ -26,3 +26,4 @@ from .sourcegen import gen_text_action
 
 from .ooaofooa import ModelLoader
 from .ooaofooa import load_metamodel
+from .ooaofooa import load_component

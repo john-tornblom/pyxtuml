@@ -513,12 +513,7 @@ class ModelLoader(xtuml.ModelLoader):
             return mk_component(mm, c_c, derived_attributes)
     
 
-def load_metamodel(resource=None, load_globals=True):
-    '''
-    Load and return a metamodel expressed in ooaofooa from a *resource*.
-    The resource may be either a filename, a path, or a list of filenames
-    and/or paths.
-    '''
+def _mk_loader(resource, load_globals):
     resource = resource or list()
         
     if isinstance(resource, str):
@@ -528,7 +523,26 @@ def load_metamodel(resource=None, load_globals=True):
     for filename in resource:
         loader.filename_input(filename)
     
+    return loader
+
+
+def load_metamodel(resource=None, load_globals=True):
+    '''
+    Load and return a metamodel expressed in ooaofooa from a *resource*.
+    The resource may be either a filename, a path, or a list of filenames
+    and/or paths.
+    '''
+    loader = _mk_loader(resource, load_globals)
     return loader.build_metamodel()
+
+
+def load_component(resource, name=None, load_globals=True):
+    '''
+    Load and return a model from a *resource*. The resource may be either a
+    filename, a path, or a list of filenames and/or paths.
+    '''
+    loader = _mk_loader(resource, load_globals)
+    return loader.build_component()
 
 
 def delete_globals(m, disconnect=False):
