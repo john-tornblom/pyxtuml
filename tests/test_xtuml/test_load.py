@@ -139,6 +139,14 @@ class TestLoader(unittest.TestCase):
         INSERT INTO TRUE VALUES ("00000000-0000-0000-0000-000000000000");
         '''
         self.assertTrue(m.select_any('TRUE') is not None)
+
+    @load_docstring
+    def test_table_named_link(self, m):
+        '''
+        CREATE TABLE LINK (Id UNIQUE_ID);
+        INSERT INTO LINK VALUES ("00000000-0000-0000-0000-000000000000");
+        '''
+        self.assertTrue(m.select_any('LINK') is not None)
         
     @load_docstring
     def test_table_named_false(self, m):

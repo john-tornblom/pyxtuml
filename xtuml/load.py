@@ -735,6 +735,7 @@ class ModelLoader(object):
                    | ON
                    | TRUE
                    | FALSE
+                   | LINK
         '''
         p[0] = p[1]
         
