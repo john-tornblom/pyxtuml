@@ -510,7 +510,7 @@ class TestLoader(unittest.TestCase):
         INSERT INTO Y VALUES (3);
         INSERT INTO Y VALUES (4);
 
-        INSERT INTO X VALUES (5);
+        INSERT INTO Y VALUES (5);
         INSERT INTO Y VALUES (6);
 
         CREATE LINK R1(I1, I1) FROM X(1) TO Y(2);
