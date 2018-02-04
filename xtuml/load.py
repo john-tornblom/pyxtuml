@@ -27,6 +27,7 @@ import re
 
 from ply import lex
 from ply import yacc
+from itertools import chain
 
 import xtuml
 
@@ -133,7 +134,21 @@ class CreateAssociationStmt(Stmt):
         self.source_phrase = source_phrase
         self.target_phrase = target_phrase
         
- 
+
+class CreateLinkStmt(Stmt):
+    def __init__(self, rel_id, source_index,target_index,
+                 source_kind, source_values, target_kind, target_values,
+                 phrase=''):
+        self.rel_id = rel_id
+        self.source_index = source_index
+        self.target_index = target_index
+        self.source_kind = source_kind
+        self.source_values = source_values
+        self.target_kind = target_kind
+        self.target_values = target_values
+        self.phrase = phrase
+
+
 class CreateUniqueStmt(Stmt):
     
     def __init__(self, kind, name, attributes):
@@ -167,6 +182,7 @@ class ModelLoader(object):
         'FALSE',
         'FROM',
         'INDEX',
+        'LINK',
         'INSERT',
         'INTO',
         'ON',
@@ -387,6 +403,9 @@ class ModelLoader(object):
             source_class = ass.source_link.to_metaclass
             target_class = ass.target_link.to_metaclass
 
+            if not ass.source_keys:
+                continue
+            
             if target_class not in storage:
                 storage[target_class] = dict()
             
@@ -415,12 +434,51 @@ class ModelLoader(object):
                     ass.source_link.connect(other_inst, inst, check=False)
                     ass.target_link.connect(inst, other_inst, check=False)
 
+        # unformalized connections
+        def cached_query(metaclass, names, values):
+            query = dict()
+            for name, value in zip(names, values):
+                ty = metaclass.attribute_type(name)
+                query[name] = deserialize_value(ty, value)
+
+            link_key = frozenset(query.keys())
+            inst_key = frozenset(tuple(query.items()))
+
+            if metaclass not in storage:
+                storage[metaclass] = dict()
+                
+            if link_key not in storage[metaclass]:
+                storage[metaclass][link_key] = dict()
+                
+            if inst_key not in storage[metaclass][link_key]:
+                storage[metaclass][link_key][inst_key] = xtuml.OrderedSet()
+                inst = next(metaclass.query(query))
+                storage[metaclass][link_key][inst_key].add(inst)
+            else:
+                inst = next(iter(storage[metaclass][link_key][inst_key]))
+
+            return inst
+            
+        for stmt in self.statements:
+            if not isinstance(stmt, CreateLinkStmt):
+                continue
+
+            metaclass = metamodel.find_metaclass(stmt.source_kind)
+            names = metaclass.indices[stmt.source_index]
+            source_inst = cached_query(metaclass, names, stmt.source_values)
+
+            metaclass = metamodel.find_metaclass(stmt.target_kind)
+            names = metaclass.indices[stmt.target_index]
+            target_inst = cached_query(metaclass, names, stmt.target_values)
+
+            xtuml.relate(source_inst, target_inst, stmt.rel_id, stmt.phrase)
+
         for inst in metamodel.instances:
             metaclass = xtuml.get_metaclass(inst)
             for attr in metaclass.referential_attributes:
                 if attr in inst.__dict__:
                     delattr(inst, attr)
-
+                    
     def populate(self, metamodel):
         '''
         Populate a *metamodel* with entities previously encountered from input.
@@ -542,6 +600,7 @@ class ModelLoader(object):
                   | insert_into_statement SEMICOLON
                   | create_rop_statement SEMICOLON
                   | create_index_statement SEMICOLON
+                  | create_link_statement SEMICOLON
         '''
         p[0] = p[1]
         p[0].offset = p.lexpos(1)
@@ -684,6 +743,24 @@ class ModelLoader(object):
         create_index_statement : CREATE UNIQUE INDEX identifier ON identifier LPAREN identifier_sequence RPAREN
         '''
         p[0] = CreateUniqueStmt(p[6], p[4], p[8])
+
+    def p_link_specification(self, p):
+        '''
+        link_specification : RELID LPAREN identifier COMMA identifier RPAREN
+        '''
+        p[0] = p[1], p[3], p[5]
+
+    def p_instance_reference(self, p):
+        '''
+        instance_reference : identifier LPAREN value_sequence RPAREN
+        '''
+        p[0] = p[1], p[3]
+        
+    def p_create_link_statement(self, p):
+        '''
+        create_link_statement : CREATE LINK link_specification FROM instance_reference TO instance_reference
+        '''
+        p[0] = CreateLinkStmt(*chain(p[3], p[5], p[7]))
 
     def p_error(self, p):
         if p:

@@ -92,6 +92,52 @@ def serialize_instances(metamodel):
     return s
 
 
+def serialize_connection(from_inst, to_inst, rel_id, phrase=''):
+    '''
+    Serialize a connection between two xtuml instances
+    '''
+    from_metaclass = xtuml.get_metaclass(from_inst)
+    from_index = next(iter(from_metaclass.indices.keys()))
+    from_values = list()
+    for name in from_metaclass.indices[from_index]:
+        value = getattr(from_inst, name)
+        ty = from_metaclass.attribute_type(name)
+        from_values.append(serialize_value(value, ty))
+
+    to_metaclass = xtuml.get_metaclass(to_inst)
+    to_index = next(iter(to_metaclass.indices.keys()))
+    to_values = list()
+    for name in to_metaclass.indices[to_index]:
+        value = getattr(to_inst, name)
+        ty = to_metaclass.attribute_type(name)
+        to_values.append(serialize_value(value, ty))
+        
+    s = 'CREATE LINK %s(%s, %s) FROM %s(%s) TO %s(%s)' % (rel_id, from_index,
+                                                          to_index,
+                                                          from_metaclass.kind,
+                                                          ', '.join(from_values),
+                                                          to_metaclass.kind,
+                                                          ', '.join(to_values))
+
+    if phrase:
+        s += " PHRASE '%s'" % phrase
+
+    return s + ';\n'
+
+
+def serialize_connections(link):
+    '''
+    Serialize connections on a link
+    '''
+    s = ''
+    for from_inst, to_insts in link.items():
+        for to_inst in to_insts:
+            s += serialize_connection(from_inst, to_inst, link.rel_id,
+                                      link.phrase)
+
+    return s
+
+
 def serialize_association(ass):
     '''
     Serialize an xtuml metamodel association.
@@ -244,6 +290,16 @@ def persist_database(metamodel, path, mode='w'):
         for ass in sorted(metamodel.associations, key=lambda x: x.rel_id):
             s = serialize_association(ass)
             f.write(s)
+
+            # skip formalized links
+            if not ass.source_keys:
+                continue
+
+            for from_inst, to_insts in ass.source_link.items():
+                for to_inst in to_insts:
+                    s = serialize_connection(from_inst, to_inst, ass.rel_id,
+                                             ass.source_link.phrase)
+                    f.write(s)
 
         for inst in metamodel.instances:
             s = serialize_instance(inst)

@@ -330,7 +330,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(x is not None)
 
         y = xtuml.navigate_one(x).Y[1]()
-        self.assertTrue(y is not None)
+        self.assertTrue(y is None)
 
     @load_docstring
     def test_empty_input(self, m):
@@ -484,6 +484,36 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(x)
         self.assertEqual(x.VAR1, 'test')
         self.assertEqual(x.VAR2, True)
+
+    @load_docstring
+    def test_create_unformalized_link(self, m):
+        '''
+        CREATE TABLE X (Id INTEGER);
+        CREATE TABLE Y (Id INTEGER);
+        
+        CREATE UNIQUE INDEX I1 ON X (Id);
+        CREATE UNIQUE INDEX I1 ON Y (Id);
+
+        CREATE ROP REF_ID R1 FROM MC X ()
+                             TO   MC Y ();
+                             
+        INSERT INTO X VALUES (1);
+        INSERT INTO Y VALUES (2);
+        INSERT INTO Y VALUES (3);
+        INSERT INTO Y VALUES (4);
+
+        INSERT INTO X VALUES (5);
+        INSERT INTO Y VALUES (6);
+
+        CREATE LINK R1(I1, I1) FROM X(1) TO Y(2);
+        CREATE LINK R1(I1, I1) FROM X(1) TO Y(3);
+        CREATE LINK R1(I1, I1) FROM X(1) TO Y(4);
+        '''
+        x = m.select_any('X')
+        self.assertTrue(x is not None)
+
+        ys = xtuml.navigate_many(x).Y[1]()
+        self.assertEqual(len(ys), 3)
 
 
 if __name__ == "__main__":
