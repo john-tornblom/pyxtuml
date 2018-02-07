@@ -455,6 +455,10 @@ class ActionTextGenWalker(Walker):
         first_filter = lambda sel: one(sel).V_PAR[816, 'succeeds']() is None
         self.accept(any(inst).V_PAR[842](first_filter))
         self.buf(')')
+
+    def accept_V_SCV(self, inst):
+        cnst_syc = one(inst).CNST_SYC[850]()
+        self.buf(cnst_syc.Name)
         
     def accept_SPR_PEP(self, inst):
         c_po = one(inst).C_P[4501].C_IR[4009].C_PO[4016]()
