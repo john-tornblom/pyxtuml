@@ -102,13 +102,24 @@ def is_global(pe_pe):
     return is_global(pe_pe)
 
 
-def get_data_type_name(s_dt):
+def get_attribute_type(o_attr):
+    '''
+    Get the base data type (S_DT) associated with a BridgePoint attribute.
+    '''
+    ref_o_attr = one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
+    if ref_o_attr:
+        return get_attribute_type(ref_o_attr)
+    else:
+        return one(o_attr).S_DT[114]()
+ 
+
+def _get_data_type_name(s_dt):
     '''
     Convert a BridgePoint data type to a pyxtuml meta model type.
     '''
     s_cdt = one(s_dt).S_CDT[17]()
     if s_cdt and s_cdt.Core_Typ in range(1, 6):
-        return s_dt.Name
+        return s_dt.Name.upper()
     
     if one(s_dt).S_EDT[17]():
         return 'INTEGER'
@@ -118,19 +129,6 @@ def get_data_type_name(s_dt):
         return get_data_type_name(s_dt)
     
 
-def get_attribute_type(o_attr):
-    '''
-    Get the pyxtuml meta model type associated with a BridgePoint class
-    attribute.
-    '''
-    ref_o_attr = one(o_attr).O_RATTR[106].O_BATTR[113].O_ATTR[106]()
-    if ref_o_attr:
-        return get_attribute_type(ref_o_attr)
-    else:
-        s_dt = one(o_attr).S_DT[114]()
-        return get_data_type_name(s_dt)
- 
-    
 def get_related_attributes(r_rgo, r_rto):
     '''
     The two lists of attributes which relates two classes in an association.
@@ -253,15 +251,16 @@ def mk_class(m, o_obj, derived_attributes=False):
     attributes = list()
         
     while o_attr:
-        ty = get_attribute_type(o_attr)
+        s_dt = get_attribute_type(o_attr)
         if not derived_attributes and one(o_attr).O_BATTR[106].O_DBATTR[107]():
             pass
 #            logger.warning('Omitting derived attribute %s.%s ' %
 #                           (o_obj.Key_Lett, o_attr.Name))
-        elif not ty:
+        elif not s_dt:
             logger.warning('Omitting unsupported attribute %s.%s ' %
                            (o_obj.Key_Lett, o_attr.Name))
         else:
+            ty = _get_data_type_name(s_dt)
             attributes.append((o_attr.Name, ty))
         
         o_attr = one(o_attr).O_ATTR[103, 'precedes']()
