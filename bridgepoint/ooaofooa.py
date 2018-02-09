@@ -169,6 +169,10 @@ def mk_bridge(metamodel, s_brg):
 
 
 def mk_external_entity(metamodel, s_ee):
+    '''
+    Create a python object from a BridgePoint external entity with bridges
+    realized as python member functions.
+    '''
     bridges = many(s_ee).S_BRG[19]()
     names = [brg.Name for brg in bridges]
     EE = collections.namedtuple(s_ee.Key_Lett, names)
