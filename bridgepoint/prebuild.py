@@ -175,7 +175,7 @@ class ActionPrebuilder(xtuml.tools.Walker):
         self.pe_pe_cache = xtuml.QuerySet()
         
         scope_filt = lambda sel: (ooaofooa.is_contained_in(sel, self.c_c) or
-                                 ooaofooa.is_global(sel)) 
+                                  ooaofooa.is_global(sel))
         
         self.pe_pe_cache |= self.m.select_many('PE_PE', scope_filt)
         
