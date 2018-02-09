@@ -129,7 +129,7 @@ def _get_data_type_name(s_dt):
         return get_data_type_name(s_dt)
     
 
-def get_related_attributes(r_rgo, r_rto):
+def _get_related_attributes(r_rgo, r_rto):
     '''
     The two lists of attributes which relates two classes in an association.
     '''
@@ -313,7 +313,7 @@ def mk_simple_association(m, r_simp):
         
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
-    source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
+    source_ids, target_ids = _get_related_attributes(r_rgo, r_rto)
 
     if source_o_obj.Obj_ID != target_o_obj.Obj_ID:
         source_phrase = target_phrase = ''
@@ -346,7 +346,7 @@ def mk_linked_association(m, r_assoc):
         r_rto = one(side1).R_RTO[204]()
 
         target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
-        source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
+        source_ids, target_ids = _get_related_attributes(r_rgo, r_rto)
         if side1.Obj_ID != side2.Obj_ID:
             source_phrase = target_phrase = ''
         else:
@@ -384,7 +384,7 @@ def mk_subsuper_association(m, r_subsup):
         r_rgo = one(r_sub).R_RGO[205]()
 
         source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
-        source_ids, target_ids = get_related_attributes(r_rgo, r_rto)
+        source_ids, target_ids = _get_related_attributes(r_rgo, r_rto)
         m.define_association(rel_id=r_rel.Numb, 
                              source_kind=source_o_obj.Key_Lett,
                              target_kind=target_o_obj.Key_Lett,
