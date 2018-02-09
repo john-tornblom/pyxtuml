@@ -66,7 +66,7 @@ def is_contained_in(pe_pe, root):
     if not pe_pe:
         return False
     
-    if pe_pe.__class__.__name__ != 'PE_PE':
+    if type(pe_pe).__name__ != 'PE_PE':
         pe_pe = one(pe_pe).PE_PE[8001]()
     
     ep_pkg = one(pe_pe).EP_PKG[8000]()
@@ -89,7 +89,7 @@ def is_global(pe_pe):
     '''
     Check if a PE_PE is globally defined, i.e. not inside a C_C
     '''
-    if pe_pe.__class__.__name__ != 'PE_PE':
+    if type(pe_pe).__name__ != 'PE_PE':
         pe_pe = one(pe_pe).PE_PE[8001]()
     
     if one(pe_pe).C_C[8003]():
@@ -291,21 +291,21 @@ def mk_class(m, o_obj, derived_attributes=False):
     return metaclass
 
 
-def mk_simple_association(m, inst):
+def mk_simple_association(m, r_simp):
     '''
     Create a pyxtuml association from a simple association in BridgePoint.
     '''
-    r_rel = one(inst).R_REL[206]()
+    r_rel = one(r_simp).R_REL[206]()
 
-    r_form = one(inst).R_FORM[208]()
-    r_part = one(inst).R_PART[207]()
+    r_form = one(r_simp).R_FORM[208]()
+    r_part = one(r_simp).R_PART[207]()
     
     r_rgo = one(r_form).R_RGO[205]()
     r_rto = one(r_part).R_RTO[204]()
     
     if not r_form:
         logger.info('unformalized association R%s' % (r_rel.Numb))
-        r_form = one(inst).R_PART[207](lambda sel: sel != r_part)
+        r_form = one(r_simp).R_PART[207](lambda sel: sel != r_part)
         r_rgo = one(r_form).R_RTO[204]()
         
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
@@ -331,12 +331,12 @@ def mk_simple_association(m, inst):
                          target_many=r_part.Mult)
 
 
-def mk_linked_association(m, inst):
+def mk_linked_association(m, r_assoc):
     '''
     Create pyxtuml associations from a linked association in BridgePoint.
     '''
-    r_rel = one(inst).R_REL[206]()
-    r_rgo = one(inst).R_ASSR[211].R_RGO[205]()
+    r_rel = one(r_assoc).R_REL[206]()
+    r_rgo = one(r_assoc).R_ASSR[211].R_RGO[205]()
     source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
     
     def _mk_assoc(side1, side2):
@@ -362,22 +362,22 @@ def mk_linked_association(m, inst):
                              source_many=side2.Mult,
                              target_many=False)
         
-    r_aone = one(inst).R_AONE[209]()
-    r_aoth = one(inst).R_AOTH[210]()
+    r_aone = one(r_assoc).R_AONE[209]()
+    r_aoth = one(r_assoc).R_AOTH[210]()
     
     _mk_assoc(r_aone, r_aoth)
     _mk_assoc(r_aoth, r_aone)
   
     
-def mk_subsuper_association(m, inst):
+def mk_subsuper_association(m, r_subsup):
     '''
     Create pyxtuml associations from a sub/super association in BridgePoint.
     '''
-    r_rel = one(inst).R_REL[206]()
-    r_rto = one(inst).R_SUPER[212].R_RTO[204]()
+    r_rel = one(r_subsup).R_REL[206]()
+    r_rto = one(r_subsup).R_SUPER[212].R_RTO[204]()
     target_o_obj = one(r_rto).R_OIR[203].O_OBJ[201]()
     
-    for r_sub in many(inst).R_SUB[213]():
+    for r_sub in many(r_subsup).R_SUB[213]():
         r_rgo = one(r_sub).R_RGO[205]()
 
         source_o_obj = one(r_rgo).R_OIR[203].O_OBJ[201]()
@@ -395,7 +395,7 @@ def mk_subsuper_association(m, inst):
                              target_many=False)
                            
 
-def mk_derived_association(m, inst):
+def mk_derived_association(m, r_comp):
     '''
     Create a pyxtuml association from a derived association in BridgePoint.
     '''
@@ -413,7 +413,7 @@ def mk_association(m, r_rel):
         'R_COMP': mk_derived_association,
     }
     inst = subtype(r_rel, 206)
-    fn = handler.get(inst.__class__.__name__)
+    fn = handler.get(type(inst).__name__)
     return fn(m, inst)
 
 
