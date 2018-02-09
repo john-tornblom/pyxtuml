@@ -102,6 +102,24 @@ def is_global(pe_pe):
     return is_global(pe_pe)
 
 
+def get_defining_component(pe_pe):
+    '''
+    Get the BridgePoint component (C_C) that defines the packeable element
+    *pe_pe*.
+    '''
+    if pe_pe is None:
+        return None
+    
+    if type(pe_pe).__name__ != 'PE_PE':
+        pe_pe = one(pe_pe).PE_PE[8001]()
+    
+    ep_pkg = one(pe_pe).EP_PKG[8000]()
+    if ep_pkg:
+        return get_defining_component(ep_pkg)
+    
+    return one(pe_pe).C_C[8003]()
+
+
 def get_attribute_type(o_attr):
     '''
     Get the base data type (S_DT) associated with a BridgePoint attribute.
