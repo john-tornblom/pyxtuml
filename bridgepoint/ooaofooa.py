@@ -145,7 +145,7 @@ def _get_data_type_name(s_dt):
     
     s_dt = one(s_dt).S_UDT[17].S_DT[18]()
     if s_dt:
-        return get_data_type_name(s_dt)
+        return _get_data_type_name(s_dt)
     
 
 def _get_related_attributes(r_rgo, r_rto):
