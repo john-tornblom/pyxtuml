@@ -281,15 +281,15 @@ def mk_class(m, o_obj, derived_attributes=False):
         
     while o_attr:
         s_dt = get_attribute_type(o_attr)
+        ty = _get_data_type_name(s_dt)
         if not derived_attributes and one(o_attr).O_BATTR[106].O_DBATTR[107]():
             pass
 #            logger.warning('Omitting derived attribute %s.%s ' %
 #                           (o_obj.Key_Lett, o_attr.Name))
-        elif not s_dt:
+        elif not ty:
             logger.warning('Omitting unsupported attribute %s.%s ' %
                            (o_obj.Key_Lett, o_attr.Name))
         else:
-            ty = _get_data_type_name(s_dt)
             attributes.append((o_attr.Name, ty))
         
         o_attr = one(o_attr).O_ATTR[103, 'precedes']()
