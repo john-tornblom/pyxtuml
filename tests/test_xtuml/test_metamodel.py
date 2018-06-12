@@ -21,6 +21,8 @@ import unittest
 import xtuml
 from bridgepoint import ooaofooa
 from xtuml import where_eq as where
+from xtuml import order_by
+from xtuml import reverse_order_by
 
 
 class TestModel(unittest.TestCase):
@@ -66,6 +68,23 @@ class TestModel(unittest.TestCase):
         m = self.metamodel
         inst = m.select_any('S_DT', where(Name='void'))
         self.assertEqual(inst.Name, 'void')
+
+    def test_select_many_ordered_by(self):
+        m = self.metamodel
+        q = m.select_many('S_DT', None, order_by('Name', 'DT_ID'))
+        prev_inst = None
+        for inst in q:
+            if not prev_inst is None:
+                self.assertTrue(
+                    getattr(inst, 'Name') > getattr(prev_inst, 'Name') or (
+                    getattr(inst, 'Name') == getattr(prev_inst, 'Name') and getattr(inst, 'DT_ID') >= getattr(prev_inst, 'DT_ID') ) )
+            prev_inst = inst
+
+    def test_select_many_reverse_ordered_by(self):
+        m = self.metamodel
+        q1 = m.select_many('S_DT', None, order_by('Name', 'DT_ID'))
+        q2 = m.select_many('S_DT', None, reverse_order_by('Name', 'DT_ID'))
+        self.assertEqual(q1, reversed(q2))
         
     def test_empty(self):
         m = self.metamodel

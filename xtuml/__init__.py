@@ -78,6 +78,8 @@ from .meta import where_eq
 from .meta import sort_reflexive
 from .meta import get_metaclass
 from .meta import get_metamodel
+from .meta import order_by
+from .meta import reverse_order_by
 
 from .consistency_check import check_association_integrity
 from .consistency_check import check_uniqueness_constraint

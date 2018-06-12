@@ -363,6 +363,12 @@ class QuerySet(xtuml.OrderedSet):
     '''
     An ordered set which holds instances that match queries.
     '''
+    def __init__(self, iterable=None, ordered_by=None):
+        if not ordered_by is None:
+            super(QuerySet, self).__init__(sorted(iterable, ordered_by))
+        else:
+            super(QuerySet, self).__init__(iterable)
+
     @property
     def first(self):
         '''
@@ -657,7 +663,7 @@ class MetaClass(object):
             
         return next(s, None)
 
-    def select_many(self, where_clause=None):
+    def select_many(self, where_clause=None, ordered_by=None):
         '''
         Select several instances from the instance pool. Optionally,
         a conditional *where-clause* in the form of a function may be provided.
@@ -669,7 +675,7 @@ class MetaClass(object):
         else:
             s = iter(self.storage)
             
-        return QuerySet(s)
+        return QuerySet(s, ordered_by)
 
     def _find_assoc_links(self, kind, rel_id, phrase=''):
         key = (kind.upper(), rel_id, phrase)
@@ -1067,6 +1073,52 @@ def cardinality(instance_or_set):
     return len(instance_or_set)
 
 
+class OrderBy(tuple):
+    '''
+    Helper class to create a tuple of key values for sorting an
+    instance set.
+    '''
+    def __call__(self, x, y):
+        for attr in self:
+            if not hasattr(x, attr):
+                raise MetaException("Class '%s' has no attribute '%s'" % (get_metaclass(x).kind, attr))
+            if not hasattr(y, attr):
+                raise MetaException("Class '%s' has no attribute '%s'" % (get_metaclass(y).kind, attr))
+            
+        return cmp( tuple(getattr(x, attr) for attr in self), tuple(getattr(y, attr) for attr in self) )
+
+
+def order_by(*attrs):
+    '''
+    Return a selection ordering comparator that will order an instance
+    set based on attribute names passed.  When ordering on multiple
+    attributes is specified, the set will be sorted by the first
+    attribute and then within each value of this, by the second
+    attribute and so on.
+    
+    Usage example:
+    
+    >>> from xtuml import order_by
+    >>> m = xtuml.load_metamodel('db.sql')
+    >>> inst = m.select_many('My_Modeled_Class', None, order_by( 'Name', 'Number' ) )
+    '''
+    return OrderBy(attrs)
+
+
+def reverse_order_by(*attrs):
+    '''
+    Return a selection ordering comparator with the same behavior as
+    the order_by function but reversed order.
+    
+    Usage example:
+    
+    >>> from xtuml import reverse_order_by
+    >>> m = xtuml.load_metamodel('db.sql')
+    >>> inst = m.select_many('My_Modeled_Class', None, reverse_order_by( 'Name', 'Number' ) )
+    '''
+    return lambda x, y: order_by(*attrs)(x, y) * -1;
+    
+
 class MetaModel(object):
     '''
     A metamodel contains metaclasses with associations between them.
@@ -1203,7 +1255,7 @@ class MetaModel(object):
         metaclass.indices[name] = tuple(named_attributes)
         metaclass.identifying_attributes |= set(named_attributes)
 
-    def select_many(self, kind, where_clause=None):
+    def select_many(self, kind, where_clause=None, ordered_by=None):
         '''
         Query the metamodel for a set of instances of some *kind*. Optionally,
         a conditional *where-clause* in the form of a function may be provided.
@@ -1214,7 +1266,7 @@ class MetaModel(object):
         >>> inst_set = m.select_many('My_Class', lambda sel: sel.number > 5)
         '''
         metaclass = self.find_metaclass(kind)
-        return metaclass.select_many(where_clause)
+        return metaclass.select_many(where_clause, ordered_by)
     
     def select_one(self, kind, where_clause=None):
         '''
