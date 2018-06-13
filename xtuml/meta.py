@@ -363,12 +363,6 @@ class QuerySet(xtuml.OrderedSet):
     '''
     An ordered set which holds instances that match queries.
     '''
-    def __init__(self, iterable=None, order_by=None):
-        if not order_by is None:
-            super(QuerySet, self).__init__(sorted(iterable, order_by))
-        else:
-            super(QuerySet, self).__init__(iterable)
-
     @property
     def first(self):
         '''
@@ -674,8 +668,11 @@ class MetaClass(object):
             s = filter(where_clause, self.storage)
         else:
             s = iter(self.storage)
+
+        if order_by:
+            s = sorted(s, order_by)
             
-        return QuerySet(s, order_by)
+        return QuerySet(s)
 
     def _find_assoc_links(self, kind, rel_id, phrase=''):
         key = (kind.upper(), rel_id, phrase)
