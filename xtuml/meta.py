@@ -133,6 +133,27 @@ def _is_null(instance, name):
             return False
 
 
+def apply_query_operators(iterable, ops):
+    '''
+    Apply a series of query operators to a sequence of instances, e.g.
+    where_eq(), order_by() or filter functions.
+    '''
+    for op in ops:
+        if isinstance(op, WhereEqual):
+            iterable = op(iterable)
+            
+        elif isinstance(op, OrderBy):
+            iterable = op(iterable)
+            
+        elif isinstance(op, dict):
+            iterable = WhereEqual(op)(iterable)
+            
+        else:
+            iterable = filter(op, iterable)
+
+    return iterable
+
+
 class Association(object):
     '''
     An association connects two metaclasses to each other via two directed
@@ -643,36 +664,26 @@ class MetaClass(object):
             for other in link[instance]:
                 unrelate(instance, other, link.rel_id, link.phrase)
         
-    def select_one(self, where_clause=None):
+    def select_one(self, *args):
         '''
-        Select a single instance from the instance pool. Optionally, a
-        conditional *where-clause* in the form of a function may be provided.
+        Select a single instance from the instance pool. Query operators such as
+        where_eq(), order_by() or filter functions may be passed as optional
+        arguments.
         '''
-        if isinstance(where_clause, dict):
-            s = self.query(where_clause)
-        elif where_clause:
-            s = iter(filter(where_clause, self.storage))
-        else:
-            s = iter(self.storage)
-            
-        return next(s, None)
+        s = apply_query_operators(self.storage, args)
+        return next(iter(s), None)
 
-    def select_many(self, where_clause=None, order_by=None):
+    def select_many(self, *args):
         '''
-        Select several instances from the instance pool. Optionally,
-        a conditional *where-clause* in the form of a function may be provided.
+        Select several instances from the instance pool. Query operators such as
+        where_eq(), order_by() or filter functions may be passed as optional
+        arguments.
         '''
-        if isinstance(where_clause, dict):
-            s = self.query(where_clause)
-        elif where_clause:
-            s = filter(where_clause, self.storage)
+        s = apply_query_operators(self.storage, args)
+        if isinstance(s, QuerySet):
+            return s
         else:
-            s = iter(self.storage)
-
-        if order_by:
-            s = sorted(s, order_by)
-            
-        return QuerySet(s)
+            return QuerySet(s)
 
     def _find_assoc_links(self, kind, rel_id, phrase=''):
         key = (kind.upper(), rel_id, phrase)
@@ -708,13 +719,7 @@ class MetaClass(object):
         Query the instance pool for instances with attributes that match a given
         *dictonary of values*.
         '''
-        items = collections.deque(dictonary_of_values.items())
-        for inst in iter(self.storage):
-            for name, value in iter(items):
-                if getattr(inst, name) != value:
-                    break
-            else:
-                yield inst
+        return WhereEqual(dictonary_of_values)(self.storage)
     
 
 class NavChain(object):
@@ -776,32 +781,29 @@ class NavChain(object):
         
         return self.nav(self._kind, relid, phrase)
 
-    def __call__(self, where_clause=None):
+    def __call__(self, *args):
         '''
-        The navigation chain is invoked. Optionally, a conditional
-        *where-clause* in the form of a function may be provided, e.g
-        
+        The navigation chain is invoked. Query operators such as where_eq(), 
+        order_by() or filter functions may be passed as optional arguments, e.g.
+
         >>> chain(lambda selected: selected.Name == 'test')
         '''
         handle = self.handle or list()
-        if where_clause:
-            handle = filter(where_clause, handle)
-            
-        return QuerySet(handle)
+        handle = apply_query_operators(handle, args)
+        if isinstance(handle, QuerySet):
+            return handle
+        else:
+            return QuerySet(handle)
     
     
 class NavOneChain(NavChain):
     '''
     A navigation chain that yeilds an instance, or None.
     '''
-    def __call__(self, where_clause=None):
-        handle = self.handle or iter([])
-        if not where_clause:
-            return next(handle, None)
-        
-        for inst in handle:
-            if where_clause(inst):
-                return inst
+    def __call__(self, *args):
+        handle = self.handle or list()
+        handle = apply_query_operators(handle, args)
+        return next(iter(handle), None)
 
 
 def navigate_one(instance):
@@ -880,12 +882,14 @@ class WhereEqual(dict):
     Helper class to create a dictonary of values for queries using
     python keyword arguments to *where_eq()*
     '''
-    def __call__(self, selected):
-        for name in self:
-            if getattr(selected, name) != self.get(name):
-                return False
-            
-        return True
+    def __call__(self, s):
+        items = collections.deque(self.items())
+        for inst in iter(s):
+            for name, value in iter(items):
+                if getattr(inst, name) != value:
+                    break
+            else:
+                yield inst
 
 
 def where_eq(**kwargs):
@@ -1070,25 +1074,26 @@ def cardinality(instance_or_set):
     return len(instance_or_set)
 
 
-class OrderBy(tuple):
+class OrderBy(list):
     '''
     Helper class to create a tuple of key values for sorting an
     instance set.
     '''
-    def __call__(self, x, y):
-        for attr in self:
-            if not hasattr(x, attr):
-                raise MetaException("Class '%s' has no attribute '%s'" % (get_metaclass(x).kind, attr))
-            if not hasattr(y, attr):
-                raise MetaException("Class '%s' has no attribute '%s'" % (get_metaclass(y).kind, attr))
-            
-        return cmp(tuple(getattr(x, attr) for attr in self), tuple(getattr(y, attr) for attr in self))
+    reverse = False
+
+    def __init__(self, attrs, reverse=False):
+        list.__init__(self, attrs)
+        self.reverse = reverse
+
+    def __call__(self, s):
+        key = lambda el: [getattr(el, name) for name in self]
+        return sorted(s, key=key, reverse=self.reverse)
 
 
 def order_by(*attrs):
     '''
-    Return a selection ordering comparator that will order an instance
-    set based on attribute names passed.  When ordering on multiple
+    Return a query ordering operator that will order an instance
+    set based on attribute names passed. When ordering on multiple
     attributes is specified, the set will be sorted by the first
     attribute and then within each value of this, by the second
     attribute and so on.
@@ -1097,23 +1102,23 @@ def order_by(*attrs):
     
     >>> from xtuml import order_by
     >>> m = xtuml.load_metamodel('db.sql')
-    >>> inst = m.select_many('My_Modeled_Class', None, order_by('Name', 'Number'))
+    >>> inst = m.select_many('My_Class', order_by('Name', 'Number'))
     '''
-    return OrderBy(attrs)
+    return OrderBy(attrs, reverse=False)
 
 
 def reverse_order_by(*attrs):
     '''
-    Return a selection ordering comparator with the same behavior as
-    the order_by function but reversed order.
+    Return a reversed query ordering operator with the same behavior as
+    order_by() but reversed order.
     
     Usage example:
     
     >>> from xtuml import reverse_order_by
     >>> m = xtuml.load_metamodel('db.sql')
-    >>> inst = m.select_many('My_Modeled_Class', None, reverse_order_by('Name', 'Number'))
+    >>> inst = m.select_many('My_Class', reverse_order_by('Name', 'Number'))
     '''
-    return lambda x, y: order_by(*attrs)(x, y) * -1;
+    return OrderBy(attrs, reverse=True)
     
 
 class MetaModel(object):
@@ -1252,10 +1257,11 @@ class MetaModel(object):
         metaclass.indices[name] = tuple(named_attributes)
         metaclass.identifying_attributes |= set(named_attributes)
 
-    def select_many(self, kind, where_clause=None, order_by=None):
+    def select_many(self, kind, *args):
         '''
-        Query the metamodel for a set of instances of some *kind*. Optionally,
-        a conditional *where-clause* in the form of a function may be provided.
+        Query the metamodel for a set of instances of some *kind*. Query
+        operators such as where_eq(), order_by() or filter functions may be
+        passed as optional arguments.
         
         Usage example:
         
@@ -1263,12 +1269,13 @@ class MetaModel(object):
         >>> inst_set = m.select_many('My_Class', lambda sel: sel.number > 5)
         '''
         metaclass = self.find_metaclass(kind)
-        return metaclass.select_many(where_clause, order_by)
+        return metaclass.select_many(*args)
     
-    def select_one(self, kind, where_clause=None):
+    def select_one(self, kind, *args):
         '''
-        Query the metamodel for a single instance of some *kind*. Optionally, a
-        conditional *where-clause* in the form of a function may be provided.
+        Query the metamodel for a single instance of some *kind*. Query
+        operators such as where_eq(), order_by() or filter functions may be
+        passed as optional arguments.
         
         Usage example:
         
@@ -1276,7 +1283,7 @@ class MetaModel(object):
         >>> inst = m.select_one('My_Class', lambda sel: sel.name == 'Test')
         '''
         metaclass = self.find_metaclass(kind)
-        return metaclass.select_one(where_clause)
+        return metaclass.select_one(*args)
     
     # Backwards compatibility with older versions of pyxtuml
     select_any = select_one
