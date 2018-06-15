@@ -96,6 +96,14 @@ class TestModel(unittest.TestCase):
         q = m.select_many('S_DT', filt, order_by('Name'))
         self.assertEqual(q.first.Name, 'boolean')
         self.assertEqual(q.last.Name, 'unique_id')
+
+    def test_select_one_ordered_by(self):
+        m = self.metamodel
+        s_dt = m.select_one('S_DT', order_by('Name'))
+        self.assertEqual(s_dt.Name, 'boolean')
+
+        s_dt = m.select_one('S_DT', reverse_order_by('Name'))
+        self.assertEqual(s_dt.Name, 'void')
         
     def test_empty(self):
         m = self.metamodel
