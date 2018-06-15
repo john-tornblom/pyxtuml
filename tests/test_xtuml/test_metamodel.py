@@ -87,6 +87,15 @@ class TestModel(unittest.TestCase):
         q1 = m.select_many('S_DT', order_by('Name', 'DT_ID'))
         q2 = m.select_many('S_DT', reverse_order_by('Name', 'DT_ID'))
         self.assertEqual(q1, reversed(q2))
+
+    def test_select_many_filter_ordered_by(self):
+        m = self.metamodel
+        s_dt = m.select_one('S_DT', where(Name='void'))
+        filt = lambda inst: inst.DT_ID > s_dt.DT_ID
+        
+        q = m.select_many('S_DT', filt, order_by('Name'))
+        self.assertEqual(q.first.Name, 'boolean')
+        self.assertEqual(q.last.Name, 'unique_id')
         
     def test_empty(self):
         m = self.metamodel
