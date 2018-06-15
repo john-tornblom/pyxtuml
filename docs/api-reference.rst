@@ -27,6 +27,8 @@ Metamodel Operations
 .. autofunction:: xtuml.delete
 .. autofunction:: xtuml.cardinality
 .. autofunction:: xtuml.where_eq
+.. autofunction:: xtuml.order_by
+.. autofunction:: xtuml.reverse_order_by
 .. autofunction:: xtuml.sort_reflexive
 .. autofunction:: xtuml.get_metamodel
 .. autofunction:: xtuml.get_metaclass
