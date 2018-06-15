@@ -74,10 +74,12 @@ class TestModel(unittest.TestCase):
         q = m.select_many('S_DT', None, order_by('Name', 'DT_ID'))
         prev_inst = None
         for inst in q:
-            if not prev_inst is None:
-                self.assertTrue(
-                    getattr(inst, 'Name') > getattr(prev_inst, 'Name') or (
-                    getattr(inst, 'Name') == getattr(prev_inst, 'Name') and getattr(inst, 'DT_ID') >= getattr(prev_inst, 'DT_ID') ) )
+            if prev_inst is None:
+                continue
+            
+            self.assertTrue(getattr(inst, 'Name') > getattr(prev_inst, 'Name') or
+                            (getattr(inst, 'Name') == getattr(prev_inst, 'Name') and
+                             getattr(inst, 'DT_ID') >= getattr(prev_inst, 'DT_ID')))
             prev_inst = inst
 
     def test_select_many_reverse_ordered_by(self):
